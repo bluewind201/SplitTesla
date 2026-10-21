@@ -178,6 +178,22 @@ class TeslaClient(
         return response.vehicleData
     }
 
+    /** Active route and GPS position in one round trip. */
+    suspend fun navigation(): NavigationInfo {
+        val get = CarServer.GetVehicleData.newBuilder()
+            .setGetDriveState(CarServer.GetDriveState.getDefaultInstance())
+            .setGetLocationState(CarServer.GetLocationState.getDefaultInstance())
+        return NavigationInfo.from(infotainment { setGetVehicleData(get) }.vehicleData)
+    }
+
+    /** Superchargers near the car, nearest first. [radiusMiles] follows the car's unit. */
+    suspend fun nearbyChargingSites(count: Int = 10, radiusMiles: Int = 200): List<ChargingSite> {
+        val request = CarServer.GetNearbyChargingSites.newBuilder()
+            .setIncludeMetaData(true).setCount(count).setRadius(radiusMiles)
+        val response = infotainment { setGetNearbyChargingSites(request) }
+        return response.getNearbyChargingSites.superchargersList.map(ChargingSite::from).sortedBy { it.distanceKm }
+    }
+
     // ── Plumbing ──
 
     private suspend fun rke(action: Vcsec.RKEAction_E) {

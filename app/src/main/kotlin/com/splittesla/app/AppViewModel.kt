@@ -9,10 +9,14 @@ import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.s3xy.CommanderStatus
 import com.splittesla.core.s3xy.SwitchType
 import com.splittesla.core.s3xy.VehicleData
+import com.splittesla.core.tesla.ChargingSite
+import com.splittesla.core.tesla.NavigationInfo
 import com.splittesla.core.tesla.StateCategory
 import com.splittesla.core.tesla.TeslaClient
 import com.tesla.generated.vcsec.Vcsec
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +40,10 @@ data class UiState(
     val busy: String? = null,
     val logRawPushes: Boolean = false,
     val vin: String = "",
+    val nav: NavigationInfo? = null,
+    val navUpdatedAt: Long? = null,
+    val navAutoRefresh: Boolean = false,
+    val chargingSites: List<ChargingSite> = emptyList(),
 )
 
 /**
@@ -190,6 +198,43 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun queryState(category: StateCategory) = withCar("${category.name} 조회") {
         val data = it.state(category)
         _ui.update { s -> s.copy(stateText = data.toString().ifBlank { "(비어 있음)" }) }
+    }
+
+    // ── Navigation ──
+
+    private var navJob: Job? = null
+
+    fun refreshNavigation() = withCar("내비 정보") { fetchNavigation(it) }
+
+    private suspend fun fetchNavigation(client: TeslaClient) {
+        val nav = client.navigation()
+        _ui.update { it.copy(nav = nav, navUpdatedAt = System.currentTimeMillis()) }
+    }
+
+    /** Polls the route every 10 s while on; the car does not push route changes over BLE. */
+    fun setNavAutoRefresh(on: Boolean) {
+        _ui.update { it.copy(navAutoRefresh = on) }
+        navJob?.cancel()
+        if (!on) return
+        navJob = viewModelScope.launch {
+            while (isActive) {
+                val client = car?.client
+                if (client != null && _ui.value.busy == null) {
+                    try {
+                        fetchNavigation(client)
+                    } catch (e: Exception) {
+                        log("내비 자동 갱신 실패: ${e.message}")
+                    }
+                }
+                delay(10_000)
+            }
+        }
+    }
+
+    fun findChargingSites() = withCar("주변 슈퍼차저") {
+        val sites = it.nearbyChargingSites()
+        _ui.update { s -> s.copy(chargingSites = sites) }
+        log("주변 슈퍼차저 ${sites.size}곳")
     }
 
     private fun withCar(label: String, block: suspend (TeslaClient) -> Unit) {

@@ -1,6 +1,7 @@
 package com.splittesla.core.tesla
 
 import com.google.protobuf.ByteString
+import com.tesla.generated.carserver.common.Common
 import com.tesla.generated.carserver.server.CarServer
 import com.tesla.generated.carserver.vehicle.Vehicle
 import com.tesla.generated.signatures.Signatures
@@ -95,7 +96,25 @@ class TeslaClientTest {
                 if (action.hasGetVehicleData()) {
                     out.setVehicleData(
                         Vehicle.VehicleData.newBuilder()
-                            .setChargeState(Vehicle.ChargeState.newBuilder().setBatteryLevel(77)),
+                            .setChargeState(Vehicle.ChargeState.newBuilder().setBatteryLevel(77))
+                            .setDriveState(
+                                Vehicle.DriveState.newBuilder()
+                                    .setActiveRouteDestination("Seoul Station")
+                                    .setActiveRouteMinutesToArrival(12.5f)
+                                    .setActiveRouteMilesToArrival(10f)
+                                    .setActiveRouteCoordinates(Common.LatLong.newBuilder().setLatitude(37.55f).setLongitude(126.97f)),
+                            )
+                            .setLocationState(Vehicle.LocationState.newBuilder().setLatitude(37.5f).setLongitude(127.0f).setHeading(90)),
+                    )
+                }
+                if (action.hasGetNearbyChargingSites()) {
+                    out.setGetNearbyChargingSites(
+                        CarServer.NearbyChargingSites.newBuilder()
+                            .addSuperchargers(CarServer.Superchargers.newBuilder().setName("Far").setDistanceMiles(20f))
+                            .addSuperchargers(
+                                CarServer.Superchargers.newBuilder().setName("Near").setDistanceMiles(2f)
+                                    .setAvailableStalls(3).setTotalStalls(8),
+                            ),
                     )
                 }
                 out.build().toByteArray()
@@ -169,6 +188,22 @@ class TeslaClientTest {
         )
         assertEquals(1, car.received.count { it.hasSessionInfoRequest() }, "one handshake per domain")
         assertTrue(car.received.filter { !it.hasSessionInfoRequest() }.all { it.flags == 2 }, "requests ask for encrypted responses")
+    }
+
+    @Test
+    fun navigationReadsRouteAndNearbySites() = runTest {
+        val car = FakeCar()
+        val client = connect(car)
+        val nav = client.navigation()
+        assertEquals("Seoul Station", nav.destination)
+        assertEquals(12.5, nav.minutesToArrival)
+        assertEquals(16.09, nav.kmToArrival!!, 0.01)
+        assertEquals(37.55, nav.destinationLat!!, 0.001)
+        assertEquals(90, nav.heading)
+        assertTrue(nav.hasRoute)
+        val sites = client.nearbyChargingSites()
+        assertEquals(listOf("Near", "Far"), sites.map { it.name })
+        assertEquals(3, sites.first().availableStalls)
     }
 
     @Test

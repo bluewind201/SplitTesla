@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 
-private val tabs = listOf("대시보드", "차량", "S3XY 동작", "설정·로그")
+private val tabs = listOf("대시보드", "내비", "차량", "S3XY 동작", "설정·로그")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,8 +69,9 @@ fun SplitTeslaApp(vm: AppViewModel) {
             val modifier = Modifier.padding(padding).fillMaxSize()
             when (tab) {
                 0 -> DashboardScreen(ui, modifier)
-                1 -> CarScreen(vm, ui, modifier)
-                2 -> ActionsScreen(vm, ui, modifier)
+                1 -> NavScreen(vm, ui, modifier)
+                2 -> CarScreen(vm, ui, modifier)
+                3 -> ActionsScreen(vm, ui, modifier)
                 else -> SettingsScreen(vm, ui, modifier)
             }
         }
