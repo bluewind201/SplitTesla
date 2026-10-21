@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -24,3 +26,13 @@ jobs:
         with:
           name: SplitTesla-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+      # Direct .apk download on the "latest-apk" prerelease, replaced on every push
+      - name: Publish APK to latest-apk release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk SplitTesla.apk
+          gh release delete latest-apk --yes --cleanup-tag || true
+          gh release create latest-apk SplitTesla.apk --prerelease --target "$GITHUB_SHA" \
+            --title "SplitTesla 테스트 APK" --notes "브랜치 ${GITHUB_REF_NAME}, 커밋 ${GITHUB_SHA::7}"
