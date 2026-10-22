@@ -24,12 +24,12 @@
 
 ## 빌드
 
-GitHub Actions가 PR과 push마다 테스트를 돌리고 디버그 APK를 아티팩트로 올립니다.
+GitHub Actions가 PR과 push마다 테스트를 돌리고 APK를 아티팩트로 올립니다. 서명 키는 [docs/배포.md](docs/배포.md)를 보세요.
 직접 빌드하려면 JDK 17과 Android SDK가 필요합니다.
 
 ```
 ./gradlew -p core test        # 프로토콜 테스트
-./gradlew :app:assembleDebug  # APK
+./gradlew :app:assembleRelease  # APK
 ```
 
 실차 테스트 순서는 [docs/실차테스트.md](docs/실차테스트.md)를 보세요.
