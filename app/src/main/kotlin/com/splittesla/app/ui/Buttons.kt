@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -14,15 +12,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
+import com.splittesla.app.ui.theme.GlowButton
+import com.splittesla.app.ui.theme.Neon
 
 /** A wrapping row of command buttons: label to action. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ButtonGrid(enabled: Boolean, vararg buttons: Pair<String, () -> Unit>) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        buttons.forEach { (label, onClick) ->
-            FilledTonalButton(onClick = onClick, enabled = enabled) { Text(label) }
-        }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        buttons.forEach { (label, onClick) -> GlowButton(label, onClick, enabled = enabled) }
     }
 }
 
@@ -47,12 +45,11 @@ fun rememberConfirmer(): Confirmer {
     confirmer.pending?.let { (question, action) ->
         AlertDialog(
             onDismissRequest = confirmer::dismiss,
+            containerColor = Neon.surfaceHi,
             title = { Text("실행할까요?") },
-            text = { Text(question) },
-            confirmButton = {
-                TextButton(onClick = { confirmer.dismiss(); action() }) { Text("실행") }
-            },
-            dismissButton = { TextButton(onClick = confirmer::dismiss) { Text("취소") } },
+            text = { Text(question, color = Neon.muted) },
+            confirmButton = { GlowButton("실행", { confirmer.dismiss(); action() }, filled = true) },
+            dismissButton = { GlowButton("취소", confirmer::dismiss) },
         )
     }
     return confirmer

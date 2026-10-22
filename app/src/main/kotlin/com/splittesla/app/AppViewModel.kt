@@ -9,6 +9,9 @@ import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.camera.CameraState
 import com.splittesla.app.camera.SpeedCameraService
 import com.splittesla.app.ble.TeslaLink
+import com.splittesla.app.ui.gauge.GaugeStyle
+import com.splittesla.app.weather.Weather
+import com.splittesla.app.weather.WeatherRepository
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.s3xy.CommanderSession
 import com.splittesla.core.s3xy.CommanderStatus
@@ -62,6 +65,9 @@ data class UiState(
     val cameraCount: Int = 0,
     val cameraUpdatedAt: Long = 0,
     val cameraApiKey: String = "",
+    val weather: Weather? = null,
+    val gaugeStyle: GaugeStyle = GaugeStyle.TRACK,
+    val demo: Boolean = false,
 )
 
 /**
@@ -75,6 +81,7 @@ data class UiState(
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Prefs(app)
     private val cameras = CameraRepository(app)
+    private val weatherRepo = WeatherRepository(app)
     private val _ui = MutableStateFlow(
         UiState(
             vin = prefs.vin,
@@ -82,6 +89,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             cameraCount = cameras.count,
             cameraUpdatedAt = cameras.updatedAt,
             cameraApiKey = cameras.apiKey,
+            gaugeStyle = prefs.gaugeStyle,
         ),
     )
     val ui: StateFlow<UiState> = _ui.asStateFlow()
@@ -110,6 +118,46 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update { it.copy(vin = prefs.vin, toast = "VIN 저장됨") }
         // A different car needs a fresh connection.
         if (changed && car != null) disconnectCar()
+    }
+
+    fun setGaugeStyle(style: GaugeStyle) {
+        prefs.gaugeStyle = style
+        _ui.update { it.copy(gaugeStyle = style) }
+    }
+
+    fun setDemo(on: Boolean) = _ui.update { it.copy(demo = on) }
+
+    // ── Weather ──
+
+    init {
+        viewModelScope.launch {
+            while (isActive) {
+                refreshWeatherNow()
+                delay(15 * 60_000L)
+            }
+        }
+    }
+
+    fun refreshWeather() {
+        viewModelScope.launch { refreshWeatherNow() }
+    }
+
+    private suspend fun refreshWeatherNow() {
+        val nav = _ui.value.nav
+        val (lat, lon) = if (nav?.latitude != null && nav.longitude != null) {
+            nav.latitude!! to nav.longitude!!
+        } else {
+            weatherRepo.lastKnownLocation()?.let { it.latitude to it.longitude } ?: run {
+                log("날씨: 위치를 아직 모릅니다")
+                return
+            }
+        }
+        try {
+            val w = weatherRepo.fetch(lat, lon)
+            _ui.update { it.copy(weather = w) }
+        } catch (e: Exception) {
+            log("날씨 받기 실패: ${e.message}")
+        }
     }
 
     fun setLogRawPushes(on: Boolean) = _ui.update { it.copy(logRawPushes = on) }

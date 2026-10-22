@@ -2,7 +2,7 @@ name: Android
 
 on:
   push:
-    branches: [main, "feature/**"]
+    branches: [main, "feature/**", "claude/**"]
   pull_request:
   workflow_dispatch:
 

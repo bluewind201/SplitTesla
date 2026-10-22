@@ -2,6 +2,7 @@ package com.splittesla.app
 
 import android.content.Context
 import android.util.Base64
+import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.tesla.TeslaKey
 import java.util.UUID
@@ -13,6 +14,10 @@ class Prefs(context: Context) {
     var vin: String
         get() = prefs.getString("vin", "") ?: ""
         set(value) = prefs.edit().putString("vin", value.trim().uppercase()).apply()
+
+    var gaugeStyle: GaugeStyle
+        get() = GaugeStyle.entries.firstOrNull { it.name == prefs.getString("gauge_style", null) } ?: GaugeStyle.TRACK
+        set(value) = prefs.edit().putString("gauge_style", value.name).apply()
 
     /** S3XY actions pinned to the top of the actions tab. */
     var favorites: Set<CommanderAction>

@@ -1,24 +1,20 @@
 package com.splittesla.app.ui
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -29,12 +25,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
+import com.splittesla.app.ui.theme.GlowButton
+import com.splittesla.app.ui.theme.Neon
+import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.s3xy.CommanderAction.*
 import kotlin.math.roundToInt
@@ -69,39 +70,51 @@ fun ActionsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
             vm.commanderAction(action, "S3XY ${action.label}", value)
         }
 
-    Column(modifier.verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
-        Text(
-            when (ui.commander) {
-                LinkState.CONNECTED -> "누르면 실행, 길게 누르면 즐겨찾기에 추가/삭제합니다."
-                LinkState.NEEDS_PAIRING -> "핸들 오른쪽 스크롤 버튼을 두 번 눌러 이 폰을 승인하세요."
-                else -> "버튼을 누르면 S3XY에 자동으로 연결합니다. 길게 누르면 즐겨찾기에 추가/삭제합니다."
-            },
-            Modifier.padding(vertical = 8.dp),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-
-        Section("즐겨찾기") {
-            if (ui.favorites.isEmpty()) {
-                Text("아래 버튼을 길게 누르면 여기에 모입니다.", style = MaterialTheme.typography.bodySmall)
-            } else {
-                ActionChips(ui.favorites.sortedBy { it.code }, ui.favorites, idle, ::actionFor, vm::toggleFavorite)
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(
+            Modifier.weight(0.38f).fillMaxHeight().verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                when (ui.commander) {
+                    LinkState.CONNECTED -> "누르면 실행, 길게 누르면 즐겨찾기에 추가/삭제합니다."
+                    LinkState.NEEDS_PAIRING -> "핸들 오른쪽 스크롤 버튼을 두 번 눌러 이 폰을 승인하세요."
+                    else -> "버튼을 누르면 S3XY에 자동으로 연결합니다. 길게 누르면 즐겨찾기에 추가/삭제합니다."
+                },
+                fontSize = 12.sp,
+                color = if (ui.commander == LinkState.NEEDS_PAIRING) Neon.cyan else Neon.muted,
+            )
+            Section("즐겨찾기") {
+                if (ui.favorites.isEmpty()) {
+                    Text("오른쪽 버튼을 길게 누르면 여기에 모입니다.", fontSize = 12.sp, color = Neon.muted)
+                } else {
+                    ActionChips(ui.favorites.sortedBy { it.code }, ui.favorites, idle, ::actionFor, vm::toggleFavorite)
+                }
+            }
+            Section("실내 온도 (S3XY)") {
+                var temp by rememberSaveable { mutableFloatStateOf(22f) }
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("${temp.roundToInt()}°", fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, color = Neon.text)
+                    Slider(
+                        temp, { temp = it }, Modifier.weight(1f), valueRange = 16f..28f, steps = 11,
+                        colors = SliderDefaults.colors(
+                            thumbColor = Neon.cyan, activeTrackColor = Neon.cyan, inactiveTrackColor = Neon.stroke,
+                            activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent,
+                        ),
+                    )
+                    GlowButton("설정", actionFor(CABIN_TEMP, temp.roundToInt().toLong()), enabled = idle, accent = Neon.cyan)
+                }
             }
         }
-
-        groups.forEach { (title, actions) ->
-            Section(title) { ActionChips(actions, ui.favorites, idle, ::actionFor, vm::toggleFavorite) }
-        }
-
-        Section("실내 온도 (S3XY)") {
-            var temp by rememberSaveable { mutableFloatStateOf(22f) }
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("${temp.roundToInt()}°C", style = MaterialTheme.typography.titleMedium)
-                Slider(temp, { temp = it }, Modifier.weight(1f), valueRange = 16f..28f, steps = 11)
-                OutlinedButton(onClick = actionFor(CABIN_TEMP, temp.roundToInt().toLong()), enabled = idle) { Text("설정") }
+        Column(
+            Modifier.weight(0.62f).fillMaxHeight().verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            groups.forEach { (title, actions) ->
+                Section(title) { ActionChips(actions, ui.favorites, idle, ::actionFor, vm::toggleFavorite) }
             }
+            AllActions(ui, idle, ::actionFor, vm::toggleFavorite)
         }
-
-        AllActions(ui, idle, ::actionFor, vm::toggleFavorite)
     }
 }
 
@@ -116,25 +129,14 @@ private fun ActionChips(
 ) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         actions.forEach { action ->
-            ActionChip(action, action in favorites, enabled, run(action, null)) { onToggleFavorite(action) }
+            GlowButton(
+                (if (action in favorites) "★ " else "") + action.label + (if (action.needsConfirm) " ⚠" else ""),
+                run(action, null),
+                enabled = enabled,
+                accent = if (action.needsConfirm) Neon.amber else Neon.lime,
+                onLongClick = { onToggleFavorite(action) },
+            )
         }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun ActionChip(action: CommanderAction, favorite: Boolean, enabled: Boolean, onClick: () -> Unit, onLongClick: () -> Unit) {
-    Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = if (enabled) 1f else 0.5f),
-        modifier = Modifier.combinedClickable(enabled = enabled, onClick = onClick, onLongClick = onLongClick),
-    ) {
-        Text(
-            (if (favorite) "★ " else "") + action.label + (if (action.needsConfirm) " ⚠" else ""),
-            Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            style = MaterialTheme.typography.labelLarge,
-        )
     }
 }
 
@@ -149,7 +151,7 @@ private fun AllActions(
     var query by rememberSaveable { mutableStateOf("") }
     var value by rememberSaveable { mutableStateOf("") }
 
-    TextButton(onClick = { show = !show }) { Text(if (show) "전체 동작 접기" else "전체 동작 100개 보기") }
+    GlowButton(if (show) "전체 동작 접기" else "전체 동작 100개 보기", { show = !show })
     if (!show) return
 
     Section("전체 동작") {
@@ -180,13 +182,14 @@ private fun AllActions(
                     Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
                         Text(
                             action.label + if (action.needsConfirm) " ⚠" else "",
-                            style = MaterialTheme.typography.bodyLarge,
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Medium,
+                            color = Neon.text,
                         )
-                        Text("${action.name} · #${action.code}", style = MaterialTheme.typography.bodySmall)
+                        Text("${action.name} · #${action.code}", fontSize = 11.sp, color = Neon.muted)
                     }
                     TextButton(onClick = { onToggleFavorite(action) }) {
-                        Text(if (favorite) "★" else "☆", style = MaterialTheme.typography.titleLarge)
+                        Text(if (favorite) "★" else "☆", fontSize = 22.sp, color = if (favorite) Neon.lime else Neon.muted)
                     }
                 }
             }

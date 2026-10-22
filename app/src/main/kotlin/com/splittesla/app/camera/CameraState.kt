@@ -10,6 +10,9 @@ object CameraState {
     val lastAlert = MutableStateFlow<String?>(null)
     val gpsOk = MutableStateFlow(false)
 
+    /** Phone GPS speed while alerts run; the dashboard falls back to it without the Commander. */
+    val gpsSpeedKmh = MutableStateFlow<Float?>(null)
+
     /** Latest speed from the Commander's CAN stream; better than GPS speed in tunnels. */
     @Volatile var commanderSpeedKmh: Long? = null
     @Volatile var commanderSpeedAt: Long = 0
