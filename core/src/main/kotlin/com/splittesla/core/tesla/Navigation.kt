@@ -23,6 +23,7 @@ data class NavigationInfo(
     val heading: Int?,
     val locationName: String?,
     val speedKmh: Double?,
+    val odometerKm: Double? = null,
 ) {
     val hasRoute: Boolean get() = destination != null || minutesToArrival != null
 
@@ -44,8 +45,12 @@ data class NavigationInfo(
                 heading = loc.heading.takeIf { loc.hasHeading() },
                 locationName = loc.locationName.takeIf { loc.hasLocationName() && it.isNotBlank() },
                 speedKmh = (drive.speedFloat * KM_PER_MILE).takeIf { drive.hasSpeedFloat() },
+                odometerKm = odometerKm(drive),
             )
         }
+
+        fun odometerKm(drive: Vehicle.DriveState): Double? =
+            (drive.odometerInHundredthsOfAMile / 100.0 * KM_PER_MILE).takeIf { drive.hasOdometerInHundredthsOfAMile() && drive.odometerInHundredthsOfAMile > 0 }
     }
 }
 

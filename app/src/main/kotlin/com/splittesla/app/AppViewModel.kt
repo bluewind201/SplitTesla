@@ -7,6 +7,7 @@ import android.net.Uri
 import com.splittesla.app.assistant.DriveAssistant
 import com.splittesla.app.ble.CommanderLink
 import com.splittesla.app.camera.CameraRepository
+import com.splittesla.app.logbook.LogbookController
 import com.splittesla.app.camera.CameraState
 import com.splittesla.app.camera.SpeedCameraService
 import com.splittesla.app.ble.TeslaLink
@@ -19,6 +20,7 @@ import com.splittesla.core.s3xy.CommanderStatus
 import com.splittesla.core.s3xy.SwitchType
 import com.splittesla.core.s3xy.VehicleData
 import com.splittesla.core.tesla.ChargingSite
+import com.splittesla.core.tesla.NavigationInfo.Companion.odometerKm
 import com.splittesla.core.tesla.NavigationInfo
 import com.splittesla.core.tesla.StateCategory
 import com.splittesla.core.tesla.TeslaClient
@@ -98,6 +100,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _log = MutableStateFlow<List<String>>(emptyList())
     val log: StateFlow<List<String>> = _log.asStateFlow()
+
+    val logbook = LogbookController(app, ::log)
 
     private var commander: CommanderLink? = null
     private var car: TeslaLink? = null
@@ -345,6 +349,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 val status = client.vehicleStatus()
                 _ui.update { it.copy(vehicleStatus = status) }
+                odometerKm(client.state(StateCategory.DRIVE).driveState)?.let(logbook::onOdometer)
                 refresh(client, Refresh.CHARGE)
                 refresh(client, Refresh.CLIMATE)
             } catch (e: Exception) {
@@ -357,7 +362,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         when (what) {
             Refresh.NONE -> Unit
             Refresh.STATUS -> client.vehicleStatus().let { s -> _ui.update { it.copy(vehicleStatus = s) } }
-            Refresh.CHARGE -> client.state(StateCategory.CHARGE).chargeState.let { s -> _ui.update { it.copy(charge = s) } }
+            Refresh.CHARGE -> client.state(StateCategory.CHARGE).chargeState.let { s ->
+                _ui.update { it.copy(charge = s) }
+                logbook.onChargeState(s)
+            }
             Refresh.CLIMATE -> client.state(StateCategory.CLIMATE).climateState.let { s -> _ui.update { it.copy(climate = s) } }
         }
     }
@@ -414,6 +422,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private suspend fun fetchNavigation(client: TeslaClient) {
         val nav = client.navigation()
         _ui.update { it.copy(nav = nav, navUpdatedAt = System.currentTimeMillis()) }
+        nav.odometerKm?.let(logbook::onOdometer)
     }
 
     /** Polls the route every 10 s while on; the car does not push route changes over BLE. */
@@ -441,6 +450,34 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update { s -> s.copy(chargingSites = sites) }
         log("주변 슈퍼차저 ${sites.size}곳")
     }
+
+    // ── Logbook ──
+
+    init {
+        // The car does not push charge state over BLE, so poll it while a cable
+        // is in; that is how a finished charge lands in the logbook.
+        viewModelScope.launch {
+            while (isActive) {
+                delay(5 * 60_000L)
+                val client = car?.client
+                val plugged = _ui.value.charge?.chargingState?.typeCase?.name !in setOf(null, "DISCONNECTED", "TYPE_NOT_SET")
+                if (client != null && plugged && _ui.value.car == LinkState.CONNECTED && _ui.value.busy == null) {
+                    try {
+                        refresh(client, Refresh.CHARGE)
+                    } catch (e: Exception) {
+                        log("충전 상태 자동 갱신 실패: ${e.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    /** Reads the odometer so a new logbook entry starts with the right number. */
+    fun refreshOdometer() = withCar("주행거리 읽기", silent = true) {
+        odometerKm(it.state(StateCategory.DRIVE).driveState)?.let(logbook::onOdometer) ?: error("차량이 주행거리를 보내지 않았습니다")
+    }
+
+    fun exportLogbook(uri: Uri) = run("차계부 내보내기") { logbook.exportCsv(uri) }
 
     // ── Speed cameras ──
 

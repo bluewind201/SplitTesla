@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
@@ -77,6 +78,7 @@ private enum class Tab(val title: String, val english: String) {
     NAV("내비", "NAVIGATION"),
     AI("AI", "AI ASSISTANT"),
     DATA("데이터", "TELEMETRY"),
+    LOGBOOK("차계부", "LOGBOOK"),
     SETTINGS("설정", "SETTINGS"),
 }
 
@@ -115,6 +117,7 @@ fun SplitTeslaApp(vm: AppViewModel) {
                             Tab.NAV -> NavScreen(vm, ui, modifier)
                             Tab.AI -> AssistantScreen(vm, modifier)
                             Tab.DATA -> TelemetryScreen(ui, modifier)
+                            Tab.LOGBOOK -> LogbookScreen(vm, modifier)
                             Tab.SETTINGS -> SettingsScreen(vm, ui, modifier)
                         }
                     }
@@ -205,6 +208,7 @@ private fun TabIcon(tab: Tab, tint: Color) {
             drawLine(tint, Offset(w * 0.34f, h * 0.92f), Offset(w * 0.66f, h * 0.92f), s, StrokeCap.Round)
         }
         Tab.DATA -> Icon(Icons.Filled.List, null, m, tint)
+        Tab.LOGBOOK -> Icon(Icons.Filled.DateRange, null, m, tint)
         Tab.SETTINGS -> Icon(Icons.Filled.Settings, null, m, tint)
     }
 }

@@ -30,6 +30,11 @@ object NaviLaunch {
         launch(context, Uri.parse("kakaomap://route?ep=$lat,$lon&by=CAR"), KAKAO_MAP)
     }
 
+    /** Opens Naver Map on its home screen, for when the car has no destination yet. */
+    fun openNaver(context: Context) = launch(context, Uri.parse("nmap://map?appname=${context.packageName}"), NAVER_MAP)
+
+    fun openKakao(context: Context) = launch(context, Uri.parse("kakaomap://open"), KAKAO_MAP)
+
     private fun launch(context: Context, uri: Uri, pkg: String) {
         val intent = Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         try {
