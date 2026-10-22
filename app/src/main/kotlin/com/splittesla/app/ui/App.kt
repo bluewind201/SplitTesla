@@ -23,7 +23,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
@@ -138,9 +140,10 @@ fun SplitTeslaApp(vm: AppViewModel) {
 @Composable
 private fun Rail(selected: Tab, onSelect: (Tab) -> Unit) {
     Column(
-        Modifier.fillMaxHeight().width(76.dp).padding(vertical = 10.dp),
+        // Eight tabs can outgrow a phone held sideways, so the rail scrolls when it must.
+        Modifier.fillMaxHeight().width(76.dp).verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Logo()
         Tab.entries.forEach { t -> RailItem(t, t == selected) { onSelect(t) } }
