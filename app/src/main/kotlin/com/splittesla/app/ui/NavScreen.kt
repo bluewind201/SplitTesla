@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
@@ -73,6 +74,31 @@ fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
             }
         }
         Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Section("네이버·카카오 길안내") {
+                val lat = nav?.destinationLat
+                val lon = nav?.destinationLon
+                if (lat != null && lon != null) {
+                    val name = nav?.destination ?: "목적지"
+                    Text("차에 설정된 목적지($name)로 폰 내비를 바로 시작합니다.", fontSize = 12.sp, color = Neon.muted)
+                    ButtonGrid(
+                        true,
+                        "네이버지도 길안내" to { NaviLaunch.naver(context, lat, lon, name) },
+                        "카카오맵 길안내" to { NaviLaunch.kakao(context, lat, lon) },
+                        "다른 지도 앱" to { openMap(context, lat, lon, name) },
+                    )
+                } else {
+                    Text(
+                        "차에 목적지를 설정하고 아래 새로고침을 누르면 그 목적지로 바로 길안내합니다. 지금은 지도 앱만 엽니다.",
+                        fontSize = 12.sp,
+                        color = Neon.muted,
+                    )
+                    ButtonGrid(
+                        true,
+                        "네이버지도 열기" to { NaviLaunch.openNaver(context) },
+                        "카카오맵 열기" to { NaviLaunch.openKakao(context) },
+                    )
+                }
+            }
             Section("경로") {
                 when {
                     nav == null -> Text("아직 읽지 않았습니다. 새로고침을 누르세요.", style = MaterialTheme.typography.bodyMedium)
@@ -93,17 +119,6 @@ fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                             highlight = nav.trafficDelayMinutes?.takeIf { it >= 5 }?.let { MaterialTheme.colorScheme.error },
                         )
                         ValueRow("도착 시 배터리", nav.energyAtArrival.fmt(0, "%"))
-                        if (nav.destinationLat != null && nav.destinationLon != null) {
-                            val lat = nav.destinationLat!!
-                            val lon = nav.destinationLon!!
-                            val name = nav.destination ?: "목적지"
-                            ButtonGrid(
-                                true,
-                                "네이버지도 길안내" to { NaviLaunch.naver(context, lat, lon, name) },
-                                "카카오맵 길안내" to { NaviLaunch.kakao(context, lat, lon) },
-                                "다른 지도 앱" to { openMap(context, lat, lon, name) },
-                            )
-                        }
                     }
                 }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {

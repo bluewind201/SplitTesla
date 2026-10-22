@@ -1,9 +1,11 @@
 package com.splittesla.app.ui.theme
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -76,7 +78,11 @@ private val typography = base.copy(
 
 @Composable
 fun SplitTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = colors, typography = typography, content = content)
+    // Plain Text outside a Surface takes LocalContentColor, which defaults to black;
+    // set it to the light text colour so nothing renders black on the dark background.
+    MaterialTheme(colorScheme = colors, typography = typography) {
+        CompositionLocalProvider(LocalContentColor provides Neon.text, content = content)
+    }
 }
 
 /** Small uppercase caption above a value, e.g. "DRIVE MODE". */
