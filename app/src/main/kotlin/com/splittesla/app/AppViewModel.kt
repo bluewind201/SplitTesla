@@ -9,6 +9,9 @@ import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.camera.CameraState
 import com.splittesla.app.camera.SpeedCameraService
 import com.splittesla.app.ble.TeslaLink
+import com.splittesla.app.ui.gauge.GaugeStyle
+import com.splittesla.app.weather.Weather
+import com.splittesla.app.weather.WeatherRepository
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.s3xy.CommanderSession
 import com.splittesla.core.s3xy.CommanderStatus
@@ -20,6 +23,7 @@ import com.splittesla.core.tesla.StateCategory
 import com.splittesla.core.tesla.TeslaClient
 import com.tesla.generated.carserver.vehicle.Vehicle
 import com.tesla.generated.vcsec.Vcsec
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,6 +66,9 @@ data class UiState(
     val cameraCount: Int = 0,
     val cameraUpdatedAt: Long = 0,
     val cameraApiKey: String = "",
+    val weather: Weather? = null,
+    val gaugeStyle: GaugeStyle = GaugeStyle.TRACK,
+    val demo: Boolean = false,
 )
 
 /**
@@ -75,6 +82,7 @@ data class UiState(
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Prefs(app)
     private val cameras = CameraRepository(app)
+    private val weatherRepo = WeatherRepository(app)
     private val _ui = MutableStateFlow(
         UiState(
             vin = prefs.vin,
@@ -82,6 +90,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             cameraCount = cameras.count,
             cameraUpdatedAt = cameras.updatedAt,
             cameraApiKey = cameras.apiKey,
+            gaugeStyle = prefs.gaugeStyle,
         ),
     )
     val ui: StateFlow<UiState> = _ui.asStateFlow()
@@ -112,6 +121,46 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (changed && car != null) disconnectCar()
     }
 
+    fun setGaugeStyle(style: GaugeStyle) {
+        prefs.gaugeStyle = style
+        _ui.update { it.copy(gaugeStyle = style) }
+    }
+
+    fun setDemo(on: Boolean) = _ui.update { it.copy(demo = on) }
+
+    // ── Weather ──
+
+    init {
+        viewModelScope.launch {
+            while (isActive) {
+                refreshWeatherNow()
+                delay(15 * 60_000L)
+            }
+        }
+    }
+
+    fun refreshWeather() {
+        viewModelScope.launch { refreshWeatherNow() }
+    }
+
+    private suspend fun refreshWeatherNow() {
+        val nav = _ui.value.nav
+        val (lat, lon) = if (nav?.latitude != null && nav.longitude != null) {
+            nav.latitude!! to nav.longitude!!
+        } else {
+            weatherRepo.lastKnownLocation()?.let { it.latitude to it.longitude } ?: run {
+                log("날씨: 위치를 아직 모릅니다")
+                return
+            }
+        }
+        try {
+            val w = weatherRepo.fetch(lat, lon)
+            _ui.update { it.copy(weather = w) }
+        } catch (e: Exception) {
+            log("날씨 받기 실패: ${e.message}")
+        }
+    }
+
     fun setLogRawPushes(on: Boolean) = _ui.update { it.copy(logRawPushes = on) }
 
     fun toggleFavorite(action: CommanderAction) {
@@ -120,9 +169,62 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update { it.copy(favorites = next) }
     }
 
+    // ── Auto connect ──
+
+    /** Set when the user taps a link off; auto connect leaves that link alone until they tap it on. */
+    private var commanderOff = false
+    private var carOff = false
+    private var foreground = false
+    private var autoJob: Job? = null
+
+    /**
+     * Connects both links as soon as the app opens and reconnects them after a
+     * drop, while the app is on screen. Runs outside [run] so it never shows
+     * as busy or blocks a button; a tap simply joins the same connection.
+     */
+    fun startAutoConnect() {
+        if (autoJob?.isActive == true) return
+        autoJob = viewModelScope.launch {
+            var failures = 0
+            while (isActive) {
+                if (foreground) {
+                    val s = _ui.value
+                    val idle = setOf(LinkState.DISCONNECTED, LinkState.FAILED)
+                    val tries = buildList {
+                        if (!commanderOff && s.commander in idle) add(launch { autoTry("S3XY") { ensureCommander() } })
+                        if (!carOff && prefs.vin.length == 17 && s.car in idle) add(launch { autoTry("차량") { ensureCar() } })
+                    }
+                    tries.forEach { it.join() }
+                    val failed = _ui.value.commander == LinkState.FAILED || _ui.value.car == LinkState.FAILED
+                    failures = if (tries.isNotEmpty() && failed) failures + 1 else 0
+                }
+                // Retry quickly at first, then ease off while the car is out of range.
+                delay(if (failures < 3) 15_000L else 60_000L)
+            }
+        }
+    }
+
+    fun setForeground(on: Boolean) {
+        foreground = on
+    }
+
+    private suspend fun autoTry(name: String, block: suspend () -> Unit) {
+        try {
+            block()
+            log("$name 자동 연결됨")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log("$name 자동 연결 실패: ${e.message}")
+        }
+    }
+
     // ── Commander ──
 
-    fun connectCommander() = run("S3XY 연결", silent = true) { ensureCommander() }
+    fun connectCommander() {
+        commanderOff = false
+        run("S3XY 연결", silent = true) { ensureCommander() }
+    }
 
     private suspend fun ensureCommander(): CommanderSession = commanderMutex.withLock {
         commander?.session?.takeIf { _ui.value.commander == LinkState.CONNECTED } ?: connectCommanderNow()
@@ -183,6 +285,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun disconnectCommander() {
+        commanderOff = true
         commander?.disconnect()
         commander = null
         _ui.update { it.copy(commander = LinkState.DISCONNECTED) }
@@ -201,7 +304,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     // ── Car ──
 
-    fun connectCar() = run("차량 연결", silent = true) { ensureCar() }
+    fun connectCar() {
+        carOff = false
+        run("차량 연결", silent = true) { ensureCar() }
+    }
 
     private suspend fun ensureCar(): TeslaClient = carMutex.withLock {
         car?.client?.takeIf { _ui.value.car == LinkState.CONNECTED } ?: connectCarNow()
@@ -253,6 +359,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun disconnectCar() {
+        carOff = true
         car?.disconnect()
         car = null
         _ui.update { it.copy(car = LinkState.DISCONNECTED) }
