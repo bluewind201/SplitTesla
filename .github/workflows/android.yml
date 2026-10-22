@@ -6,6 +6,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Pushes close together used to publish latest-apk at the same time, and one
+# run's delete raced the other's create. Only the newest run per branch goes on.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
