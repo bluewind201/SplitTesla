@@ -94,11 +94,14 @@ fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                         )
                         ValueRow("도착 시 배터리", nav.energyAtArrival.fmt(0, "%"))
                         if (nav.destinationLat != null && nav.destinationLon != null) {
+                            val lat = nav.destinationLat!!
+                            val lon = nav.destinationLon!!
+                            val name = nav.destination ?: "목적지"
                             ButtonGrid(
                                 true,
-                                "폰 지도에서 목적지 열기" to {
-                                    openMap(context, nav.destinationLat!!, nav.destinationLon!!, nav.destination ?: "목적지")
-                                },
+                                "네이버지도 길안내" to { NaviLaunch.naver(context, lat, lon, name) },
+                                "카카오맵 길안내" to { NaviLaunch.kakao(context, lat, lon) },
+                                "다른 지도 앱" to { openMap(context, lat, lon, name) },
                             )
                         }
                     }
