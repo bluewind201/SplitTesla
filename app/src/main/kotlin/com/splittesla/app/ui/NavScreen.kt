@@ -49,6 +49,8 @@ fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
             )
         }
 
+        CameraSection(vm, ui)
+
         Section("주행") {
             val speed = ui.live.speedKmh ?: nav?.speedKmh?.toLong()
             val limit = ui.live.speedLimit

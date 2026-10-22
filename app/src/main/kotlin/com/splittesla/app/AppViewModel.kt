@@ -3,7 +3,11 @@ package com.splittesla.app
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import android.net.Uri
 import com.splittesla.app.ble.CommanderLink
+import com.splittesla.app.camera.CameraRepository
+import com.splittesla.app.camera.CameraState
+import com.splittesla.app.camera.SpeedCameraService
 import com.splittesla.app.ble.TeslaLink
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.s3xy.CommanderSession
@@ -55,6 +59,9 @@ data class UiState(
     val navUpdatedAt: Long? = null,
     val navAutoRefresh: Boolean = false,
     val chargingSites: List<ChargingSite> = emptyList(),
+    val cameraCount: Int = 0,
+    val cameraUpdatedAt: Long = 0,
+    val cameraApiKey: String = "",
 )
 
 /**
@@ -67,7 +74,16 @@ data class UiState(
  */
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Prefs(app)
-    private val _ui = MutableStateFlow(UiState(vin = prefs.vin, favorites = prefs.favorites))
+    private val cameras = CameraRepository(app)
+    private val _ui = MutableStateFlow(
+        UiState(
+            vin = prefs.vin,
+            favorites = prefs.favorites,
+            cameraCount = cameras.count,
+            cameraUpdatedAt = cameras.updatedAt,
+            cameraApiKey = cameras.apiKey,
+        ),
+    )
     val ui: StateFlow<UiState> = _ui.asStateFlow()
 
     private val _log = MutableStateFlow<List<String>>(emptyList())
@@ -121,6 +137,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 phoneUuid = prefs.commanderPhoneUuid,
                 onData = { delta ->
                     _ui.update { it.copy(live = delta.mergedOnto(it.live), pushCount = it.pushCount + 1) }
+                    _ui.value.live.speedKmh?.let {
+                        CameraState.commanderSpeedKmh = it
+                        CameraState.commanderSpeedAt = System.currentTimeMillis()
+                    }
                 },
                 onRawPush = { bytes -> if (_ui.value.logRawPushes) log("PUSH ${bytes.hex()}") },
                 onDisconnect = {
@@ -309,6 +329,38 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val sites = it.nearbyChargingSites()
         _ui.update { s -> s.copy(chargingSites = sites) }
         log("주변 슈퍼차저 ${sites.size}곳")
+    }
+
+    // ── Speed cameras ──
+
+    fun importCameras(uri: Uri) = run("카메라 데이터 가져오기", silent = true) {
+        onCamerasLoaded(cameras.importCsv(uri))
+    }
+
+    fun downloadCameras(key: String) = run("카메라 데이터 받기", silent = true) {
+        cameras.apiKey = key
+        _ui.update { it.copy(cameraApiKey = cameras.apiKey) }
+        onCamerasLoaded(cameras.download(cameras.apiKey))
+    }
+
+    private fun onCamerasLoaded(n: Int) {
+        log("과속 카메라 ${n}개 저장")
+        _ui.update { it.copy(cameraCount = n, cameraUpdatedAt = cameras.updatedAt, toast = "과속 카메라 ${n}개를 저장했습니다") }
+        // A running service keeps its old list; restart it to pick up the new one.
+        if (CameraState.running.value) {
+            SpeedCameraService.stop(getApplication())
+            SpeedCameraService.start(getApplication())
+        }
+    }
+
+    fun setCameraAlerts(on: Boolean) {
+        if (!on) {
+            SpeedCameraService.stop(getApplication())
+        } else if (cameras.count == 0) {
+            _ui.update { it.copy(toast = "먼저 카메라 데이터를 가져오세요") }
+        } else {
+            SpeedCameraService.start(getApplication())
+        }
     }
 
     private fun withCar(label: String, silent: Boolean = false, block: suspend (TeslaClient) -> Unit) =
