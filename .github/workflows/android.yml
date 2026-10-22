@@ -28,7 +28,7 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
       # Direct .apk download on the "latest-apk" prerelease, replaced on every push
       - name: Publish APK to latest-apk release
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.ref_name == 'claude/project-thread-ga7jmz'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
