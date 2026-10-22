@@ -45,6 +45,11 @@ class AssistantPrefs(context: Context) {
         get() = NaviApp.entries.firstOrNull { it.name == prefs.getString("navi_app", null) } ?: NaviApp.NAVER
         set(value) = prefs.edit().putString("navi_app", value.name).apply()
 
+    /** Navigation app opened in split screen when this app starts. */
+    var companionNavi: CompanionNavi
+        get() = CompanionNavi.entries.firstOrNull { it.name == prefs.getString("companion_navi", null) } ?: CompanionNavi.NONE
+        set(value) = prefs.edit().putString("companion_navi", value.name).apply()
+
     var homeAddress: String
         get() = prefs.getString("home", "") ?: ""
         set(value) = prefs.edit().putString("home", value.trim()).apply()

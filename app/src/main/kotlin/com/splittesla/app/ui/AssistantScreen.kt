@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
+import com.splittesla.app.assistant.CompanionNavi
 import com.splittesla.app.assistant.LlmProvider
 import com.splittesla.app.assistant.MicState
 import com.splittesla.app.assistant.NaviApp
@@ -132,6 +133,16 @@ fun AssistantScreen(vm: AppViewModel, modifier: Modifier) {
                         s.hasKey -> "사용 중: ${s.provider.label} · ${s.model}. 키는 이 폰에만 저장됩니다."
                         else -> "키가 없으면 정해진 문장으로 안내하고, 간단한 명령만 알아듣습니다."
                     },
+                )
+            }
+
+            Section("앱 켤 때 같이 띄울 내비") {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CompanionNavi.entries.forEach { a -> GlowButton(a.label, { assistant.setCompanionNavi(a) }, active = a == s.companionNavi) }
+                }
+                Hint(
+                    "앱을 켜면 고른 내비를 화면 분할로 옆에 엽니다. 비율은 가운데 막대를 끌어 맞추면 다음부터 그대로 열리는 폰이 많아요. " +
+                        "분할을 못 하는 폰에서는 내비가 전체 화면으로 열립니다.",
                 )
             }
 

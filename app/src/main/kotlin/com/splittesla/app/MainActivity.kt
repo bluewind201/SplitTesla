@@ -12,10 +12,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.splittesla.app.assistant.AssistantPrefs
+import com.splittesla.app.assistant.SplitLaunch
 import com.splittesla.app.ui.SplitTeslaApp
 
 class MainActivity : ComponentActivity() {
     private val viewModel: AppViewModel by viewModels()
+    private var splitPending = false
 
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         val denied = result.filterValues { !it }.keys
@@ -24,6 +27,12 @@ class MainActivity : ComponentActivity() {
         viewModel.assistant.onAppStart(mic)
         // Start only after the permission answer, so the first scan is not refused.
         viewModel.startAutoConnect()
+        // After the permission prompt, so the split doesn't open under it.
+        if (splitPending) {
+            splitPending = false
+            val companion = AssistantPrefs(this).companionNavi
+            window.decorView.postDelayed({ SplitLaunch.open(this, companion, viewModel::log) }, 800)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +56,8 @@ class MainActivity : ComponentActivity() {
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.RECORD_AUDIO)
         }
         permissionLauncher.launch(permissions)
+        // Fresh start only, not on rotation or when coming back from split screen.
+        splitPending = savedInstanceState == null && !isInMultiWindowMode
         setContent { SplitTeslaApp(viewModel) }
     }
 

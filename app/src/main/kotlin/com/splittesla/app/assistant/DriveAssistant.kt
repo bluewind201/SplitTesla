@@ -42,6 +42,7 @@ data class AssistantUi(
     val micOnStart: Boolean = true,
     val announcements: Boolean = true,
     val naviApp: NaviApp = NaviApp.NAVER,
+    val companionNavi: CompanionNavi = CompanionNavi.NONE,
     val homeAddress: String = "",
     val workAddress: String = "",
     val itsKey: String = "",
@@ -93,6 +94,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         micOnStart = prefs.micOnStart,
         announcements = prefs.announcements,
         naviApp = prefs.naviApp,
+        companionNavi = prefs.companionNavi,
         homeAddress = prefs.homeAddress,
         workAddress = prefs.workAddress,
         itsKey = prefs.itsKey,
@@ -115,6 +117,11 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         prefs.homeAddress = home
         prefs.workAddress = work
         prefs.itsKey = itsKey
+        reloadPrefs()
+    }
+
+    fun setCompanionNavi(app: CompanionNavi) {
+        prefs.companionNavi = app
         reloadPrefs()
     }
 

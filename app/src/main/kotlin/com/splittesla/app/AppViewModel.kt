@@ -9,7 +9,6 @@ import com.splittesla.app.ble.CommanderLink
 import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.logbook.LogbookController
 import com.splittesla.app.camera.CameraState
-import com.splittesla.app.camera.NaviNotificationListener
 import com.splittesla.app.camera.SpeedCameraService
 import com.splittesla.app.ble.TeslaLink
 import com.splittesla.app.ui.gauge.GaugeStyle
@@ -167,12 +166,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             _ui.update { it.copy(weather = w) }
         } catch (e: Exception) {
             log("날씨 받기 실패: ${e.message}")
-        }
-    }
-
-    init {
-        viewModelScope.launch {
-            NaviNotificationListener.lastRaw.collect { raw -> raw?.let { log("내비 알림 $it") } }
         }
     }
 
