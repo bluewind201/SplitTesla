@@ -16,8 +16,12 @@ android {
         versionName = "0.1.0"
     }
 
-    // A fixed test key so each CI build installs over the previous one. A new
+    // A fixed key so each CI build installs over the previous one. A new
     // signature would force an uninstall, which deletes the paired Tesla key.
+    // Shared builds use the private release key (registered with Google's
+    // developer verification); CI decodes it from secrets and passes its path
+    // here. Without it the build falls back to the committed test key.
+    val releaseKeystore = System.getenv("SPLITTESLA_KEYSTORE")?.let(::file)?.takeIf { it.exists() }
     signingConfigs {
         getByName("debug") {
             storeFile = file("debug.keystore")
@@ -25,12 +29,20 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = System.getenv("SPLITTESLA_KEYSTORE_PASSWORD")
+                keyAlias = "splittesla"
+                keyPassword = System.getenv("SPLITTESLA_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 
