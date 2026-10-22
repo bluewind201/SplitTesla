@@ -1,12 +1,14 @@
 package com.splittesla.app
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -18,6 +20,8 @@ class MainActivity : ComponentActivity() {
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         val denied = result.filterValues { !it }.keys
         if (denied.isNotEmpty()) viewModel.log("권한 거부됨: $denied. 차량 검색이 동작하지 않을 수 있습니다")
+        val mic = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+        viewModel.assistant.onAppStart(mic)
         // Start only after the permission answer, so the first scan is not refused.
         viewModel.startAutoConnect()
     }
@@ -37,9 +41,10 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.BLUETOOTH_CONNECT,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.RECORD_AUDIO,
             )
         } else {
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.RECORD_AUDIO)
         }
         permissionLauncher.launch(permissions)
         setContent { SplitTeslaApp(viewModel) }

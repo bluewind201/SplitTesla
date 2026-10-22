@@ -22,6 +22,22 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Voice assistant: wake word listening, kept alive while a map app is in front -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+
+    <!-- Android 11+ package visibility: the speech recognizer, TTS engine and map apps -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <package android:name="com.nhn.android.nmap" />
+        <package android:name="net.daum.android.map" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -44,5 +60,9 @@
             android:name=".camera.SpeedCameraService"
             android:exported="false"
             android:foregroundServiceType="location" />
+        <service
+            android:name=".assistant.AssistantService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
     </application>
 </manifest>

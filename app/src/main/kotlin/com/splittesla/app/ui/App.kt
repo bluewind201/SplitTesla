@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
+import com.splittesla.app.assistant.MicState
 import com.splittesla.app.ui.theme.LinkPill
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
@@ -74,6 +75,7 @@ private enum class Tab(val title: String, val english: String) {
     CAR("차량", "VEHICLE"),
     S3XY("S3XY", "S3XY COMMANDER"),
     NAV("내비", "NAVIGATION"),
+    AI("AI", "AI ASSISTANT"),
     DATA("데이터", "TELEMETRY"),
     SETTINGS("설정", "SETTINGS"),
 }
@@ -98,7 +100,7 @@ fun SplitTeslaApp(vm: AppViewModel) {
             Row(Modifier.fillMaxSize()) {
                 Rail(tab) { tabIndex = it.ordinal }
                 Column(Modifier.fillMaxSize()) {
-                    TopStrip(tab, vm, ui.commander, ui.car, ui.busy)
+                    TopStrip(tab, vm, ui.commander, ui.car, ui.busy) { tabIndex = Tab.AI.ordinal }
                     AnimatedContent(
                         targetState = tab,
                         transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
@@ -111,6 +113,7 @@ fun SplitTeslaApp(vm: AppViewModel) {
                             Tab.CAR -> CarScreen(vm, ui, modifier)
                             Tab.S3XY -> ActionsScreen(vm, ui, modifier)
                             Tab.NAV -> NavScreen(vm, ui, modifier)
+                            Tab.AI -> AssistantScreen(vm, modifier)
                             Tab.DATA -> TelemetryScreen(ui, modifier)
                             Tab.SETTINGS -> SettingsScreen(vm, ui, modifier)
                         }
@@ -191,13 +194,24 @@ private fun TabIcon(tab: Tab, tint: Color) {
         }
         Tab.S3XY -> Icon(Icons.Filled.Star, null, m, tint)
         Tab.NAV -> Icon(Icons.Filled.Place, null, m, tint)
+        Tab.AI -> Canvas(m) {
+            // Microphone: capsule head, cradle and stand.
+            val w = size.width
+            val h = size.height
+            val s = 2.dp.toPx()
+            drawRoundRect(tint, Offset(w * 0.36f, h * 0.08f), Size(w * 0.28f, h * 0.50f), CornerRadius(w * 0.14f))
+            drawArc(tint, 0f, 180f, false, Offset(w * 0.24f, h * 0.22f), Size(w * 0.52f, h * 0.50f), style = Stroke(s, cap = StrokeCap.Round))
+            drawLine(tint, Offset(w * 0.5f, h * 0.72f), Offset(w * 0.5f, h * 0.90f), s, StrokeCap.Round)
+            drawLine(tint, Offset(w * 0.34f, h * 0.92f), Offset(w * 0.66f, h * 0.92f), s, StrokeCap.Round)
+        }
         Tab.DATA -> Icon(Icons.Filled.List, null, m, tint)
         Tab.SETTINGS -> Icon(Icons.Filled.Settings, null, m, tint)
     }
 }
 
 @Composable
-private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: LinkState, busy: String?) {
+private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: LinkState, busy: String?, openAssistant: () -> Unit) {
+    val assistant by vm.assistant.state.collectAsState()
     Row(
         Modifier.fillMaxWidth().height(52.dp).padding(start = 4.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -218,6 +232,7 @@ private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: Link
         LinkPill("CAR", car.label, car.color(), car == LinkState.CONNECTING) {
             if (car == LinkState.CONNECTED) vm.disconnectCar() else vm.connectCar()
         }
+        LinkPill("MIC", assistant.mic.label, assistant.mic.color(), assistant.mic == MicState.COMMAND || assistant.thinking, openAssistant)
         Clock()
     }
 }
@@ -232,6 +247,14 @@ private fun Clock() {
         }
     }
     Text(SimpleDateFormat("HH:mm", Locale.KOREA).format(Date(now)), fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Neon.text)
+}
+
+fun MicState.color(): Color = when (this) {
+    MicState.LISTENING -> Neon.green
+    MicState.COMMAND -> Neon.lime
+    MicState.PAUSED -> Neon.cyan
+    MicState.OFF -> Neon.faint
+    MicState.UNAVAILABLE, MicState.NO_PERMISSION -> Neon.red
 }
 
 fun LinkState.color(): Color = when (this) {

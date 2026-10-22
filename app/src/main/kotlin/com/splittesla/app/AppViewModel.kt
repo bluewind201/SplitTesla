@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import android.net.Uri
+import com.splittesla.app.assistant.DriveAssistant
 import com.splittesla.app.ble.CommanderLink
 import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.camera.CameraState
@@ -105,6 +106,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
 
     val teslaPublicKeyHex: String by lazy { prefs.teslaKey.publicKeyBytes.joinToString("") { "%02x".format(it) } }
+
+    /** Voice assistant: wake word commands and spoken driving notes. */
+    val assistant = DriveAssistant(this, viewModelScope)
 
     fun log(line: String) {
         val stamped = "${timeFormat.format(Date())} $line"
@@ -494,6 +498,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     override fun onCleared() {
+        assistant.shutdown()
         commander?.disconnect()
         car?.disconnect()
     }
