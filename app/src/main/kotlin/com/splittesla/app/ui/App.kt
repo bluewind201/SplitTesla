@@ -260,6 +260,7 @@ fun MicState.color(): Color = when (this) {
     MicState.LISTENING -> Neon.green
     MicState.COMMAND -> Neon.lime
     MicState.PAUSED -> Neon.cyan
+    MicState.MEDIA -> Neon.amber
     MicState.OFF -> Neon.faint
     MicState.UNAVAILABLE, MicState.NO_PERMISSION -> Neon.red
 }

@@ -23,17 +23,26 @@ class AssistantService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_TALK) {
+            onTalk?.invoke()
+            return START_NOT_STICKY
+        }
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel(CHANNEL, "음성 비서", NotificationManager.IMPORTANCE_LOW))
         val open = PendingIntent.getActivity(
             this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE,
         )
+        val talk = PendingIntent.getService(
+            this, 1, Intent(this, AssistantService::class.java).setAction(ACTION_TALK),
+            PendingIntent.FLAG_IMMUTABLE,
+        )
         val notification = Notification.Builder(this, CHANNEL)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("음성 비서 대기 중")
-            .setContentText("호출어로 부르면 명령을 듣습니다")
+            .setContentText("호출어로 부르세요. 영상·음악이 나올 때는 '말하기'를 누르세요")
             .setContentIntent(open)
+            .addAction(Notification.Action.Builder(null as android.graphics.drawable.Icon?, "말하기", talk).build())
             .setOngoing(true)
             .build()
         try {
@@ -52,6 +61,10 @@ class AssistantService : Service() {
     companion object {
         private const val CHANNEL = "assistant"
         private const val ID = 7
+        private const val ACTION_TALK = "com.splittesla.app.TALK"
+
+        /** Set by the assistant; the notification's "말하기" button calls it. */
+        @Volatile var onTalk: (() -> Unit)? = null
 
         fun start(context: Context) {
             try {

@@ -145,6 +145,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     }
 
     fun startMic() {
+        AssistantService.onTalk = ::talkNow
         main.post {
             AssistantService.start(context)
             listener.start()
@@ -179,14 +180,29 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         listener.expectCommand(false)
         if (command.isBlank()) {
             // Wake word on its own: answer and take the next phrase as the command.
-            commandUntil = now + 9000
-            say("네, 말씀하세요.", interrupt = true)
-            main.postDelayed({ listener.expectCommand(true) }, 300)
+            askForCommand()
             return
         }
         _state.update { it.copy(heard = command) }
         vm.log("음성 명령: $command")
         scope.launch { handleCommand(command) }
+    }
+
+    private fun askForCommand() {
+        commandUntil = System.currentTimeMillis() + 9000
+        say("네, 말씀하세요.", interrupt = true)
+        main.postDelayed({ listener.expectCommand(true) }, 300)
+    }
+
+    /**
+     * Opens the mic for one command without the wake word. Used while a video
+     * or music plays, when the wake word loop rests so it doesn't pause it.
+     */
+    fun talkNow() {
+        main.post {
+            listener.listenOnce()
+            askForCommand()
+        }
     }
 
     /** Runs a typed or spoken command, also used by the test box on the AI screen. */

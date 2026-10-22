@@ -2,6 +2,7 @@ package com.splittesla.app.assistant
 
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,7 +11,8 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 
 enum class MicState(val label: String) {
-    OFF("꺼짐"), LISTENING("호출어 대기"), COMMAND("명령 듣는 중"), PAUSED("말하는 중"), UNAVAILABLE("사용 불가"), NO_PERMISSION("마이크 권한 없음")
+    OFF("꺼짐"), LISTENING("호출어 대기"), COMMAND("명령 듣는 중"), PAUSED("말하는 중"), MEDIA("음악·영상 재생 중 쉼"),
+    UNAVAILABLE("사용 불가"), NO_PERMISSION("마이크 권한 없음")
 }
 
 /**
@@ -20,6 +22,10 @@ enum class MicState(val label: String) {
  *
  * The phone's recognizer stops after each phrase or silence, so this restarts
  * it right away. On some phones that restart plays a short beep.
+ *
+ * Every start of the recognizer takes audio focus, which pauses YouTube or
+ * music. So while another app is playing sound, the loop rests and only
+ * [listenOnce] (a tap on the notification or the AI tab) opens the mic.
  */
 class WakeListener(
     private val context: Context,
@@ -28,11 +34,15 @@ class WakeListener(
     private val log: (String) -> Unit,
 ) {
     private val main = Handler(Looper.getMainLooper())
+    private val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var recognizer: SpeechRecognizer? = null
     private var wanted = false
     private var paused = false
     private var listening = false
     private var commandMode = false
+
+    /** One listen that goes ahead even while media plays, because the driver asked for it. */
+    private var forced = false
 
     val available: Boolean get() = SpeechRecognizer.isRecognitionAvailable(context)
 
@@ -69,6 +79,14 @@ class WakeListener(
         }
     }
 
+    /** Listens for one phrase now, even over music. Starts the loop if it was off. */
+    fun listenOnce() {
+        if (!wanted) start()
+        if (!wanted) return
+        forced = true
+        if (!paused) listenSoon(0)
+    }
+
     /** The next phrase is a command, not a wake word check; only changes the shown state. */
     fun expectCommand(on: Boolean) {
         commandMode = on
@@ -82,6 +100,13 @@ class WakeListener(
 
     private fun listen() {
         if (!wanted || paused) return
+        if (!forced && !commandMode && audio.isMusicActive) {
+            // Starting the recognizer would pause the video; check again shortly.
+            destroy()
+            onState(MicState.MEDIA)
+            listenSoon(3000)
+            return
+        }
         val r = recognizer ?: SpeechRecognizer.createSpeechRecognizer(context).also {
             it.setRecognitionListener(listener)
             recognizer = it
@@ -120,6 +145,7 @@ class WakeListener(
     private val listener = object : RecognitionListener {
         override fun onResults(results: Bundle?) {
             listening = false
+            forced = false
             val texts = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty().filter { it.isNotBlank() }
             if (texts.isNotEmpty()) onText(texts)
             listenSoon(100)
@@ -127,6 +153,7 @@ class WakeListener(
 
         override fun onError(error: Int) {
             listening = false
+            forced = false
             when (error) {
                 SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> listenSoon(100)
                 SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> {

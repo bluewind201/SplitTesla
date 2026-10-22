@@ -84,7 +84,18 @@ fun AssistantScreen(vm: AppViewModel, modifier: Modifier) {
                 s.said?.let { Line("비서", it, Neon.lime) }
                 Toggle("앱을 켜면 마이크 바로 켜기", s.micOnStart, assistant::setMicOnStart)
                 Toggle("상황별 자동 안내 (탑승·경로·사고·날씨·도착)", s.announcements, assistant::setAnnouncements)
-                ButtonGrid(true, "탑승 멘트 듣기" to { assistant.testGreeting() }, "지금 상황 안내" to { assistant.testBriefing() })
+                if (s.mic == MicState.MEDIA) {
+                    Text(
+                        "영상·음악이 나오는 동안은 호출어 대기를 쉬어요 (켜두면 영상이 계속 멈춰요). '지금 말하기'나 알림창의 '말하기'를 누르세요.",
+                        color = Neon.amber, fontSize = 12.sp, lineHeight = 17.sp,
+                    )
+                }
+                ButtonGrid(
+                    true,
+                    "지금 말하기" to { assistant.talkNow() },
+                    "탑승 멘트 듣기" to { assistant.testGreeting() },
+                    "지금 상황 안내" to { assistant.testBriefing() },
+                )
             }
 
             Section("호출어") {
