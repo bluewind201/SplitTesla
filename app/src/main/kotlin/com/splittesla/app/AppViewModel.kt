@@ -249,11 +249,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 context = getApplication(),
                 phoneUuid = prefs.commanderPhoneUuid,
                 onData = { delta ->
-                    _ui.update { it.copy(live = delta.mergedOnto(it.live), pushCount = it.pushCount + 1) }
-                    _ui.value.live.speedKmh?.let {
+                    delta.speedKmh?.let {
                         CameraState.commanderSpeedKmh = it
                         CameraState.commanderSpeedAt = System.currentTimeMillis()
                     }
+                    queueLive(delta)
                 },
                 onRawPush = { bytes -> if (_ui.value.logRawPushes) log("PUSH ${bytes.hex()}") },
                 onDisconnect = {
@@ -293,6 +293,32 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val sub = session.subscribe()
         log("실시간 데이터 구독: $sub")
         _ui.update { it.copy(commander = LinkState.CONNECTED) }
+    }
+
+    // The Commander streams many CAN frames a second. Redrawing the screen for
+    // each one kept the phone busy enough to stutter video, so pushes are
+    // merged and shown at most four times a second.
+    private val liveLock = Any()
+    private var pendingLive: VehicleData? = null
+    private var pendingPushes = 0
+    private var liveFlush: Job? = null
+
+    private fun queueLive(delta: VehicleData) {
+        synchronized(liveLock) {
+            pendingLive = pendingLive?.let { delta.mergedOnto(it) } ?: delta
+            pendingPushes++
+            if (liveFlush?.isActive == true) return
+            liveFlush = viewModelScope.launch {
+                delay(250)
+                val (live, n) = synchronized(liveLock) {
+                    val out = pendingLive to pendingPushes
+                    pendingLive = null
+                    pendingPushes = 0
+                    out
+                }
+                if (live != null) _ui.update { it.copy(live = live.mergedOnto(it.live), pushCount = it.pushCount + n) }
+            }
+        }
     }
 
     fun disconnectCommander() {
