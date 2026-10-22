@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -101,7 +102,11 @@ fun SplitTeslaApp(vm: AppViewModel) {
 
     SplitTheme {
         Box(Modifier.fillMaxSize().background(Neon.bg)) {
-            Row(Modifier.fillMaxSize()) {
+            // A narrow window means split screen beside a map app: show the glanceable strip only.
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+            if (maxWidth < 420.dp) {
+                CompactPanel(vm, ui)
+            } else Row(Modifier.fillMaxSize()) {
                 Rail(tab) { tabIndex = it.ordinal }
                 Column(Modifier.fillMaxSize()) {
                     TopStrip(tab, vm, ui.commander, ui.car, ui.busy) { tabIndex = Tab.AI.ordinal }
@@ -124,6 +129,7 @@ fun SplitTeslaApp(vm: AppViewModel) {
                         }
                     }
                 }
+            }
             }
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp)) { data ->
                 Snackbar(
