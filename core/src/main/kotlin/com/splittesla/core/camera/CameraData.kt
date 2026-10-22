@@ -26,13 +26,14 @@ object CameraCsv {
         val road = col("소재지도로명주소")
         val sectionPos = col("단속구간위치구분")
         val sectionLen = col("과속단속구간길이")
+        val zone = col("보호구역구분")
         return rows.drop(1).mapIndexedNotNull { i, r ->
             fun at(c: Int?) = c?.let { r.getOrNull(it)?.trim() }.orEmpty()
             camera(
                 id = at(id).ifEmpty { "row$i" },
                 lat = at(lat), lon = at(lon), limit = at(limit),
                 place = at(place).ifEmpty { at(road) },
-                section = at(sectionPos), sectionLength = at(sectionLen),
+                section = at(sectionPos), sectionLength = at(sectionLen), zone = at(zone),
             )
         }
     }
@@ -89,6 +90,7 @@ internal fun camera(
     place: String,
     section: String,
     sectionLength: String,
+    zone: String = "",
 ): SpeedCamera? {
     val la = lat.toDoubleOrNull() ?: return null
     val lo = lon.toDoubleOrNull() ?: return null
@@ -99,14 +101,17 @@ internal fun camera(
         section.contains("종료") || section.contains("끝") || section == "2" -> SectionRole.END
         else -> null
     }
-    return SpeedCamera(id, la, lo, kmh, place, role, sectionLength.toDoubleOrNull()?.toInt()?.takeIf { it > 0 })
+    return SpeedCamera(
+        id, la, lo, kmh, place, role, sectionLength.toDoubleOrNull()?.toInt()?.takeIf { it > 0 },
+        zone.trim().takeIf { it.endsWith("보호구역") },
+    )
 }
 
 /** Compact storage so the app does not re-parse the CSV on every start. */
 object CameraStore {
     fun encode(cameras: List<SpeedCamera>): String = buildString {
         cameras.forEach { c ->
-            append(listOf(c.id, c.latitude, c.longitude, c.limitKmh, c.section?.name.orEmpty(), c.sectionLengthM ?: "", c.place.replace('\t', ' '))
+            append(listOf(c.id, c.latitude, c.longitude, c.limitKmh, c.section?.name.orEmpty(), c.sectionLengthM ?: "", c.place.replace('\t', ' '), c.zone.orEmpty())
                 .joinToString("\t"))
             append('\n')
         }
@@ -118,7 +123,7 @@ object CameraStore {
         SpeedCamera(
             id = f[0], latitude = f[1].toDouble(), longitude = f[2].toDouble(), limitKmh = f[3].toInt(),
             section = f[4].takeIf { it.isNotEmpty() }?.let(SectionRole::valueOf),
-            sectionLengthM = f[5].toIntOrNull(), place = f[6],
+            sectionLengthM = f[5].toIntOrNull(), place = f[6], zone = f.getOrNull(7)?.takeIf { it.isNotEmpty() },
         )
     }.toList()
 }

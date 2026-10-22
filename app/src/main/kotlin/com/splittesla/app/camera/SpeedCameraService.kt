@@ -102,7 +102,8 @@ class SpeedCameraService : Service(), LocationListener {
         val s = alerter.status
         updateNotification(
             when {
-                s.sectionAverageKmh != null -> "구간단속 평균 ${s.sectionAverageKmh!!.roundToInt()} / 제한 ${s.sectionLimitKmh}"
+                s.sectionAverageKmh != null -> "구간단속 평균 ${s.sectionAverageKmh!!.roundToInt()} / 제한 ${s.sectionLimitKmh}" +
+                    (s.sectionRemainingM?.let { " · 남은 ${"%.1f".format(it / 1000)}km" } ?: "")
                 s.ahead != null -> "${s.distanceM!!.roundToInt()}m 앞 카메라 · 제한 ${s.ahead!!.limitKmh}"
                 else -> "주변 카메라 감시 중"
             },
@@ -124,10 +125,11 @@ class SpeedCameraService : Service(), LocationListener {
 
     private fun announce(alert: CameraAlert) {
         val limit = alert.camera.limitKmh
+        val zone = alert.camera.zone?.let { "$it " }.orEmpty()
         val text = when (alert) {
             is CameraAlert.Approaching ->
-                "${(alert.distanceM / 50).roundToInt() * 50}미터 앞 과속 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
-            is CameraAlert.Final -> "100미터 앞 단속 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
+                "${(alert.distanceM / 50).roundToInt() * 50}미터 앞 ${zone}과속 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
+            is CameraAlert.Final -> "100미터 앞 ${zone}단속 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
             is CameraAlert.SectionStart -> "구간단속 시작, 제한속도 $limit"
             is CameraAlert.SectionEnd -> "구간단속 종료, 평균 속도 ${alert.averageKmh.roundToInt()}킬로미터"
         }
