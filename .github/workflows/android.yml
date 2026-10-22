@@ -34,9 +34,20 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
           SPLITTESLA_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
         run: |
+          # Secrets pasted from secrets.txt may carry the "KEYSTORE_PASSWORD="
+          # label, spaces or a line break, so keep only the value.
+          pw=$(printf '%s' "$SPLITTESLA_KEYSTORE_PASSWORD" | sed -n 's/^KEYSTORE_PASSWORD=//; /./{p;q}' | tr -d ' \t\r\n')
+          export SPLITTESLA_KEYSTORE_PASSWORD="$pw"
           if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
-            export SPLITTESLA_KEYSTORE="$RUNNER_TEMP/release.jks"
+            printf '%s' "$KEYSTORE_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/release.jks"
+            # A wrong secret falls back to the test key instead of failing
+            # every branch's build.
+            if keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$pw" -alias splittesla >/dev/null 2>&1; then
+              export SPLITTESLA_KEYSTORE="$RUNNER_TEMP/release.jks"
+              echo "Signing with the release key"
+            else
+              echo "::warning::Release keystore didn't open (password length ${#pw}); using the test key"
+            fi
           else
             echo "::warning::Signing secrets not set; using the test key"
           fi
