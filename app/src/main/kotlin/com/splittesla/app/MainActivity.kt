@@ -18,6 +18,8 @@ class MainActivity : ComponentActivity() {
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         val denied = result.filterValues { !it }.keys
         if (denied.isNotEmpty()) viewModel.log("권한 거부됨: $denied. 차량 검색이 동작하지 않을 수 있습니다")
+        // Start only after the permission answer, so the first scan is not refused.
+        viewModel.startAutoConnect()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,5 +43,15 @@ class MainActivity : ComponentActivity() {
         }
         permissionLauncher.launch(permissions)
         setContent { SplitTeslaApp(viewModel) }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.setForeground(true)
+    }
+
+    override fun onStop() {
+        viewModel.setForeground(false)
+        super.onStop()
     }
 }

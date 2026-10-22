@@ -23,6 +23,7 @@ import com.splittesla.core.tesla.StateCategory
 import com.splittesla.core.tesla.TeslaClient
 import com.tesla.generated.carserver.vehicle.Vehicle
 import com.tesla.generated.vcsec.Vcsec
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -168,9 +169,62 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update { it.copy(favorites = next) }
     }
 
+    // ── Auto connect ──
+
+    /** Set when the user taps a link off; auto connect leaves that link alone until they tap it on. */
+    private var commanderOff = false
+    private var carOff = false
+    private var foreground = false
+    private var autoJob: Job? = null
+
+    /**
+     * Connects both links as soon as the app opens and reconnects them after a
+     * drop, while the app is on screen. Runs outside [run] so it never shows
+     * as busy or blocks a button; a tap simply joins the same connection.
+     */
+    fun startAutoConnect() {
+        if (autoJob?.isActive == true) return
+        autoJob = viewModelScope.launch {
+            var failures = 0
+            while (isActive) {
+                if (foreground) {
+                    val s = _ui.value
+                    val idle = setOf(LinkState.DISCONNECTED, LinkState.FAILED)
+                    val tries = buildList {
+                        if (!commanderOff && s.commander in idle) add(launch { autoTry("S3XY") { ensureCommander() } })
+                        if (!carOff && prefs.vin.length == 17 && s.car in idle) add(launch { autoTry("차량") { ensureCar() } })
+                    }
+                    tries.forEach { it.join() }
+                    val failed = _ui.value.commander == LinkState.FAILED || _ui.value.car == LinkState.FAILED
+                    failures = if (tries.isNotEmpty() && failed) failures + 1 else 0
+                }
+                // Retry quickly at first, then ease off while the car is out of range.
+                delay(if (failures < 3) 15_000L else 60_000L)
+            }
+        }
+    }
+
+    fun setForeground(on: Boolean) {
+        foreground = on
+    }
+
+    private suspend fun autoTry(name: String, block: suspend () -> Unit) {
+        try {
+            block()
+            log("$name 자동 연결됨")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log("$name 자동 연결 실패: ${e.message}")
+        }
+    }
+
     // ── Commander ──
 
-    fun connectCommander() = run("S3XY 연결", silent = true) { ensureCommander() }
+    fun connectCommander() {
+        commanderOff = false
+        run("S3XY 연결", silent = true) { ensureCommander() }
+    }
 
     private suspend fun ensureCommander(): CommanderSession = commanderMutex.withLock {
         commander?.session?.takeIf { _ui.value.commander == LinkState.CONNECTED } ?: connectCommanderNow()
@@ -231,6 +285,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun disconnectCommander() {
+        commanderOff = true
         commander?.disconnect()
         commander = null
         _ui.update { it.copy(commander = LinkState.DISCONNECTED) }
@@ -249,7 +304,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     // ── Car ──
 
-    fun connectCar() = run("차량 연결", silent = true) { ensureCar() }
+    fun connectCar() {
+        carOff = false
+        run("차량 연결", silent = true) { ensureCar() }
+    }
 
     private suspend fun ensureCar(): TeslaClient = carMutex.withLock {
         car?.client?.takeIf { _ui.value.car == LinkState.CONNECTED } ?: connectCarNow()
@@ -301,6 +359,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun disconnectCar() {
+        carOff = true
         car?.disconnect()
         car = null
         _ui.update { it.copy(car = LinkState.DISCONNECTED) }
