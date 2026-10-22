@@ -55,6 +55,7 @@ fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
             }
 
             CameraSection(vm, ui)
+            NaviFeedSection()
 
             Section("주행") {
                 val speed = ui.live.speedKmh ?: nav?.speedKmh?.toLong()
