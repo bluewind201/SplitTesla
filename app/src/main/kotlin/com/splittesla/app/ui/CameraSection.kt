@@ -90,6 +90,7 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
                     color = if (speed != null && speed > ahead.limitKmh) MaterialTheme.colorScheme.error
                     else MaterialTheme.colorScheme.onSurface,
                 )
+                ahead.zone?.let { Text(it, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error) }
                 if (ahead.place.isNotBlank()) Text(ahead.place, style = MaterialTheme.typography.bodySmall)
             } else {
                 Text("앞쪽에 카메라 없음", style = MaterialTheme.typography.bodyMedium)
@@ -101,6 +102,8 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
                     "${avg.roundToInt()} / 제한 $limit km/h",
                     highlight = if (limit != null && avg > limit) MaterialTheme.colorScheme.error else null,
                 )
+                status.sectionRemainingM?.let { ValueRow("구간 남은 거리", "%.1f km".format(it / 1000)) }
+                status.sectionSafeKmh?.let { ValueRow("남은 구간 권장 속도", "${it.roundToInt()} km/h 이하") }
             }
         }
         lastAlert?.let { Text("최근 알림: $it", style = MaterialTheme.typography.bodySmall) }

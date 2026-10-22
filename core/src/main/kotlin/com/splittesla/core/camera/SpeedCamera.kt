@@ -17,6 +17,8 @@ data class SpeedCamera(
     val place: String,
     val section: SectionRole? = null,
     val sectionLengthM: Int? = null,
+    /** "어린이보호구역" and the like, when the camera guards a protected zone. */
+    val zone: String? = null,
 )
 
 internal object Geo {
