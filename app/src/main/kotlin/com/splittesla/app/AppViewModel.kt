@@ -206,8 +206,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     val failed = _ui.value.commander == LinkState.FAILED || _ui.value.car == LinkState.FAILED
                     failures = if (tries.isNotEmpty() && failed) failures + 1 else 0
                 }
-                // Retry quickly at first, then ease off while the car is out of range.
-                delay(if (failures < 3) 15_000L else 60_000L)
+                // Retry quickly at first, then ease off while the car is out of range:
+                // 15 s, 30 s, 1 min, 2 min, then every 3 min. Scanning disturbs
+                // Bluetooth audio and the hotspot, so a car that isn't there
+                // should not be searched for nonstop.
+                delay(minOf(15_000L shl minOf(failures, 4), 180_000L))
             }
         }
     }
