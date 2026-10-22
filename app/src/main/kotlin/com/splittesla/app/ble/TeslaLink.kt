@@ -28,8 +28,18 @@ class TeslaLink(
     suspend fun connect() {
         val localName = TeslaBleConstants.localName(vin)
         log("차량 검색: $localName")
-        val device = BleScanner(context).findByName(localName)
-            ?: throw GattException("차량 BLE를 찾지 못했습니다 ($localName). VIN과 거리를 확인하세요")
+        val others = mutableListOf<String>()
+        val device = BleScanner(context).findByName(
+            localName,
+            similar = { TESLA_NAME.matches(it) },
+            onOther = { others += it; log("다른 테슬라 발견: $it") },
+        ) ?: throw GattException(
+            if (others.isNotEmpty()) {
+                "근처 테슬라(${others.joinToString()})는 보이는데 이 VIN의 차($localName)는 없습니다. VIN을 확인하세요"
+            } else {
+                "테슬라 BLE 신호가 하나도 안 잡힙니다. 위치 권한·위치(GPS) 켜짐과 차와의 거리를 확인하세요"
+            },
+        )
         val g = GattClient(context, device, { uuid, value -> onIndication(uuid, value) }) {
             client = null
             onDisconnect()
@@ -55,6 +65,11 @@ class TeslaLink(
     private fun onIndication(uuid: UUID, value: ByteArray) {
         if (uuid != fromVehicle) return
         for (message in deframer.feed(value)) client?.onMessage(message)
+    }
+
+    private companion object {
+        /** Every Tesla advertises "S" + 16 hex digits + a letter (C for cars). */
+        val TESLA_NAME = Regex("^S[0-9a-fA-F]{16}[A-Z]$")
     }
 
     fun disconnect() {
