@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -25,9 +27,11 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.splittesla.app.AppViewModel
-import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
 
 @Composable
@@ -36,32 +40,53 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
     var vin by rememberSaveable { mutableStateOf(ui.vin) }
-    val carReady = ui.car == LinkState.CONNECTED && ui.busy == null
+    // Commands connect on demand, so only a missing VIN or a running command blocks them.
+    val carReady = ui.vin.length == 17 && ui.busy == null
 
     Column(modifier.verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
         Section("차량 VIN") {
+            val valid = vin.length == 17
             OutlinedTextField(
                 value = vin,
-                onValueChange = { vin = it.uppercase().filter(Char::isLetterOrDigit).take(17) },
+                // VINs use digits and capital letters except I, O and Q.
+                onValueChange = { input -> vin = input.uppercase().filter { it in VIN_CHARS }.take(17) },
                 label = { Text("VIN (17자리)") },
+                supportingText = {
+                    Text(
+                        when {
+                            vin == ui.vin && valid -> "저장됨"
+                            else -> "${vin.length}/17"
+                        },
+                    )
+                },
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Characters,
+                    autoCorrectEnabled = false,
+                    keyboardType = KeyboardType.Ascii,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(onDone = { if (valid) vm.setVin(vin) }),
                 modifier = Modifier.fillMaxWidth(),
             )
-            ButtonGrid(vin.length == 17 && vin != ui.vin, "저장" to { vm.setVin(vin) })
+            ButtonGrid(valid, "저장" to { vm.setVin(vin) })
             Text(
-                "차량 BLE는 VIN으로 차를 찾습니다. 차량 화면 '소프트웨어' 또는 앞유리 하단에서 확인하세요.",
+                "차량 화면 '컨트롤 > 소프트웨어' 또는 앞유리 왼쪽 아래에서 확인하세요. 저장하면 차량 BLE는 이 VIN으로 차를 찾습니다.",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
 
         Section("테슬라 키 등록 (처음 한 번)") {
             Text(
-                "1) 차 안에서 '차량 BLE'를 연결합니다.\n" +
-                    "2) 아래 '키 등록 요청'을 누릅니다.\n" +
-                    "3) 센터 콘솔 폰 거치대 뒤 리더에 키 카드를 대고, 차량 화면에서 승인합니다.\n" +
+                "1) VIN을 저장하고 차 안에 탑니다.\n" +
+                    "2) '키 등록 요청'을 누르면 차량에 자동으로 연결한 뒤 요청을 보냅니다.\n" +
+                    "3) 센터 콘솔 리더에 키 카드를 대고, 차량 화면에서 승인합니다.\n" +
                     "4) '핑 테스트'가 성공하면 등록 완료입니다.",
                 style = MaterialTheme.typography.bodyMedium,
             )
+            if (ui.vin.length != 17) {
+                Text("VIN을 먼저 저장해야 버튼이 켜집니다.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
             ButtonGrid(
                 carReady,
                 "키 등록 요청" to vm::sendAddKeyRequest,
@@ -109,3 +134,5 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
         }
     }
 }
+
+private val VIN_CHARS = ('0'..'9').toSet() + ('A'..'Z').toSet() - setOf('I', 'O', 'Q')

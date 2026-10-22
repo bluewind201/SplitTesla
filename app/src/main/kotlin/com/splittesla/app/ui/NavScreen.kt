@@ -36,14 +36,14 @@ import java.util.Locale
 @Composable
 fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
     val context = LocalContext.current
-    val ready = ui.car == LinkState.CONNECTED && ui.busy == null
+    val ready = ui.vin.length == 17 && ui.busy == null
     val nav = ui.nav
     val clock = SimpleDateFormat("HH:mm", Locale.KOREA)
 
     Column(modifier.verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
         if (ui.car != LinkState.CONNECTED) {
             Text(
-                "경로 정보는 차량 BLE로 읽습니다. 위쪽 '차량 BLE' 칩을 눌러 연결하세요.",
+                "경로 정보는 차량 BLE로 읽습니다. 새로고침을 누르면 자동으로 연결합니다.",
                 Modifier.padding(vertical = 8.dp),
                 style = MaterialTheme.typography.bodyMedium,
             )

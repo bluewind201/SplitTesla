@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -13,11 +14,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -36,9 +42,18 @@ fun SplitTeslaApp(vm: AppViewModel) {
     val ui by vm.ui.collectAsState()
     var tab by rememberSaveable { mutableIntStateOf(0) }
     val colors = if (isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(ui.toast) {
+        ui.toast?.let {
+            vm.consumeToast()
+            snackbar.currentSnackbarData?.dismiss()
+            snackbar.showSnackbar(it, duration = SnackbarDuration.Short)
+        }
+    }
 
     MaterialTheme(colorScheme = colors) {
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbar) },
             topBar = {
                 Column {
                     TopAppBar(title = { Text("SplitTesla") })
@@ -50,7 +65,10 @@ fun SplitTeslaApp(vm: AppViewModel) {
                             if (ui.car == LinkState.CONNECTED) vm.disconnectCar() else vm.connectCar()
                         }
                     }
-                    if (ui.busy != null) LinearProgressIndicator(Modifier.padding(top = 4.dp))
+                    ui.busy?.let {
+                        Text("$it…", Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.labelMedium)
+                        LinearProgressIndicator(Modifier.padding(top = 4.dp).fillMaxWidth())
+                    }
                 }
             },
             bottomBar = {

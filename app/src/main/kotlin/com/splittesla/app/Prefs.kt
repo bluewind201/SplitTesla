@@ -2,6 +2,7 @@ package com.splittesla.app
 
 import android.content.Context
 import android.util.Base64
+import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.tesla.TeslaKey
 import java.util.UUID
 
@@ -12,6 +13,13 @@ class Prefs(context: Context) {
     var vin: String
         get() = prefs.getString("vin", "") ?: ""
         set(value) = prefs.edit().putString("vin", value.trim().uppercase()).apply()
+
+    /** S3XY actions pinned to the top of the actions tab. */
+    var favorites: Set<CommanderAction>
+        get() = prefs.getStringSet("favorites", null)
+            ?.mapNotNull { name -> CommanderAction.entries.firstOrNull { it.name == name } }?.toSet()
+            ?: setOf(CommanderAction.HAZARD_LIGHTS, CommanderAction.FOLD_MIRRORS, CommanderAction.OPEN_GLOVE_BOX)
+        set(value) = prefs.edit().putStringSet("favorites", value.map { it.name }.toSet()).apply()
 
     /** Persistent "{uuid}" the Commander keeps on its allowlist. */
     val commanderPhoneUuid: String

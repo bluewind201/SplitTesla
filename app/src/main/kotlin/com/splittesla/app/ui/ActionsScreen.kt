@@ -1,25 +1,35 @@
 package com.splittesla.app.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.splittesla.app.AppViewModel
@@ -27,103 +37,158 @@ import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.s3xy.CommanderAction.*
+import kotlin.math.roundToInt
+
+private val groups = listOf(
+    "주행" to listOf(
+        DRIVE_MODE_ACCEL, DRIVE_MODE_REGEN, DRIVE_MODE_STEERING, STOPPING_MODE, SUSPENSION, RIDE_HANDLING,
+        FOLLOW_DISTANCE, TRACK_MODE, TRACTION_CONTROL,
+    ),
+    "조명·미러" to listOf(
+        HAZARD_LIGHTS, HIGH_BEAM_STROBE, DYNAMIC_BRAKE_LIGHTS, THANK_YOU, INTERIOR_LIGHTS, ALL_FOG_LIGHTS,
+        FOLD_MIRRORS, MIRRORS_DIP, MIRRORS_DIM,
+    ),
+    "실내" to listOf(
+        OPEN_GLOVE_BOX, REAR_VIEW_CAMERA, STEERING_WHEEL_HEAT, FRONT_SEAT_HEAT_LEFT, FRONT_SEAT_HEAT_RIGHT,
+        FRONT_SEAT_VENT_LEFT, FRONT_SEAT_VENT_RIGHT, BACK_WINDOW_HEATER, RECIRC, SCREEN_TILT,
+    ),
+)
 
 /**
  * Actions only the Commander can perform: it injects CAN frames as if the
  * driver used the stalk, scroll wheel or screen, which the official BLE
- * protocol does not expose.
+ * protocol does not expose. Tap to run, long-press to pin to favorites.
  */
 @Composable
 fun ActionsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
-    val ready = ui.commander == LinkState.CONNECTED && ui.busy == null
-    var showAll by rememberSaveable { mutableStateOf(false) }
-    var value by rememberSaveable { mutableStateOf("") }
+    val confirm = rememberConfirmer()
+    val idle = ui.busy == null
 
-    fun act(action: CommanderAction) = { vm.commanderAction(action, value.toLongOrNull()) }
+    fun actionFor(action: CommanderAction, value: Long? = null) =
+        confirm.guard("S3XY: ${action.label}", ask = action.needsConfirm) {
+            vm.commanderAction(action, "S3XY ${action.label}", value)
+        }
 
     Column(modifier.verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
-        if (ui.commander != LinkState.CONNECTED) {
-            Text(
-                "위쪽 'S3XY' 칩을 눌러 Commander에 연결하세요.",
-                Modifier.padding(vertical = 8.dp),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
+        Text(
+            when (ui.commander) {
+                LinkState.CONNECTED -> "누르면 실행, 길게 누르면 즐겨찾기에 추가/삭제합니다."
+                LinkState.NEEDS_PAIRING -> "핸들 오른쪽 스크롤 버튼을 두 번 눌러 이 폰을 승인하세요."
+                else -> "버튼을 누르면 S3XY에 자동으로 연결합니다. 길게 누르면 즐겨찾기에 추가/삭제합니다."
+            },
+            Modifier.padding(vertical = 8.dp),
+            style = MaterialTheme.typography.bodyMedium,
+        )
 
-        Section("주행") {
-            ButtonGrid(
-                ready,
-                "가속 모드" to act(DRIVE_MODE_ACCEL),
-                "회생 제동" to act(DRIVE_MODE_REGEN),
-                "스티어링 모드" to act(DRIVE_MODE_STEERING),
-                "트랙 모드" to act(TRACK_MODE),
-                "정지 모드" to act(STOPPING_MODE),
-                "서스펜션" to act(SUSPENSION),
-                "승차감" to act(RIDE_HANDLING),
-                "트랙션 컨트롤" to act(TRACTION_CONTROL),
-                "추종 거리" to act(FOLLOW_DISTANCE),
-            )
-        }
-
-        Section("조명·미러") {
-            ButtonGrid(
-                ready,
-                "비상등" to act(HAZARD_LIGHTS),
-                "상향등 스트로브" to act(HIGH_BEAM_STROBE),
-                "다이내믹 브레이크등" to act(DYNAMIC_BRAKE_LIGHTS),
-                "땡큐 깜빡이" to act(THANK_YOU),
-                "실내등" to act(INTERIOR_LIGHTS),
-                "안개등" to act(ALL_FOG_LIGHTS),
-                "미러 접기" to act(FOLD_MIRRORS),
-                "미러 내림" to act(MIRRORS_DIP),
-                "미러 감광" to act(MIRRORS_DIM),
-            )
-        }
-
-        Section("실내") {
-            ButtonGrid(
-                ready,
-                "글러브박스" to act(OPEN_GLOVE_BOX),
-                "후방 카메라" to act(REAR_VIEW_CAMERA),
-                "스티어링 열선" to act(STEERING_WHEEL_HEAT),
-                "운전석 열선" to act(FRONT_SEAT_HEAT_LEFT),
-                "조수석 열선" to act(FRONT_SEAT_HEAT_RIGHT),
-                "운전석 통풍" to act(FRONT_SEAT_VENT_LEFT),
-                "조수석 통풍" to act(FRONT_SEAT_VENT_RIGHT),
-                "뒷유리 열선" to act(BACK_WINDOW_HEATER),
-                "내기 순환" to act(RECIRC),
-                "화면 기울이기" to act(SCREEN_TILT),
-            )
-        }
-
-        Section("전체 동작 목록") {
-            OutlinedTextField(
-                value = value,
-                onValueChange = { value = it.filter(Char::isDigit).take(6) },
-                label = { Text("값 (선택, 예: CABIN_TEMP 22)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                "값을 비우면 1(토글)로 보냅니다. 위 버튼들도 이 값을 씁니다.",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            TextButton(onClick = { showAll = !showAll }) {
-                Text(if (showAll) "목록 접기" else "100개 동작 모두 보기")
+        Section("즐겨찾기") {
+            if (ui.favorites.isEmpty()) {
+                Text("아래 버튼을 길게 누르면 여기에 모입니다.", style = MaterialTheme.typography.bodySmall)
+            } else {
+                ActionChips(ui.favorites.sortedBy { it.code }, ui.favorites, idle, ::actionFor, vm::toggleFavorite)
             }
-            if (showAll) {
-                CommanderAction.entries.forEach { action ->
-                    Row(
-                        Modifier.fillMaxWidth().clickable(enabled = ready, onClick = act(action)).padding(vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(action.name, style = MaterialTheme.typography.bodyMedium)
-                        Text("#${action.code}", style = MaterialTheme.typography.bodySmall)
+        }
+
+        groups.forEach { (title, actions) ->
+            Section(title) { ActionChips(actions, ui.favorites, idle, ::actionFor, vm::toggleFavorite) }
+        }
+
+        Section("실내 온도 (S3XY)") {
+            var temp by rememberSaveable { mutableFloatStateOf(22f) }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("${temp.roundToInt()}°C", style = MaterialTheme.typography.titleMedium)
+                Slider(temp, { temp = it }, Modifier.weight(1f), valueRange = 16f..28f, steps = 11)
+                OutlinedButton(onClick = actionFor(CABIN_TEMP, temp.roundToInt().toLong()), enabled = idle) { Text("설정") }
+            }
+        }
+
+        AllActions(ui, idle, ::actionFor, vm::toggleFavorite)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ActionChips(
+    actions: List<CommanderAction>,
+    favorites: Set<CommanderAction>,
+    enabled: Boolean,
+    run: (CommanderAction, Long?) -> () -> Unit,
+    onToggleFavorite: (CommanderAction) -> Unit,
+) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        actions.forEach { action ->
+            ActionChip(action, action in favorites, enabled, run(action, null)) { onToggleFavorite(action) }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ActionChip(action: CommanderAction, favorite: Boolean, enabled: Boolean, onClick: () -> Unit, onLongClick: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = if (enabled) 1f else 0.5f),
+        modifier = Modifier.combinedClickable(enabled = enabled, onClick = onClick, onLongClick = onLongClick),
+    ) {
+        Text(
+            (if (favorite) "★ " else "") + action.label + (if (action.needsConfirm) " ⚠" else ""),
+            Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            style = MaterialTheme.typography.labelLarge,
+        )
+    }
+}
+
+@Composable
+private fun AllActions(
+    ui: UiState,
+    enabled: Boolean,
+    run: (CommanderAction, Long?) -> () -> Unit,
+    onToggleFavorite: (CommanderAction) -> Unit,
+) {
+    var show by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var value by rememberSaveable { mutableStateOf("") }
+
+    TextButton(onClick = { show = !show }) { Text(if (show) "전체 동작 접기" else "전체 동작 100개 보기") }
+    if (!show) return
+
+    Section("전체 동작") {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            label = { Text("검색 (예: 열선, 창문)") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = { value = it.filter(Char::isDigit).take(6) },
+            label = { Text("고급: 보낼 값 (비우면 1)") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        val q = query.trim()
+        CommanderAction.entries
+            .filter { q.isEmpty() || it.label.contains(q) || it.name.contains(q, ignoreCase = true) }
+            .forEach { action ->
+                val favorite = action in ui.favorites
+                Row(
+                    Modifier.fillMaxWidth().clickable(enabled = enabled, onClick = run(action, value.toLongOrNull())),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+                        Text(
+                            action.label + if (action.needsConfirm) " ⚠" else "",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text("${action.name} · #${action.code}", style = MaterialTheme.typography.bodySmall)
+                    }
+                    TextButton(onClick = { onToggleFavorite(action) }) {
+                        Text(if (favorite) "★" else "☆", style = MaterialTheme.typography.titleLarge)
                     }
                 }
             }
-        }
     }
 }
