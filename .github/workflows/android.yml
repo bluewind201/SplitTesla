@@ -26,7 +26,9 @@ jobs:
         with:
           name: SplitTesla-debug-apk
           path: app/build/outputs/apk/debug/*.apk
-      # Direct .apk download on the "latest-apk" prerelease, replaced on every push
+      # Direct .apk download on the "latest-apk" prerelease. Only the top of the
+      # branch stack (design -> logbook -> AI voice) publishes, so the link
+      # always has every feature.
       - name: Publish APK to latest-apk release
         if: github.event_name != 'pull_request' && github.ref_name == 'claude/project-thread-ga7jmz'
         env:

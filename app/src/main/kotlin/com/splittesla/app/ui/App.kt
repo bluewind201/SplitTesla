@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
@@ -75,6 +76,7 @@ private enum class Tab(val title: String, val english: String) {
     S3XY("S3XY", "S3XY COMMANDER"),
     NAV("내비", "NAVIGATION"),
     DATA("데이터", "TELEMETRY"),
+    LOGBOOK("차계부", "LOGBOOK"),
     SETTINGS("설정", "SETTINGS"),
 }
 
@@ -112,6 +114,7 @@ fun SplitTeslaApp(vm: AppViewModel) {
                             Tab.S3XY -> ActionsScreen(vm, ui, modifier)
                             Tab.NAV -> NavScreen(vm, ui, modifier)
                             Tab.DATA -> TelemetryScreen(ui, modifier)
+                            Tab.LOGBOOK -> LogbookScreen(vm, modifier)
                             Tab.SETTINGS -> SettingsScreen(vm, ui, modifier)
                         }
                     }
@@ -192,6 +195,7 @@ private fun TabIcon(tab: Tab, tint: Color) {
         Tab.S3XY -> Icon(Icons.Filled.Star, null, m, tint)
         Tab.NAV -> Icon(Icons.Filled.Place, null, m, tint)
         Tab.DATA -> Icon(Icons.Filled.List, null, m, tint)
+        Tab.LOGBOOK -> Icon(Icons.Filled.DateRange, null, m, tint)
         Tab.SETTINGS -> Icon(Icons.Filled.Settings, null, m, tint)
     }
 }
