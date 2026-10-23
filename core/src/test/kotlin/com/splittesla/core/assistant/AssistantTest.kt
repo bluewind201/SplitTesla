@@ -53,4 +53,14 @@ class AssistantTest {
         // A destination a block or more away is.
         assertTrue(RouteShare.isNewDestination(gangnam, LatLon(37.5010, 127.0276)))
     }
+
+    @Test
+    fun projectsAPointAheadAlongTheHeading() {
+        val cityHall = LatLon(37.5663, 126.9779)
+        val north = Geo.offset(cityHall, 0.0, 5.0)
+        assertTrue(Geo.distanceKm(cityHall, north) in 4.99..5.01)
+        assertTrue(north.lat > cityHall.lat)
+        val east = Geo.offset(cityHall, 90.0, 5.0)
+        assertTrue(east.lon > cityHall.lon && kotlin.math.abs(east.lat - cityHall.lat) < 0.001)
+    }
 }

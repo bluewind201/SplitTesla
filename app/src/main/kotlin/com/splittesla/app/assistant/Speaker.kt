@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * Korean text-to-speech that ducks music or a navigation app's voice while it
  * talks.
  */
-class Speaker(context: Context) {
+class Speaker(context: Context, private val log: (String) -> Unit = {}) {
     private val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private val attributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
@@ -32,6 +32,7 @@ class Speaker(context: Context) {
 
     private val tts: TextToSpeech = TextToSpeech(context.applicationContext) { status ->
         ready = status == TextToSpeech.SUCCESS
+        if (!ready) log("음성 엔진(TTS)을 시작하지 못해 음성 안내를 할 수 없습니다 (코드 $status)")
         if (ready) {
             setup()
             queued?.let { speak(it) }
@@ -40,7 +41,10 @@ class Speaker(context: Context) {
     }
 
     private fun setup() {
-        tts.setLanguage(Locale.KOREAN)
+        val lang = tts.setLanguage(Locale.KOREAN)
+        if (lang < TextToSpeech.LANG_AVAILABLE) {
+            log("한국어 음성 데이터가 없습니다. 휴대폰 설정 > 텍스트 음성 변환에서 한국어를 설치하세요")
+        }
         tts.setAudioAttributes(attributes)
         tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) = Unit

@@ -34,6 +34,7 @@
         <package android:name="com.nhn.android.nmap" />
         <package android:name="net.daum.android.map" />
         <package android:name="com.skt.tmap.ku" />
+        <package android:name="com.skt.skaf.l001mtm091" />
         <package android:name="com.locnall.KimGiSa" />
         <package android:name="com.waze" />
     </queries>

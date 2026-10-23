@@ -22,13 +22,17 @@ object NaviLaunch {
     fun routeIntent(context: Context, app: NaviApp, lat: Double, lon: Double, label: String): Intent {
         val uri = when (app) {
             NaviApp.NAVER -> "nmap://navigation?dlat=$lat&dlng=$lon&dname=${Uri.encode(label)}&appname=${context.packageName}"
-            // TMAP takes longitude as X and latitude as Y.
-            NaviApp.TMAP -> "tmap://route?rGoName=${Uri.encode(label)}&rGoX=$lon&rGoY=$lat"
+            // TMAP takes longitude as X and latitude as Y. The rGoX/rGoY form only
+            // works on iOS; on Android it opens TMAP without a destination.
+            NaviApp.TMAP -> "tmap://route?referrer=com.skt.Tmap&goalx=$lon&goaly=$lat&goalname=${Uri.encode(label)}"
             NaviApp.KAKAO -> "kakaomap://route?ep=$lat,$lon&by=CAR"
             NaviApp.WAZE -> "https://waze.com/ul?ll=$lat,$lon&navigate=yes&utm_source=${context.packageName}"
         }
-        // Waze's link is a web address; pin it to the app so a browser doesn't take it.
-        return Intent(Intent.ACTION_VIEW, Uri.parse(uri)).setPackage(app.pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        // Waze's link is a web address; pin it to the app so a browser doesn't take it. The others
+        // use their own schemes, which also reach older builds such as TMAP's ONE store package.
+        if (app == NaviApp.WAZE) intent.setPackage(app.pkg)
+        return intent
     }
 
     fun route(context: Context, app: NaviApp, lat: Double, lon: Double, label: String, adjacent: Boolean = false) {

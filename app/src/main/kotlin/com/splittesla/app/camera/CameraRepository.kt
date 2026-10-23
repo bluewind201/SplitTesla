@@ -44,7 +44,7 @@ class CameraRepository(private val context: Context) {
         var total = Int.MAX_VALUE
         while ((page - 1) * PAGE < total) {
             val body = fetch(key, page)
-            val root = runCatching { JSONObject(body).optJSONObject("response") }.getOrNull() ?: error(apiError(body))
+            val root = responseRoot(body) ?: error(apiError(body))
             val header = root.optJSONObject("header")
             val code = header?.optString("resultCode")
             if (code != null && code != "00") error("API 오류 $code: ${header.optString("resultMsg")}")
@@ -60,15 +60,20 @@ class CameraRepository(private val context: Context) {
     /** Asks for a single row; returns how many cameras the API holds. Fails with the API's own message. */
     suspend fun test(key: String): Int = withContext(Dispatchers.IO) {
         val body = fetch(key, 1, rows = 1)
-        val root = try {
-            JSONObject(body).optJSONObject("response")
-        } catch (_: Exception) {
-            null
-        } ?: error(apiError(body))
+        val root = responseRoot(body) ?: error(apiError(body))
         val header = root.optJSONObject("header")
         val code = header?.optString("resultCode")
         if (code != null && code != "00") error("API 오류 $code: ${header.optString("resultMsg")}")
         root.optJSONObject("body")?.optInt("totalCount", 0) ?: 0
+    }
+
+    /**
+     * The part holding header and body. Some data.go.kr APIs wrap it in
+     * {"response": …}; this camera API sends {"header": …, "body": …} bare.
+     */
+    private fun responseRoot(body: String): JSONObject? {
+        val json = runCatching { JSONObject(body) }.getOrNull() ?: return null
+        return json.optJSONObject("response") ?: json.takeIf { it.has("header") || it.has("body") }
     }
 
     /** data.go.kr answers a bad or unapproved key with an XML message instead of JSON. */

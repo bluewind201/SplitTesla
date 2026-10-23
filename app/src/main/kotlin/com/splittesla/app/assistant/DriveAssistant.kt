@@ -48,6 +48,10 @@ data class AssistantUi(
     val thinking: Boolean = false,
     val destinationWeather: Weather? = null,
     val events: List<TrafficEvent> = emptyList(),
+    /** What the automatic guidance is working from right now, or why it is quiet. */
+    val watching: String = "",
+    /** Time and text of the last automatic announcement. */
+    val lastAnnounce: String? = null,
 )
 
 /**
@@ -70,7 +74,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     private val _state = MutableStateFlow(snapshotPrefs(AssistantUi()))
     val state: StateFlow<AssistantUi> = _state.asStateFlow()
 
-    private val speaker = Speaker(context)
+    private val speaker = Speaker(context, vm::log)
 
     // ── Settings ──
 
@@ -292,6 +296,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     private var lastEventsCheck = 0L
     private var lastRainy: Boolean? = null
     private var navPolling = false
+    private var lastBriefing = 0L
 
     private fun watchDrive() {
         if (driveJob?.isActive == true) return
@@ -328,8 +333,13 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         }
 
         val nav = ui.nav?.takeIf { it.hasRoute }
+        _state.update { it.copy(watching = watchingText(ui, nav != null)) }
         if (nav == null) {
+            // No route from the car (no destination, or the car link is down):
+            // look ahead along the way the phone is moving instead.
+            if (lastRouteKey != null) announcedEvents.clear()
             lastRouteKey = null
+            checkAhead(ui)
             checkRain(ui)
             return
         }
@@ -340,6 +350,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             lastRouteKey = routeKey
             arrivedKey = null
             lastDelay = nav.trafficDelayMinutes ?: 0.0
+            lastBriefing = System.currentTimeMillis()
             announcedEvents.clear()
             val destWeather = destination(nav)?.let { fetchWeather(it) }
             _state.update { it.copy(destinationWeather = destWeather, events = emptyList()) }
@@ -361,25 +372,110 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             return
         }
 
-        // Traffic getting worse.
+        // Traffic getting worse or clearing.
         val delayMin = nav.trafficDelayMinutes ?: 0.0
         if (delayMin - lastDelay >= 5) {
             announce("정체 증가", "경로 정체가 늘었습니다. 늘어난 지연 시간을 알리고 침착하게 운전하도록 짧게 말하세요.") {
                 "앞쪽 정체로 도착이 약 ${delayMin.roundToInt()}분 늦어질 것 같아요."
             }
+        } else if (lastDelay - delayMin >= 5) {
+            announce("정체 해소", "경로 정체가 풀렸습니다. 줄어든 지연과 새 도착 예정을 짧게 알리세요.") {
+                "정체가 풀려 도착이 약 ${(lastDelay - delayMin).roundToInt()}분 빨라졌어요." +
+                    (nav.minutesToArrival?.let { " 이제 ${it.roundToInt()}분 남았어요." } ?: "")
+            }
         }
         lastDelay = delayMin
 
-        // New accidents ahead, every 3 minutes.
-        val fresh = checkEvents(ui, force = false).filter { it.isAccident || !it.isRoadwork }.filter { announcedEvents.add(it.id) }
+        // New accidents and roadwork ahead, every 3 minutes.
+        val from = here(ui)
+        val fresh = checkEvents(ui, force = false).filter { announcedEvents.add(it.id) }
         if (fresh.isNotEmpty()) {
-            announce("돌발 상황", "경로 앞쪽에 새 돌발 상황이 있습니다. 위치(도로명)와 종류, 차로 통제를 짧게 알리고 주의를 당부하세요.") {
-                val e = fresh.first()
-                "주의하세요. ${e.road.ifBlank { "경로 앞쪽" }}에 ${e.kind.ifBlank { "돌발 상황" }}이 있어요." +
-                    (e.lanes.takeIf { it.isNotBlank() }?.let { " $it 통제 중입니다." } ?: "")
+            val e = fresh.sortedBy { from?.let { f -> Geo.distanceKm(f, it.position) } ?: 0.0 }.first()
+            announce("돌발 상황", "경로 앞쪽에 새 돌발 상황이 있습니다. 거리, 위치(도로명)와 종류, 차로 통제를 짧게 알리고 주의를 당부하세요.") {
+                eventText(e, from, "경로 앞쪽")
+            }
+        } else if (System.currentTimeMillis() - lastBriefing > BRIEFING_MS && (nav.minutesToArrival ?: 0.0) > 10) {
+            // A short update every 15 minutes on longer drives.
+            lastBriefing = System.currentTimeMillis()
+            announce("경로 브리핑", "주행 중 정기 안내입니다. 남은 시간과 거리, 정체, 경로상 사고·공사 수를 한두 문장으로 알리세요.") {
+                routeStatusText(nav) +
+                    (nav.trafficDelayMinutes?.takeIf { it >= 3 }?.let { " 정체로 ${it.roundToInt()}분 늦어지고 있어요." } ?: " 길은 대체로 원활해요.") +
+                    (_state.value.events.size.takeIf { it > 0 }?.let { " 경로에 사고·공사가 ${it}건 있어요." } ?: "")
             }
         }
         checkRain(ui)
+    }
+
+    /**
+     * Without a route from the car, warns about accidents and roadwork on the
+     * road ahead: a corridor [AHEAD_KM] long in the direction of travel, from
+     * the car's or the phone's GPS. Checked every 3 minutes while moving.
+     */
+    private suspend fun checkAhead(ui: UiState) {
+        val key = prefs.itsKey.takeIf { it.isNotBlank() } ?: return
+        val now = System.currentTimeMillis()
+        if (now - lastEventsCheck < 3 * 60_000) return
+        val from = here(ui) ?: return
+        val heading = heading(ui) ?: return
+        lastEventsCheck = now
+        val ahead = Geo.offset(from, heading, AHEAD_KM)
+        val list = try {
+            TrafficEvents(key).around(from, ahead, marginDeg = 0.02).filter { Geo.aheadOnRoute(from, ahead, it.position, minWidthKm = 0.8) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            vm.log("교통 돌발정보 실패: ${e.message}")
+            return
+        }
+        _state.update { it.copy(events = list) }
+        val fresh = list.filter { announcedEvents.add(it.id) }.sortedBy { Geo.distanceKm(from, it.position) }
+        if (fresh.isEmpty()) return
+        announce("전방 돌발 상황", "진행 방향 앞쪽에 돌발 상황이 있습니다. 거리, 도로명, 종류, 차로 통제를 짧게 알리고 주의를 당부하세요.") {
+            eventText(fresh.first(), from, "전방") + if (fresh.size > 1) " 그 밖에도 ${fresh.size - 1}건이 더 있어요." else ""
+        }
+    }
+
+    private fun eventText(e: TrafficEvent, from: LatLon?, fallbackPlace: String): String {
+        val km = from?.let { Geo.distanceKm(it, e.position) }
+        val where = buildString {
+            if (km != null) append(if (km < 1) "${(km * 10).roundToInt() * 100}미터 앞 " else "${km.roundToInt()}킬로미터 앞 ")
+            append(e.road.ifBlank { fallbackPlace })
+        }
+        val kind = e.kind.ifBlank { "돌발 상황" }
+        return "주의하세요. ${where}에 $kind${subject(kind)} 있어요." +
+            (e.lanes.takeIf { it.isNotBlank() }?.let { " $it 통제 중입니다." } ?: "")
+    }
+
+    /** 이 or 가, whichever fits after [word] (공사가, 사고가, 통제가 / 낙하물이). */
+    private fun subject(word: String): String {
+        val c = word.lastOrNull() ?: return "이"
+        if (c !in '가'..'힣') return "이"
+        return if ((c - '가') % 28 == 0) "가" else "이"
+    }
+
+    /** One line for the AI tab: what the guidance is working from, or why it is quiet. */
+    private fun watchingText(ui: UiState, hasRoute: Boolean): String {
+        val its = prefs.itsKey.isNotBlank()
+        return when {
+            hasRoute -> "테슬라 경로 기준으로 안내 중" + if (its) " (사고·공사 포함)" else " (교통정보 키를 넣으면 사고·공사도 안내)"
+            ui.car != LinkState.CONNECTED && freshFix() == null ->
+                "차량 BLE 미연결이라 경로를 모릅니다. 과속카메라 알림을 켜면 폰 GPS로 전방 교통상황을 안내합니다"
+            !its -> "경로 없음. 설정 탭에 교통정보 키를 넣으면 진행 방향의 사고·공사를 안내합니다"
+            heading(ui) == null -> "정차 중. 출발하면 진행 방향 ${AHEAD_KM.roundToInt()}km 안의 사고·공사를 확인합니다"
+            else -> "진행 방향 ${AHEAD_KM.roundToInt()}km 안의 사고·공사를 3분마다 확인 중"
+        }
+    }
+
+    private fun freshFix(): android.location.Location? =
+        CameraState.fix?.takeIf { System.currentTimeMillis() - it.time < 2 * 60_000 }
+
+    /** Direction of travel, only while moving fast enough for it to mean something. */
+    private fun heading(ui: UiState): Double? {
+        val fix = freshFix()
+        if (fix != null && fix.hasBearing() && fix.hasSpeed() && fix.speed > 4f) return fix.bearing.toDouble()
+        val nav = ui.nav
+        val moving = (nav?.speedKmh ?: 0.0) > 15 || (ui.live.speedKmh ?: 0L) > 15
+        return nav?.heading?.toDouble()?.takeIf { moving && ui.car == LinkState.CONNECTED }
     }
 
     /** Speaks once when rain or snow starts or stops where the car is. */
@@ -435,6 +531,8 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             }
         }
         vm.log("AI 안내($event): $text")
+        val time = SimpleDateFormat("HH:mm", Locale.KOREA).format(Date())
+        _state.update { it.copy(lastAnnounce = "$time $event: $text") }
         say(text)
     }
 
@@ -474,6 +572,8 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
 
     private fun here(ui: UiState): LatLon? {
         val nav = ui.nav
+        if (ui.car == LinkState.CONNECTED && nav?.latitude != null && nav.longitude != null) return LatLon(nav.latitude!!, nav.longitude!!)
+        freshFix()?.let { return LatLon(it.latitude, it.longitude) }
         if (nav?.latitude != null && nav.longitude != null) return LatLon(nav.latitude!!, nav.longitude!!)
         return weatherRepo.lastKnownLocation()?.let { LatLon(it.latitude, it.longitude) }
     }
@@ -587,6 +687,9 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     private fun fmtTemp(c: Float) = if (c % 1f == 0f) c.toInt().toString() else c.toString()
 
     private companion object {
+        const val AHEAD_KM = 8.0
+        const val BRIEFING_MS = 15 * 60_000L
+
         const val ANNOUNCE_SYSTEM =
             "당신은 테슬라 차량용 한국어 음성 비서입니다. 주어진 차량 상황과 지시에 맞춰 운전자에게 소리 내어 읽어줄 안내 멘트만 출력하세요. " +
                 "한두 문장, 60자 안팎, 존댓말, 친근하고 차분하게. 이모지·마크다운·따옴표 금지. 주어진 값만 쓰고 모르는 것은 말하지 마세요."

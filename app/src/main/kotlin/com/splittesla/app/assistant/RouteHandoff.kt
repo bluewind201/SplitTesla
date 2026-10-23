@@ -77,7 +77,9 @@ object RouteHandoff {
 
     private fun open(context: Context, app: NaviApp, uri: Uri) {
         try {
-            context.startActivity(Intent(Intent.ACTION_VIEW, uri).setPackage(app.pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            val intent = Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (app == NaviApp.WAZE) intent.setPackage(app.pkg)
+            context.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
             // Same fallback as the navi tab: the app's store page.
             context.startActivity(
