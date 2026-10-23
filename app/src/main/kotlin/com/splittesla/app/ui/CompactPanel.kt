@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -26,7 +25,6 @@ import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.UiState
 import com.splittesla.app.camera.CameraState
-import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
 import kotlin.math.roundToInt
@@ -34,13 +32,15 @@ import kotlin.math.roundToInt
 /**
  * The narrow strip shown when the app shares the screen with a navigation app
  * (split screen with the map taking most of it): speed, the limit, the next
- * camera, battery and a talk button, big enough to read at a glance.
+ * camera, battery and the last destination sent to the map, big enough to
+ * read at a glance.
  */
 @Composable
 fun CompactPanel(vm: AppViewModel, ui: UiState) {
     val camera by CameraState.status.collectAsState()
     val gpsSpeed by CameraState.gpsSpeedKmh.collectAsState()
     val assistant by vm.assistant.state.collectAsState()
+    val shared by vm.routeSync.last.collectAsState()
     val c = Cockpit.from(ui, camera, gpsSpeed)
     val over = c.overLimit
 
@@ -52,7 +52,6 @@ fun CompactPanel(vm: AppViewModel, ui: UiState) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             Dot("S3XY", ui.commander.color())
             Dot("CAR", ui.car.color())
-            Dot("MIC", assistant.mic.color())
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -90,7 +89,9 @@ fun CompactPanel(vm: AppViewModel, ui: UiState) {
             Text(it, color = Neon.muted, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
         }
 
-        GlowButton("말하기", { vm.assistant.talkNow() }, Modifier.fillMaxWidth(), filled = true)
+        shared?.let {
+            Text(it, color = Neon.cyan, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+        }
     }
 }
 

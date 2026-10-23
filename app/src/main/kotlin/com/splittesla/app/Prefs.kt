@@ -19,6 +19,16 @@ class Prefs(context: Context) {
         get() = GaugeStyle.entries.firstOrNull { it.name == prefs.getString("gauge_style", null) } ?: GaugeStyle.TRACK
         set(value) = prefs.edit().putString("gauge_style", value.name).apply()
 
+    /** The car accepted this phone's key; remembered so the settings screen can say so before connecting. */
+    var keyPaired: Boolean
+        get() = prefs.getBoolean("key_paired", false)
+        set(value) = prefs.edit().putBoolean("key_paired", value).apply()
+
+    /** Speed camera alerts were left on; they start again with the app. */
+    var cameraAlerts: Boolean
+        get() = prefs.getBoolean("camera_alerts", false)
+        set(value) = prefs.edit().putBoolean("camera_alerts", value).apply()
+
     /** S3XY actions pinned to the top of the actions tab. */
     var favorites: Set<CommanderAction>
         get() = prefs.getStringSet("favorites", null)

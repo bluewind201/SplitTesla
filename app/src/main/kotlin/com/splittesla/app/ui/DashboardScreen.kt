@@ -95,7 +95,7 @@ fun DashboardScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
             }
         }
         Column(Modifier.weight(0.26f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            LimitPanel(c, Modifier.weight(1f).fillMaxWidth())
+            LimitPanel(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
             LockPanel(vm, ui, c, Modifier.weight(1.6f).fillMaxWidth())
         }
     }
@@ -166,34 +166,48 @@ private fun BatteryPanel(c: Cockpit, modifier: Modifier) {
     }
 }
 
+/**
+ * Speed cameras from the public data.go.kr list (the alert service tracks
+ * them). The car's own road limit from Tesla's map is shown only as a small
+ * line underneath, so it can't be mistaken for a camera.
+ */
 @Composable
-private fun LimitPanel(c: Cockpit, modifier: Modifier) {
+private fun LimitPanel(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier) {
+    val running by CameraState.running.collectAsState()
+    val camera by CameraState.status.collectAsState()
     val over = c.overLimit
     val blink = if (over) rememberPulse(450) else 1f
-    Panel(modifier, accent = if (over) Neon.red.copy(alpha = blink) else null, padding = 12.dp) {
-        Text(if (over) "과속 경고" else "SPEED LIMIT", style = Caption.copy(color = if (over) Neon.red else Neon.muted))
+    val clickable = if (!running) Modifier.clickable { vm.setCameraAlerts(true) } else Modifier
+    Panel(modifier.then(clickable), accent = if (over) Neon.red.copy(alpha = blink) else null, padding = 12.dp) {
+        Text(if (over) "과속 경고" else "SPEED CAMERA", style = Caption.copy(color = if (over) Neon.red else Neon.muted))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            val limit = c.activeLimit
-            if (limit != null) LimitSign(limit, 54.dp, flashing = over, blink = blink)
+            val ahead = camera.ahead
+            val d = camera.distanceM
+            val limit = camera.sectionLimitKmh ?: ahead?.limitKmh
+            if (running && limit != null) LimitSign(limit, 54.dp, flashing = over, blink = blink)
             else Text("—", fontFamily = Orbitron, fontSize = 28.sp, color = Neon.faint)
             Spacer(Modifier.width(12.dp))
             Column {
-                val d = c.cameraDistanceM
-                if (c.cameraLimitKmh != null && d != null) {
-                    Text("카메라", fontSize = 11.sp, color = Neon.muted)
-                    Text("${d.roundToInt()}m", fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = Neon.amber)
-                } else {
-                    Text(
-                        when {
-                            c.limitKmh != null -> "도로 제한속도"
-                            else -> "S3XY 연결 또는\n카메라 알림을 켜세요"
-                        },
-                        fontSize = 11.sp,
-                        color = Neon.muted,
+                when {
+                    !running -> Text(
+                        if (ui.cameraCount > 0) "카메라 알림 꺼짐\n탭해서 켜기" else "카메라 데이터 없음\n내비 탭에서 받기",
+                        fontSize = 11.sp, color = Neon.muted,
                     )
+                    camera.sectionAverageKmh != null -> {
+                        Text("구간단속 평균", fontSize = 11.sp, color = Neon.muted)
+                        Text("${camera.sectionAverageKmh!!.roundToInt()}", fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = Neon.amber)
+                    }
+                    ahead != null && d != null -> {
+                        Text(ahead.zone ?: "단속카메라", fontSize = 11.sp, color = if (ahead.zone != null) Neon.red else Neon.muted)
+                        Text("${d.roundToInt()}m", fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = Neon.amber)
+                    }
+                    else -> Text("앞쪽 카메라 없음", fontSize = 11.sp, color = Neon.muted)
                 }
             }
         }
+        val source = if (ui.cameraCount > 0) "공공데이터 ${ui.cameraCount}개" else "공공데이터"
+        val road = c.limitKmh?.let { " · 테슬라 도로제한 $it" } ?: ""
+        Text(source + road, fontSize = 10.sp, color = Neon.faint, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

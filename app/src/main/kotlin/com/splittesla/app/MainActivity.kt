@@ -23,8 +23,9 @@ class MainActivity : ComponentActivity() {
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         val denied = result.filterValues { !it }.keys
         if (denied.isNotEmpty()) viewModel.log("권한 거부됨: $denied. 차량 검색이 동작하지 않을 수 있습니다")
-        val mic = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-        viewModel.assistant.onAppStart(mic)
+        viewModel.assistant.onAppStart()
+        val location = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        viewModel.resumeCameraAlerts(location)
         // Start only after the permission answer, so the first scan is not refused.
         viewModel.startAutoConnect()
         // After the permission prompt, so the split doesn't open under it.
@@ -50,12 +51,13 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.BLUETOOTH_CONNECT,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.RECORD_AUDIO,
             )
         } else {
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.RECORD_AUDIO)
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
         }
-        permissionLauncher.launch(permissions)
+        // Notifications carry the camera alerts and a changed Tesla destination.
+        val notify = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(Manifest.permission.POST_NOTIFICATIONS) else emptyArray()
+        permissionLauncher.launch(permissions + notify)
         // Fresh start only, not on rotation or when coming back from split screen.
         splitPending = savedInstanceState == null && !isInMultiWindowMode
         setContent { SplitTeslaApp(viewModel) }
@@ -64,6 +66,12 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         viewModel.setForeground(true)
+        viewModel.inMultiWindow = isInMultiWindowMode
+    }
+
+    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: android.content.res.Configuration) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
+        viewModel.inMultiWindow = isInMultiWindowMode
     }
 
     override fun onStop() {

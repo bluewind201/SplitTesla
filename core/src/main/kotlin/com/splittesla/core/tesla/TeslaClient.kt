@@ -104,6 +104,21 @@ class TeslaClient(
         transport.send(envelope.toByteArray())
     }
 
+    /**
+     * True once the car knows this phone's key. Before the key card is tapped
+     * and the request approved, the car answers the security handshake with
+     * "unknown key".
+     */
+    suspend fun isKeyPaired(): Boolean = mutex.withLock {
+        sessions.remove(Domain.DOMAIN_VEHICLE_SECURITY)
+        try {
+            ensureSession(Domain.DOMAIN_VEHICLE_SECURITY)
+            true
+        } catch (_: KeyNotPairedException) {
+            false
+        }
+    }
+
     // ── Infotainment: the car must be awake ──
 
     suspend fun chargeStart() = infotainment {

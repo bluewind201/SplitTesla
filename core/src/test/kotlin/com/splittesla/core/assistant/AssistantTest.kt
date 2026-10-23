@@ -3,30 +3,9 @@ package com.splittesla.core.assistant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AssistantTest {
-    @Test
-    fun findsWakeWordAndReturnsTheCommandAfterIt() {
-        assertEquals("강남역으로 가자", WakeWord.match("자비스 강남역으로 가자", "자비스"))
-        assertEquals("에어컨 켜줘", WakeWord.match("헤이, 자비스! 에어컨 켜줘", "자비스"))
-        assertEquals("", WakeWord.match("자비스", "자 비스"))
-        assertEquals("가자", WakeWord.match("Hey Tesla 가자", "hey tesla"))
-        assertNull(WakeWord.match("강남역으로 가자", "자비스"))
-    }
-
-    @Test
-    fun toleratesOneLetterOffForLongerWords() {
-        // A swapped syllable is fine for a three-letter word...
-        assertEquals("날씨 어때", WakeWord.match("쟈비스 날씨 어때", "자비스"))
-        // ...but two letters out of three is not enough.
-        assertNull(WakeWord.match("비스 날씨 어때", "자비스"))
-        // Four or more letters may also lose or gain one.
-        assertEquals("가자", WakeWord.match("스플릿슬라 가자", "스플릿테슬라"))
-        assertEquals("가자", WakeWord.matchAny(listOf("아무 말", "스플릿 테슬라 가자"), "스플릿테슬라"))
-    }
-
     @Test
     fun understandsCommonPhrasingsWithoutAModel() {
         assertEquals(VoiceAction.Navigate("강남역"), VoiceRules.parse("강남역으로 가자"))
@@ -63,5 +42,15 @@ class AssistantTest {
         assertTrue(Geo.aheadOnRoute(seoul, busan, daejeonSide))
         assertFalse(Geo.aheadOnRoute(seoul, busan, LatLon(37.9, 126.6))) // behind the start
         assertFalse(Geo.aheadOnRoute(seoul, busan, LatLon(35.8, 126.7))) // far to the west
+    }
+
+    @Test
+    fun sendsTheRouteAgainOnlyForAnotherPlace() {
+        val gangnam = LatLon(37.4979, 127.0276)
+        assertTrue(RouteShare.isNewDestination(null, gangnam))
+        // The car re-snapping the same destination a few metres away is not a new route.
+        assertFalse(RouteShare.isNewDestination(gangnam, LatLon(37.4981, 127.0279)))
+        // A destination a block or more away is.
+        assertTrue(RouteShare.isNewDestination(gangnam, LatLon(37.5010, 127.0276)))
     }
 }

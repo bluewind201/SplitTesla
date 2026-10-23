@@ -48,7 +48,7 @@ class TrafficEvents(private val apiKey: String) {
             conn.readTimeout = 12000
             val code = conn.responseCode
             val text = (if (code in 200..299) conn.inputStream else conn.errorStream)?.bufferedReader()?.use { it.readText() }.orEmpty()
-            if (code !in 200..299) error("교통정보 오류 $code")
+            if (code !in 200..299) error("교통정보 HTTP $code ${text.take(120)}".trim())
             parse(text)
         } finally {
             conn.disconnect()
@@ -56,7 +56,8 @@ class TrafficEvents(private val apiKey: String) {
     }
 
     private fun parse(text: String): List<TrafficEvent> {
-        val root = JSONObject(text)
+        // A wrong key comes back as a short text or XML message rather than JSON.
+        val root = runCatching { JSONObject(text) }.getOrNull() ?: error("키를 확인하세요. 응답: ${text.take(120)}")
         val header = root.optJSONObject("header")
         if (header != null && header.optInt("resultCode", 0) != 0) error("교통정보: ${header.optString("resultMsg")}")
         val items: JSONArray = when (val raw = root.optJSONObject("body")?.opt("items")) {

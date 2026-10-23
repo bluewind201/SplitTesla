@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 import java.util.Locale
 
 /**
- * Voice route changes, handed to Naver Map or Kakao Map. Changing the car's
+ * Route changes from typed commands, handed to the chosen navigation app. Changing the car's
  * own route needs the Fleet API, which this app does not use.
  *
  * A spoken place name is turned into coordinates with the phone's geocoder,
@@ -33,15 +33,13 @@ object RouteHandoff {
         }
     }
 
-    fun toPoint(context: Context, app: NaviApp, point: LatLon, label: String) = when (app) {
-        NaviApp.NAVER -> NaviLaunch.naver(context, point.lat, point.lon, label)
-        NaviApp.KAKAO -> NaviLaunch.kakao(context, point.lat, point.lon)
-    }
+    fun toPoint(context: Context, app: NaviApp, point: LatLon, label: String) =
+        NaviLaunch.route(context, app, point.lat, point.lon, label)
 
     /**
      * Keeps the destination and adds [stop] before it. Naver Map takes the
-     * stop in the route itself; Kakao Map's link has no stops, so it guides
-     * to the stop first.
+     * stop in the route itself; the other apps' links have no stops,
+     * so they guide to the stop first.
      */
     suspend fun viaStop(context: Context, app: NaviApp, stop: String, destination: LatLon, destName: String, near: LatLon?, log: (String) -> Unit) {
         val point = geocode(context, stop, near)
@@ -53,6 +51,7 @@ object RouteHandoff {
                 }
                 app == NaviApp.NAVER -> open(
                     context,
+                    app,
                     Uri.parse(
                         "nmap://route/car?dlat=${destination.lat}&dlng=${destination.lon}&dname=${Uri.encode(destName)}" +
                             "&v1lat=${point.lat}&v1lng=${point.lon}&v1name=${Uri.encode(stop)}&appname=${context.packageName}",
@@ -63,19 +62,26 @@ object RouteHandoff {
         }
     }
 
-    fun search(context: Context, app: NaviApp, query: String) = when (app) {
-        NaviApp.NAVER -> open(context, Uri.parse("nmap://search?query=${Uri.encode(query)}&appname=${context.packageName}"))
-        NaviApp.KAKAO -> open(context, Uri.parse("kakaomap://search?q=${Uri.encode(query)}"))
-    }
+    fun search(context: Context, app: NaviApp, query: String) = open(
+        context,
+        app,
+        Uri.parse(
+            when (app) {
+                NaviApp.NAVER -> "nmap://search?query=${Uri.encode(query)}&appname=${context.packageName}"
+                NaviApp.TMAP -> "tmap://search?name=${Uri.encode(query)}"
+                NaviApp.KAKAO -> "kakaomap://search?q=${Uri.encode(query)}"
+                NaviApp.WAZE -> "https://waze.com/ul?q=${Uri.encode(query)}&navigate=yes&utm_source=${context.packageName}"
+            },
+        ),
+    )
 
-    private fun open(context: Context, uri: Uri) {
+    private fun open(context: Context, app: NaviApp, uri: Uri) {
         try {
-            context.startActivity(Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            context.startActivity(Intent(Intent.ACTION_VIEW, uri).setPackage(app.pkg).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         } catch (_: ActivityNotFoundException) {
             // Same fallback as the navi tab: the app's store page.
-            val pkg = if (uri.scheme == "nmap") "com.nhn.android.nmap" else "net.daum.android.map"
             context.startActivity(
-                Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$pkg")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${app.pkg}")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
         }
     }

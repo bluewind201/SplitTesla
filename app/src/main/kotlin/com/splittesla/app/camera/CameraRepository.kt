@@ -44,7 +44,7 @@ class CameraRepository(private val context: Context) {
         var total = Int.MAX_VALUE
         while ((page - 1) * PAGE < total) {
             val body = fetch(key, page)
-            val root = JSONObject(body).optJSONObject("response") ?: error("API 응답 형식이 다릅니다: ${body.take(200)}")
+            val root = runCatching { JSONObject(body).optJSONObject("response") }.getOrNull() ?: error(apiError(body))
             val header = root.optJSONObject("header")
             val code = header?.optString("resultCode")
             if (code != null && code != "00") error("API 오류 $code: ${header.optString("resultMsg")}")
@@ -57,15 +57,43 @@ class CameraRepository(private val context: Context) {
         save(all)
     }
 
-    private fun fetch(key: String, page: Int): String {
+    /** Asks for a single row; returns how many cameras the API holds. Fails with the API's own message. */
+    suspend fun test(key: String): Int = withContext(Dispatchers.IO) {
+        val body = fetch(key, 1, rows = 1)
+        val root = try {
+            JSONObject(body).optJSONObject("response")
+        } catch (_: Exception) {
+            null
+        } ?: error(apiError(body))
+        val header = root.optJSONObject("header")
+        val code = header?.optString("resultCode")
+        if (code != null && code != "00") error("API 오류 $code: ${header.optString("resultMsg")}")
+        root.optJSONObject("body")?.optInt("totalCount", 0) ?: 0
+    }
+
+    /** data.go.kr answers a bad or unapproved key with an XML message instead of JSON. */
+    private fun apiError(body: String): String {
+        val msg = Regex("<returnAuthMsg>(.*?)</returnAuthMsg>").find(body)?.groupValues?.get(1)
+            ?: Regex("<errMsg>(.*?)</errMsg>").find(body)?.groupValues?.get(1)
+        return when {
+            msg?.contains("NOT_REGISTERED") == true -> "등록되지 않은 키입니다 (활용신청 승인 후 1~2시간 뒤부터 동작할 수 있어요)"
+            msg != null -> "API 응답: $msg"
+            else -> "API 응답 형식이 다릅니다: ${body.take(120)}"
+        }
+    }
+
+    private fun fetch(key: String, page: Int, rows: Int = PAGE): String {
         // Keys from data.go.kr come either URL-encoded or not; encode only a raw one.
         val encodedKey = if ('%' in key) key else URLEncoder.encode(key, "UTF-8")
-        val url = URL("$API?serviceKey=$encodedKey&pageNo=$page&numOfRows=$PAGE&type=json")
+        val url = URL("$API?serviceKey=$encodedKey&pageNo=$page&numOfRows=$rows&type=json")
         val conn = url.openConnection() as HttpURLConnection
         conn.connectTimeout = 15_000
         conn.readTimeout = 30_000
         return try {
-            if (conn.responseCode != 200) error("API HTTP ${conn.responseCode}")
+            if (conn.responseCode != 200) {
+                val err = conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
+                error(if (err.isNotBlank()) apiError(err) else "API HTTP ${conn.responseCode}")
+            }
             conn.inputStream.bufferedReader().readText()
         } finally {
             conn.disconnect()

@@ -12,10 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Korean text-to-speech that ducks music or a navigation app's voice while it
- * talks, and reports when it starts and stops so the microphone can pause and
- * not hear itself.
+ * talks.
  */
-class Speaker(context: Context, private val onSpeaking: (Boolean) -> Unit) {
+class Speaker(context: Context) {
     private val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private val attributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
@@ -62,7 +61,6 @@ class Speaker(context: Context, private val onSpeaking: (Boolean) -> Unit) {
         }
         if (pending.getAndIncrement() == 0) {
             focus?.let { audio.requestAudioFocus(it) }
-            onSpeaking(true)
         }
         tts.speak(text, if (interrupt) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD, null, "say${counter++}")
     }
@@ -71,7 +69,6 @@ class Speaker(context: Context, private val onSpeaking: (Boolean) -> Unit) {
         if (pending.decrementAndGet() <= 0) {
             pending.set(0)
             focus?.let { audio.abandonAudioFocusRequest(it) }
-            onSpeaking(false)
         }
     }
 
@@ -79,7 +76,6 @@ class Speaker(context: Context, private val onSpeaking: (Boolean) -> Unit) {
         tts.stop()
         pending.set(0)
         focus?.let { audio.abandonAudioFocusRequest(it) }
-        onSpeaking(false)
     }
 
     fun shutdown() {

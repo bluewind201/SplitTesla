@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.UiState
 import com.splittesla.app.camera.CameraState
+import com.splittesla.app.ui.theme.Neon
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,7 +52,12 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
         uri?.let(vm::importCameras)
     }
 
-    Section("과속카메라 알림") {
+    FoldSection(
+        "과속카메라 알림 (공공데이터)",
+        summary = (if (running) "켜짐" else "꺼짐") + if (ui.cameraCount > 0) " · ${ui.cameraCount}개" else " · 데이터 없음",
+        summaryColor = if (running) Neon.green else Neon.muted,
+        startOpen = running || ui.cameraCount == 0,
+    ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Column(Modifier.weight(1f)) {
                 Text(if (running) "켜짐" else "꺼짐", style = MaterialTheme.typography.titleMedium)
@@ -128,7 +134,18 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            ButtonGrid(ui.busy == null && key.isNotBlank(), "API로 받기" to { vm.downloadCameras(key) })
+            ButtonGrid(
+                ui.busy == null && key.isNotBlank(),
+                "연결 테스트" to { vm.testCameraKey(key) },
+                "API로 받기" to { vm.downloadCameras(key) },
+            )
+            ui.cameraTest?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (it.startsWith("✅")) Neon.green else if (it.startsWith("❌")) Neon.red else Neon.muted,
+                )
+            }
         }
     }
 }
