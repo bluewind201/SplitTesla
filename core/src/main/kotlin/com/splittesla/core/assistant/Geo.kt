@@ -2,6 +2,7 @@ package com.splittesla.core.assistant
 
 import kotlin.math.PI
 import kotlin.math.asin
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
@@ -42,5 +43,16 @@ object Geo {
         val dx = px - t * bx
         val dy = py - t * by
         return sqrt(dx * dx + dy * dy) <= width
+    }
+
+    /** The point [km] away from [from] heading [bearingDeg] (0 = north, 90 = east). */
+    fun offset(from: LatLon, bearingDeg: Double, km: Double): LatLon {
+        val d = km / EARTH_KM
+        val b = bearingDeg * PI / 180
+        val lat1 = from.lat * PI / 180
+        val lon1 = from.lon * PI / 180
+        val lat2 = asin(sin(lat1) * cos(d) + cos(lat1) * sin(d) * cos(b))
+        val lon2 = lon1 + atan2(sin(b) * sin(d) * cos(lat1), cos(d) - sin(lat1) * sin(lat2))
+        return LatLon(lat2 * 180 / PI, lon2 * 180 / PI)
     }
 }

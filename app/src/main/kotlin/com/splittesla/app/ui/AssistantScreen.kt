@@ -53,8 +53,14 @@ fun AssistantScreen(vm: AppViewModel, modifier: Modifier) {
         Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FoldSection("자동 음성 안내", summary = if (s.announcements) "켜짐" else "꺼짐", startOpen = true) {
                 Toggle("상황별 자동 안내 (탑승·경로·사고·날씨·도착)", s.announcements, assistant::setAnnouncements)
+                if (s.watching.isNotBlank()) Line("지금", s.watching)
+                s.lastAnnounce?.let { Line("최근 안내", it) }
                 if (s.thinking) Hint("AI가 문장을 만드는 중…")
                 s.said?.let { Line("비서", it, Neon.lime) }
+                Hint(
+                    "자동으로 말하는 때: 앱 시작(탑승), 차에 새 경로, 경로 앞 사고·공사, 정체가 5분 이상 늘거나 풀릴 때, " +
+                        "긴 주행 중 15분마다 브리핑, 비·눈 시작, 도착 직전. 차량 경로가 없어도 폰 GPS로 진행 방향 8km 안의 사고·공사를 알려줍니다.",
+                )
                 ButtonGrid(
                     true,
                     "탑승 멘트 듣기" to { assistant.testGreeting() },

@@ -91,6 +91,7 @@ class SpeedCameraService : Service(), LocationListener {
     override fun onLocationChanged(location: Location) {
         val alerter = alerter ?: return
         CameraState.gpsOk.value = true
+        CameraState.fix = location
         CameraState.gpsSpeedKmh.value = if (location.hasSpeed()) location.speed * 3.6f else null
         val now = System.currentTimeMillis()
         val canSpeed = CameraState.commanderSpeedKmh?.takeIf { now - CameraState.commanderSpeedAt < 3000 }
@@ -181,6 +182,7 @@ class SpeedCameraService : Service(), LocationListener {
         CameraState.running.value = false
         CameraState.gpsOk.value = false
         CameraState.gpsSpeedKmh.value = null
+        CameraState.fix = null
         CameraState.status.value = com.splittesla.core.camera.CameraStatus()
         super.onDestroy()
     }
