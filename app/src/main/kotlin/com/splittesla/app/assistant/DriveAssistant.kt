@@ -1,7 +1,5 @@
 package com.splittesla.app.assistant
 
-import android.os.Handler
-import android.os.Looper
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
@@ -13,7 +11,6 @@ import com.splittesla.core.assistant.Geo
 import com.splittesla.core.assistant.LatLon
 import com.splittesla.core.assistant.VoiceAction
 import com.splittesla.core.assistant.VoiceRules
-import com.splittesla.core.assistant.WakeWord
 import com.splittesla.core.tesla.NavigationInfo
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -34,18 +31,18 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 data class AssistantUi(
-    val mic: MicState = MicState.OFF,
     val provider: LlmProvider = LlmProvider.CLAUDE,
     val hasKey: Boolean = false,
     val model: String = "",
-    val wakeWord: String = "",
-    val micOnStart: Boolean = true,
     val announcements: Boolean = true,
     val naviApp: NaviApp = NaviApp.NAVER,
+    val autoShareRoute: Boolean = true,
     val companionNavi: CompanionNavi = CompanionNavi.NONE,
     val homeAddress: String = "",
     val workAddress: String = "",
     val itsKey: String = "",
+    /** Result of the last traffic API connection test, shown under the key. */
+    val itsTest: String? = null,
     val heard: String? = null,
     val said: String? = null,
     val thinking: Boolean = false,
@@ -54,35 +51,26 @@ data class AssistantUi(
 )
 
 /**
- * The in-car voice assistant. It speaks on its own when something happens
+ * The in-car assistant. It speaks on its own when something happens
  * (getting in, a new route, an accident ahead, rain at the destination,
- * arriving) and answers commands said after the driver's wake word.
+ * arriving) and runs commands typed on the AI tab. There is no wake word or
+ * always-on microphone; the driver asked for it to be taken out.
  *
  * Wording comes from the chosen AI model when a key is saved, and from fixed
  * Korean sentences otherwise, so it still works offline or without a key.
  * The car's own route cannot be changed without the Fleet API, so route
- * commands open Naver Map or Kakao Map with the new destination.
+ * commands open the chosen phone navigation app with the new destination.
  */
 class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineScope) {
     private val context = vm.getApplication<android.app.Application>()
     private val prefs = AssistantPrefs(context)
     private val weatherRepo = WeatherRepository(context)
-    private val main = Handler(Looper.getMainLooper())
     private val llmMutex = Mutex()
 
     private val _state = MutableStateFlow(snapshotPrefs(AssistantUi()))
     val state: StateFlow<AssistantUi> = _state.asStateFlow()
 
-    private val speaker = Speaker(context) { speaking -> main.post { listener.pause(speaking) } }
-    private val listener = WakeListener(
-        context,
-        onText = ::onHeard,
-        onState = { mic -> _state.update { it.copy(mic = mic) } },
-        log = vm::log,
-    )
-
-    /** Set after the wake word alone; the next phrase before this time is the command. */
-    private var commandUntil = 0L
+    private val speaker = Speaker(context)
 
     // ── Settings ──
 
@@ -90,10 +78,9 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         provider = prefs.provider,
         hasKey = prefs.apiKey(prefs.provider).isNotBlank(),
         model = prefs.model(prefs.provider),
-        wakeWord = prefs.wakeWord,
-        micOnStart = prefs.micOnStart,
         announcements = prefs.announcements,
         naviApp = prefs.naviApp,
+        autoShareRoute = prefs.autoShareRoute,
         companionNavi = prefs.companionNavi,
         homeAddress = prefs.homeAddress,
         workAddress = prefs.workAddress,
@@ -110,14 +97,48 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         prefs.setApiKey(provider, key)
         prefs.setModel(provider, model)
         reloadPrefs()
+        vm.toast(if (key.isBlank()) "${provider.label} 키를 지웠습니다" else "✅ ${provider.label} 키를 등록했습니다")
     }
 
-    fun saveVoice(wakeWord: String, home: String, work: String, itsKey: String) {
-        if (wakeWord.isNotBlank()) prefs.wakeWord = wakeWord
+    fun savePlaces(home: String, work: String) {
         prefs.homeAddress = home
         prefs.workAddress = work
-        prefs.itsKey = itsKey
         reloadPrefs()
+        vm.toast("✅ 집·회사 주소를 저장했습니다")
+    }
+
+    fun saveItsKey(key: String) {
+        prefs.itsKey = key
+        _state.update { snapshotPrefs(it).copy(itsTest = null) }
+        vm.toast(if (key.isBlank()) "교통정보 키를 지웠습니다" else "✅ 교통정보 API 키를 등록했습니다")
+    }
+
+    /**
+     * Asks the traffic API for incidents around the car (or Seoul City Hall
+     * when the location is unknown) and shows whether the key works.
+     */
+    fun testItsKey(key: String) {
+        val k = key.trim().ifBlank { prefs.itsKey }
+        if (k.isBlank()) {
+            vm.toast("교통정보 API 키를 먼저 넣으세요")
+            return
+        }
+        _state.update { it.copy(itsTest = "연결 확인 중…") }
+        scope.launch {
+            val center = here(vm.ui.value) ?: LatLon(37.5663, 126.9779)
+            val result = try {
+                val n = TrafficEvents(k).around(center, center, marginDeg = 0.3).size
+                vm.log("교통정보 연결 테스트 성공: 주변 돌발상황 ${n}건")
+                "✅ 연결 성공 · 주변 돌발상황 ${n}건"
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                vm.log("교통정보 연결 테스트 실패: ${e.message}")
+                "❌ 연결 실패: ${e.message}"
+            }
+            _state.update { it.copy(itsTest = result) }
+            vm.toast(result)
+        }
     }
 
     fun setCompanionNavi(app: CompanionNavi) {
@@ -128,10 +149,11 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     fun setNaviApp(app: NaviApp) {
         prefs.naviApp = app
         reloadPrefs()
+        vm.toast("✅ 길 안내 앱: ${app.label}")
     }
 
-    fun setMicOnStart(on: Boolean) {
-        prefs.micOnStart = on
+    fun setAutoShareRoute(on: Boolean) {
+        prefs.autoShareRoute = on
         reloadPrefs()
     }
 
@@ -144,75 +166,17 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     // ── Lifecycle ──
 
     /** Called once the permission answer is in. */
-    fun onAppStart(micAllowed: Boolean) {
-        if (prefs.micOnStart) {
-            if (micAllowed) startMic() else _state.update { it.copy(mic = MicState.NO_PERMISSION) }
-        }
+    fun onAppStart() {
         watchDrive()
     }
 
-    fun startMic() {
-        AssistantService.onTalk = ::talkNow
-        main.post {
-            AssistantService.start(context)
-            listener.start()
-        }
-    }
-
-    fun stopMic() {
-        main.post {
-            listener.stop()
-            AssistantService.stop(context)
-        }
-    }
-
     fun shutdown() {
-        main.post {
-            listener.stop()
-            AssistantService.stop(context)
-        }
         speaker.shutdown()
     }
 
-    // ── Voice commands ──
+    // ── Commands ──
 
-    private fun onHeard(alternatives: List<String>) {
-        val now = System.currentTimeMillis()
-        val command = if (now < commandUntil) {
-            WakeWord.matchAny(alternatives, prefs.wakeWord)?.takeIf { it.isNotBlank() } ?: alternatives.first()
-        } else {
-            WakeWord.matchAny(alternatives, prefs.wakeWord) ?: return
-        }
-        commandUntil = 0
-        listener.expectCommand(false)
-        if (command.isBlank()) {
-            // Wake word on its own: answer and take the next phrase as the command.
-            askForCommand()
-            return
-        }
-        _state.update { it.copy(heard = command) }
-        vm.log("음성 명령: $command")
-        scope.launch { handleCommand(command) }
-    }
-
-    private fun askForCommand() {
-        commandUntil = System.currentTimeMillis() + 9000
-        say("네, 말씀하세요.", interrupt = true)
-        main.postDelayed({ listener.expectCommand(true) }, 300)
-    }
-
-    /**
-     * Opens the mic for one command without the wake word. Used while a video
-     * or music plays, when the wake word loop rests so it doesn't pause it.
-     */
-    fun talkNow() {
-        main.post {
-            listener.listenOnce()
-            askForCommand()
-        }
-    }
-
-    /** Runs a typed or spoken command, also used by the test box on the AI screen. */
+    /** Runs a typed command from the AI screen. */
     fun handleCommandText(command: String) {
         _state.update { it.copy(heard = command) }
         scope.launch { handleCommand(command) }
@@ -537,7 +501,8 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             appendLine("[차량 상황]")
             appendLine("시각: ${SimpleDateFormat("M월 d일 E요일 HH:mm", Locale.KOREA).format(Date())}")
             c.speedKmh?.let { appendLine("속도: ${it.roundToInt()}km/h") }
-            c.activeLimit?.let { appendLine("제한속도: ${it}km/h") }
+            c.activeLimit?.let { appendLine("단속카메라 제한속도: ${it}km/h") }
+            c.limitKmh?.let { appendLine("도로 제한속도(테슬라 지도): ${it}km/h") }
             c.gear?.let { appendLine("기어: $it") }
             c.socPercent?.let { appendLine("배터리: $it%") }
             c.rangeKm?.let { appendLine("주행 가능 거리: ${it}km") }

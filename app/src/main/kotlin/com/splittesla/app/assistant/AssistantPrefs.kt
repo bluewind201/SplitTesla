@@ -8,11 +8,17 @@ enum class LlmProvider(val label: String, val defaultModel: String, val keyHint:
     GEMINI("Gemini", "gemini-2.5-flash", "aistudio.google.com 에서 발급 (AIza…)"),
 }
 
-enum class NaviApp(val label: String) { NAVER("네이버 지도"), KAKAO("카카오맵") }
+enum class NaviApp(val label: String, val pkg: String) {
+    NAVER("네이버 지도", "com.nhn.android.nmap"),
+    TMAP("TMAP", "com.skt.tmap.ku"),
+    KAKAO("카카오맵", "net.daum.android.map"),
+    WAZE("Waze", "com.waze"),
+}
 
 /**
- * Voice assistant settings, in their own file so they stay apart from the
- * car key and the rest of the app's settings. API keys stay on this phone.
+ * Assistant and phone-navigation settings, in their own file so they stay
+ * apart from the car key and the rest of the app's settings. API keys stay
+ * on this phone.
  */
 class AssistantPrefs(context: Context) {
     private val prefs = context.getSharedPreferences("assistant", Context.MODE_PRIVATE)
@@ -27,15 +33,6 @@ class AssistantPrefs(context: Context) {
     fun model(p: LlmProvider): String = prefs.getString("model_${p.name}", null)?.takeIf { it.isNotBlank() } ?: p.defaultModel
     fun setModel(p: LlmProvider, model: String) = prefs.edit().putString("model_${p.name}", model.trim()).apply()
 
-    var wakeWord: String
-        get() = prefs.getString("wake_word", null) ?: "헤이 테슬라"
-        set(value) = prefs.edit().putString("wake_word", value.trim()).apply()
-
-    /** Listen for the wake word as soon as the app opens. */
-    var micOnStart: Boolean
-        get() = prefs.getBoolean("mic_on_start", true)
-        set(value) = prefs.edit().putBoolean("mic_on_start", value).apply()
-
     /** Speak boarding, route, accident, weather and arrival notes on its own. */
     var announcements: Boolean
         get() = prefs.getBoolean("announcements", true)
@@ -44,6 +41,11 @@ class AssistantPrefs(context: Context) {
     var naviApp: NaviApp
         get() = NaviApp.entries.firstOrNull { it.name == prefs.getString("navi_app", null) } ?: NaviApp.NAVER
         set(value) = prefs.edit().putString("navi_app", value.name).apply()
+
+    /** Send the car's destination to [naviApp] on its own whenever it changes. */
+    var autoShareRoute: Boolean
+        get() = prefs.getBoolean("auto_share_route", true)
+        set(value) = prefs.edit().putBoolean("auto_share_route", value).apply()
 
     /** Navigation app opened in split screen when this app starts. */
     var companionNavi: CompanionNavi
