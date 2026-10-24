@@ -19,6 +19,8 @@ data class SpeedCamera(
     val sectionLengthM: Int? = null,
     /** "어린이보호구역" and the like, when the camera guards a protected zone. */
     val zone: String? = null,
+    /** The dataset says it watches both directions. */
+    val twoWay: Boolean = false,
 )
 
 internal object Geo {
@@ -41,6 +43,9 @@ internal object Geo {
         val x = cos(p1) * sin(p2) - sin(p1) * cos(p2) * cos(dLon)
         return (Math.toDegrees(atan2(y, x)) + 360) % 360
     }
+
+    /** Turn from heading [from] to heading [to], -180..180, positive clockwise (to the right). */
+    fun signedAngle(from: Double, to: Double): Double = ((to - from) % 360 + 540) % 360 - 180
 
     /** Smallest angle between two headings, 0..180. */
     fun angleDiff(a: Double, b: Double): Double {
