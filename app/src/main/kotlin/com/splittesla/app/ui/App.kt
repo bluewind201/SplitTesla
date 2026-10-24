@@ -46,6 +46,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -62,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
+import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.LinkPill
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
@@ -91,6 +93,10 @@ fun SplitTeslaApp(vm: AppViewModel) {
     var tabIndex by rememberSaveable { mutableIntStateOf(0) }
     val tab = Tab.entries[tabIndex]
     val snackbar = remember { SnackbarHostState() }
+    val multiWindow by vm.multiWindow.collectAsState()
+    // The tabs were asked for while split; leaving split screen resets it.
+    var menuInSplit by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(multiWindow) { if (!multiWindow) menuInSplit = false }
     LaunchedEffect(ui.toast) {
         ui.toast?.let {
             vm.consumeToast()
@@ -102,14 +108,16 @@ fun SplitTeslaApp(vm: AppViewModel) {
 
     SplitTheme {
         Box(Modifier.fillMaxSize().background(Neon.bg)) {
-            // A narrow window means split screen beside a map app: show the glanceable strip only.
+            // Split screen beside the navi shows the dashboard alone; a very narrow window only the strip.
             BoxWithConstraints(Modifier.fillMaxSize()) {
-            if (maxWidth < 420.dp) {
+            if (maxWidth < 380.dp) {
                 CompactPanel(vm, ui)
+            } else if (multiWindow && !menuInSplit) {
+                SplitDashboard(vm, ui) { menuInSplit = true }
             } else Row(Modifier.fillMaxSize()) {
                 Rail(tab) { tabIndex = it.ordinal }
                 Column(Modifier.fillMaxSize()) {
-                    TopStrip(tab, vm, ui.commander, ui.car, ui.busy)
+                    TopStrip(tab, vm, ui.commander, ui.car, ui.busy, if (multiWindow) ({ menuInSplit = false }) else null)
                     AnimatedContent(
                         targetState = tab,
                         transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
@@ -222,7 +230,7 @@ private fun TabIcon(tab: Tab, tint: Color) {
 }
 
 @Composable
-private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: LinkState, busy: String?) {
+private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: LinkState, busy: String?, onSplitDash: (() -> Unit)?) {
     Row(
         Modifier.fillMaxWidth().height(52.dp).padding(start = 4.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -233,6 +241,7 @@ private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: Link
             Text(tab.title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Neon.text)
         }
         Spacer(Modifier.weight(1f))
+        onSplitDash?.let { GlowButton("계기판만", it, accent = Neon.cyan) }
         if (busy != null) {
             CircularProgressIndicator(Modifier.size(16.dp), color = Neon.lime, strokeWidth = 2.dp)
             Text("$busy…", fontSize = 12.sp, color = Neon.muted)
