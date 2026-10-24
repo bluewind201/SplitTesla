@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.splittesla.app.assistant.AssistantPrefs
 import com.splittesla.app.assistant.SplitLaunch
+import com.splittesla.app.camera.SpeedCameraService
 import com.splittesla.app.ui.SplitTeslaApp
 
 class MainActivity : ComponentActivity() {
@@ -77,5 +78,12 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         viewModel.setForeground(false)
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        // Closed with back or from recents (not a rotation): stop watching cameras too.
+        // The alerts switch stays on, so they resume the next time the app is opened.
+        if (isFinishing) SpeedCameraService.stop(this)
+        super.onDestroy()
     }
 }
