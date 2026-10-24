@@ -59,7 +59,8 @@ class SpeedCameraService : Service(), LocationListener {
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
         ServiceCompat.startForeground(this, NOTIFICATION_ID, notification("카메라 데이터를 불러오는 중"), type)
         if (alerter == null) start()
-        return START_STICKY
+        // Not sticky: once the app is closed the system must not bring the camera watch back by itself.
+        return START_NOT_STICKY
     }
 
     private fun start() {
@@ -175,6 +176,12 @@ class SpeedCameraService : Service(), LocationListener {
 
     private fun updateNotification(text: String) {
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification(text))
+    }
+
+    /** Swiped away from recents: the app is closed, so stop watching. */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        stopSelf()
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onDestroy() {

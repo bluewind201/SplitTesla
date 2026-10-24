@@ -60,6 +60,7 @@
         <service
             android:name=".camera.SpeedCameraService"
             android:exported="false"
+            android:stopWithTask="true"
             android:foregroundServiceType="location" />
     </application>
 </manifest>
