@@ -120,4 +120,58 @@ class CameraTest {
         assertEquals(5000 / 210.0 * 3.6, CameraAlerter.sectionSafeKmh(10_000.0, 100, 5000.0, 150.0)!!, 0.01)
         assertEquals(null, CameraAlerter.sectionSafeKmh(10_000.0, 100, 5000.0, 400.0))
     }
+
+    private val metresPerDegLon = 111_195.0 * Math.cos(Math.toRadians(37.5))
+
+    @Test
+    fun ignoresCameraOnTheOppositeCarriageway() {
+        // 20 m to our left while driving north: it watches southbound traffic.
+        val opposite = SpeedCamera("O", 37.5000, 127.0 - 20 / metresPerDegLon, 80, "반대편")
+        val alerts = drive(CameraAlerter(CameraIndex(listOf(opposite))), 37.49, 37.505, 90.0)
+        assertTrue(alerts.isEmpty(), "got $alerts")
+    }
+
+    @Test
+    fun warnsForCameraOnOurSideAndForTwoWayCameraAcross() {
+        val ours = SpeedCamera("R", 37.5000, 127.0 + 8 / metresPerDegLon, 80, "우측")
+        val ourAlerts = drive(CameraAlerter(CameraIndex(listOf(ours))), 37.49, 37.505, 90.0).map { it.second }
+        assertTrue(ourAlerts.any { it is CameraAlert.Approaching } && ourAlerts.any { it is CameraAlert.Final }, "got $ourAlerts")
+
+        val twoWay = SpeedCamera("T", 37.5000, 127.0 - 20 / metresPerDegLon, 80, "양방향", twoWay = true)
+        val twoWayAlerts = drive(CameraAlerter(CameraIndex(listOf(twoWay))), 37.49, 37.505, 90.0).map { it.second }
+        assertTrue(twoWayAlerts.any { it is CameraAlert.Final }, "got $twoWayAlerts")
+    }
+
+    @Test
+    fun followsALongLeftBend() {
+        // 800 m radius left-hand bend; the camera stands 6 m outside it (our right), 480 m round.
+        val r = 800.0
+        fun at(theta: Double, radius: Double = r) =
+            (37.5 + radius * Math.sin(theta) / 111_195.0) to (127.0 + (radius * Math.cos(theta) - r) / metresPerDegLon)
+        val (cLat, cLon) = at(0.6, r + 6)
+        val alerter = CameraAlerter(CameraIndex(listOf(SpeedCamera("B", cLat, cLon, 80, "커브"))))
+        val alerts = ArrayList<CameraAlert>()
+        var theta = 0.0
+        var t = 0L
+        while (theta < 0.65) {
+            val (lat, lon) = at(theta)
+            val heading = (Math.toDegrees(Math.atan2(-Math.sin(theta), Math.cos(theta))) + 360) % 360
+            alerts += alerter.update(lat, lon, heading, 72.0, t)
+            theta += 20 / r
+            t += 1000
+        }
+        val early = alerts.filterIsInstance<CameraAlert.Approaching>().singleOrNull()
+        assertNotNull(early, "got $alerts")
+        assertTrue(early.distanceM > 180, "early at ${early.distanceM}")
+        assertTrue(alerts.any { it is CameraAlert.Final })
+    }
+
+    @Test
+    fun readsTwoWayFromDirectionColumn() {
+        val cams = CameraCsv.parse(
+            "관리번호,위도,경도,제한속도,도로노선방향\nA,37.5,127.0,60,양방향\nB,37.6,127.0,60,상행\n",
+        )
+        assertEquals(listOf(true, false), cams.map { it.twoWay })
+        assertEquals(cams, CameraStore.decode(CameraStore.encode(cams)))
+    }
 }

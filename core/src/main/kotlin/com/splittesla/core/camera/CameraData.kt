@@ -27,6 +27,7 @@ object CameraCsv {
         val sectionPos = col("단속구간위치구분")
         val sectionLen = col("과속단속구간길이")
         val zone = col("보호구역구분")
+        val direction = col("도로노선방향")
         return rows.drop(1).mapIndexedNotNull { i, r ->
             fun at(c: Int?) = c?.let { r.getOrNull(it)?.trim() }.orEmpty()
             camera(
@@ -34,6 +35,7 @@ object CameraCsv {
                 lat = at(lat), lon = at(lon), limit = at(limit),
                 place = at(place).ifEmpty { at(road) },
                 section = at(sectionPos), sectionLength = at(sectionLen), zone = at(zone),
+                direction = at(direction),
             )
         }
     }
@@ -91,6 +93,7 @@ internal fun camera(
     section: String,
     sectionLength: String,
     zone: String = "",
+    direction: String = "",
 ): SpeedCamera? {
     val la = lat.toDoubleOrNull() ?: return null
     val lo = lon.toDoubleOrNull() ?: return null
@@ -104,6 +107,7 @@ internal fun camera(
     return SpeedCamera(
         id, la, lo, kmh, place, role, sectionLength.toDoubleOrNull()?.toInt()?.takeIf { it > 0 },
         zone.trim().takeIf { it.endsWith("보호구역") },
+        twoWay = direction.contains("양방향"),
     )
 }
 
@@ -111,7 +115,7 @@ internal fun camera(
 object CameraStore {
     fun encode(cameras: List<SpeedCamera>): String = buildString {
         cameras.forEach { c ->
-            append(listOf(c.id, c.latitude, c.longitude, c.limitKmh, c.section?.name.orEmpty(), c.sectionLengthM ?: "", c.place.replace('\t', ' '), c.zone.orEmpty())
+            append(listOf(c.id, c.latitude, c.longitude, c.limitKmh, c.section?.name.orEmpty(), c.sectionLengthM ?: "", c.place.replace('\t', ' '), c.zone.orEmpty(), if (c.twoWay) "2" else "")
                 .joinToString("\t"))
             append('\n')
         }
@@ -124,6 +128,7 @@ object CameraStore {
             id = f[0], latitude = f[1].toDouble(), longitude = f[2].toDouble(), limitKmh = f[3].toInt(),
             section = f[4].takeIf { it.isNotEmpty() }?.let(SectionRole::valueOf),
             sectionLengthM = f[5].toIntOrNull(), place = f[6], zone = f.getOrNull(7)?.takeIf { it.isNotEmpty() },
+            twoWay = f.getOrNull(8) == "2",
         )
     }.toList()
 }
