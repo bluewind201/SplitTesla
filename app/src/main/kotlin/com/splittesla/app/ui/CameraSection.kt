@@ -98,6 +98,9 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
                 )
                 ahead.zone?.let { Text(it, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error) }
                 if (ahead.place.isNotBlank()) Text(ahead.place, style = MaterialTheme.typography.bodySmall)
+                status.headingDeg?.let { heading ->
+                    TextButton(onClick = { vm.ignoreCamera(ahead.id, heading) }) { Text("반대 방향 카메라예요 (이 방향에선 끄기)") }
+                }
             } else {
                 Text("앞쪽에 카메라 없음", style = MaterialTheme.typography.bodyMedium)
             }
@@ -116,6 +119,8 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
 
         val updated = ui.cameraUpdatedAt.takeIf { it > 0 }?.let { SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(Date(it)) }
         ValueRow("카메라 데이터", if (ui.cameraCount > 0) "${ui.cameraCount}개 ($updated)" else "없음")
+        val ignored = vm.ignoredCameraCount
+        if (ignored > 0) TextButton(onClick = vm::clearIgnoredCameras) { Text("방향 제외한 카메라 ${ignored}개 되살리기") }
         TextButton(onClick = { showData = !showData }) { Text(if (showData) "데이터 받기 접기" else "카메라 데이터 받기·갱신") }
         if (showData) {
             Text(

@@ -124,22 +124,31 @@ class CameraTest {
     private val metresPerDegLon = 111_195.0 * Math.cos(Math.toRadians(37.5))
 
     @Test
-    fun ignoresCameraOnTheOppositeCarriageway() {
-        // 20 m to our left while driving north: it watches southbound traffic.
-        val opposite = SpeedCamera("O", 37.5000, 127.0 - 20 / metresPerDegLon, 80, "반대편")
-        val alerts = drive(CameraAlerter(CameraIndex(listOf(opposite))), 37.49, 37.505, 90.0)
-        assertTrue(alerts.isEmpty(), "got $alerts")
+    fun warnsForJunctionPointsOnEitherSide() {
+        // The dataset often puts a camera at the middle of a junction, left or right of our lane.
+        for (offset in listOf(-20.0, 8.0)) {
+            val cam = SpeedCamera("J", 37.5000, 127.0 + offset / metresPerDegLon, 80, "교차로")
+            val alerts = drive(CameraAlerter(CameraIndex(listOf(cam))), 37.49, 37.505, 90.0).map { it.second }
+            assertTrue(alerts.any { it is CameraAlert.Approaching } && alerts.any { it is CameraAlert.Final }, "offset $offset got $alerts")
+        }
     }
 
     @Test
-    fun warnsForCameraOnOurSideAndForTwoWayCameraAcross() {
-        val ours = SpeedCamera("R", 37.5000, 127.0 + 8 / metresPerDegLon, 80, "우측")
-        val ourAlerts = drive(CameraAlerter(CameraIndex(listOf(ours))), 37.49, 37.505, 90.0).map { it.second }
-        assertTrue(ourAlerts.any { it is CameraAlert.Approaching } && ourAlerts.any { it is CameraAlert.Final }, "got $ourAlerts")
-
-        val twoWay = SpeedCamera("T", 37.5000, 127.0 - 20 / metresPerDegLon, 80, "양방향", twoWay = true)
-        val twoWayAlerts = drive(CameraAlerter(CameraIndex(listOf(twoWay))), 37.49, 37.505, 90.0).map { it.second }
-        assertTrue(twoWayAlerts.any { it is CameraAlert.Final }, "got $twoWayAlerts")
+    fun skipsCameraTheDriverMarkedForThisDirection() {
+        val cam = SpeedCamera("X", 37.5000, 127.0, 80, "반대편 전용")
+        // Marked while heading north (10°): skipped northbound, still warned southbound.
+        val ignored = { id: String, heading: Double -> id == "X" && Geo.angleDiff(heading, 10.0) <= 45 }
+        assertTrue(drive(CameraAlerter(CameraIndex(listOf(cam)), ignored = ignored), 37.49, 37.505, 90.0).isEmpty())
+        val south = CameraAlerter(CameraIndex(listOf(cam)), ignored = ignored)
+        val alerts = ArrayList<CameraAlert>()
+        var lat = 37.51
+        var t = 0L
+        while (lat > 37.499) {
+            alerts += south.update(lat, 127.0, 180.0, 90.0, t)
+            lat -= 25 / 111_195.0
+            t += 1000
+        }
+        assertTrue(alerts.any { it is CameraAlert.Final }, "got $alerts")
     }
 
     @Test
@@ -167,11 +176,28 @@ class CameraTest {
     }
 
     @Test
-    fun readsTwoWayFromDirectionColumn() {
+    fun readsTheRealDatasetCodes() {
+        // Shaped like the data.go.kr sample: one record per direction at one point, numeric codes.
         val cams = CameraCsv.parse(
-            "관리번호,위도,경도,제한속도,도로노선방향\nA,37.5,127.0,60,양방향\nB,37.6,127.0,60,상행\n",
+            """
+            무인교통단속카메라관리번호,설치장소,위도,경도,단속구분,제한속도,도로노선방향,보호구역구분,단속구간위치구분
+            1,하귀교차로(여주시청→가남읍),37.2285839,127.5648913,2,70,3,,
+            2,하귀교차로(가남읍→여주시청),37.2285839,127.5648913,2,70,3,,
+            3,우만통 입구 노인보호구역(여주시청→흔암리),37.25597796,127.6758508,1,30,3,1,
+            4,초등학교 앞,37.3,127.6,1,30,3,2,
+            5,작전동 주정차,37.53075196,126.7370527,3,0,1,,
+            6,버스전용차로,37.54,126.74,4,50,3,,
+            7,구월중학교직전(구간단속 시점),37.45,126.70,1,60,3,,
+            8,석천초등학교(구간단속 종점),37.46,126.70,1,60,3,,
+            9,이동식 단속지점,37.47,126.70,1,60,3,,
+            """.trimIndent(),
         )
-        assertEquals(listOf(true, false), cams.map { it.twoWay })
+        assertEquals(listOf("1", "3", "4", "7", "8"), cams.map { it.id })
+        assertTrue(cams[0].signal)
+        assertEquals("노인보호구역", cams[1].zone)
+        assertEquals("어린이보호구역", cams[2].zone)
+        assertEquals(SectionRole.START, cams[3].section)
+        assertEquals(SectionRole.END, cams[4].section)
         assertEquals(cams, CameraStore.decode(CameraStore.encode(cams)))
     }
 }

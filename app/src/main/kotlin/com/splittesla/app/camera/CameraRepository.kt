@@ -5,6 +5,7 @@ import android.net.Uri
 import com.splittesla.core.camera.CameraCsv
 import com.splittesla.core.camera.CameraStore
 import com.splittesla.core.camera.SpeedCamera
+import com.splittesla.core.camera.mergeSameSpot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -30,7 +31,8 @@ class CameraRepository(private val context: Context) {
         set(value) = prefs.edit().putString("camera_api_key", value.trim()).apply()
 
     suspend fun load(): List<SpeedCamera> = withContext(Dispatchers.IO) {
-        if (file.exists()) CameraStore.decode(file.readText()) else emptyList()
+        // Data saved by older versions still has one entry per direction.
+        if (file.exists()) mergeSameSpot(CameraStore.decode(file.readText())) else emptyList()
     }
 
     suspend fun importCsv(uri: Uri): Int = withContext(Dispatchers.IO) {
@@ -108,16 +110,45 @@ class CameraRepository(private val context: Context) {
     private fun fromApi(o: JSONObject): SpeedCamera? {
         fun s(vararg keys: String) = keys.firstNotNullOfOrNull { k -> o.optString(k).takeIf { it.isNotBlank() && it != "null" } }.orEmpty()
         // The API uses the standard dataset's English field names; feed them through the same rules as the CSV.
-        val header = listOf("무인교통단속카메라관리번호", "위도", "경도", "제한속도", "설치장소", "단속구간위치구분", "과속단속구간길이", "보호구역구분", "도로노선방향")
+        val header = listOf("무인교통단속카메라관리번호", "위도", "경도", "제한속도", "설치장소", "단속구간위치구분", "과속단속구간길이", "보호구역구분", "단속구분")
         val row = listOf(
             s("mnlssRegltCameraManageNo", "cameraManageNo"), s("latitude"), s("longitude"), s("lmttVe"),
-            s("itlpc", "rdnmadr", "lnmadr"), s("regltSctnLcSe"), s("ovrspdRegltSctnLt"), s("prtcareaType"), s("roadRouteDrc"),
+            s("itlpc", "rdnmadr", "lnmadr"), s("regltSctnLcSe"), s("ovrspdRegltSctnLt"), s("prtcareaType", "prtcareaSe"), s("regltSe"),
         )
         val csv = header.joinToString(",") + "\n" + row.joinToString(",") { "\"" + it.replace("\"", "\"\"") + "\"" }
         return CameraCsv.parse(csv).firstOrNull()
     }
 
-    private fun save(cameras: List<SpeedCamera>): Int {
+    /**
+     * Cameras the driver said do not apply when driving this way, as
+     * "id@heading". The dataset has no enforcement direction, so this is
+     * the only way to quiet one that watches the other carriageway.
+     */
+    fun isIgnored(id: String, headingDeg: Double): Boolean =
+        ignoredEntries().any { (i, h) -> i == id && angleDiff(h, headingDeg) <= 45 }
+
+    fun ignore(id: String, headingDeg: Double) {
+        val set = prefs.getStringSet("camera_ignored", emptySet()).orEmpty() + "$id@${headingDeg.toInt()}"
+        prefs.edit().putStringSet("camera_ignored", set).apply()
+    }
+
+    val ignoredCount: Int get() = prefs.getStringSet("camera_ignored", emptySet()).orEmpty().size
+
+    fun clearIgnored() = prefs.edit().remove("camera_ignored").apply()
+
+    private fun ignoredEntries(): List<Pair<String, Double>> =
+        prefs.getStringSet("camera_ignored", emptySet()).orEmpty().mapNotNull { e ->
+            val at = e.lastIndexOf('@')
+            e.substring(at + 1).toDoubleOrNull()?.let { e.substring(0, at) to it }
+        }
+
+    private fun angleDiff(a: Double, b: Double): Double {
+        val d = ((a - b) % 360 + 360) % 360
+        return if (d > 180) 360 - d else d
+    }
+
+    private fun save(all: List<SpeedCamera>): Int {
+        val cameras = mergeSameSpot(all)
         if (cameras.isEmpty()) error("과속 카메라를 하나도 찾지 못했습니다. 파일이나 키를 확인하세요")
         file.writeText(CameraStore.encode(cameras))
         prefs.edit().putInt("camera_count", cameras.size).putLong("camera_updated", System.currentTimeMillis()).apply()

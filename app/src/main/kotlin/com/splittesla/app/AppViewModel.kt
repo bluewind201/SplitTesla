@@ -628,6 +628,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update { it.copy(cameraTest = result, toast = result) }
     }
 
+    /** The camera ahead watches the other direction; skip it when driving this way from now on. */
+    fun ignoreCamera(id: String, headingDeg: Double) {
+        cameras.ignore(id, headingDeg)
+        log("카메라 $id 를 이 방향(${headingDeg.toInt()}°)에서 제외")
+        _ui.update { it.copy(toast = "이 방향으로 갈 때는 이 카메라를 알리지 않습니다") }
+    }
+
+    val ignoredCameraCount: Int get() = cameras.ignoredCount
+
+    fun clearIgnoredCameras() {
+        cameras.clearIgnored()
+        _ui.update { it.copy(toast = "제외한 카메라를 모두 되살렸습니다") }
+    }
+
     private fun onCamerasLoaded(n: Int) {
         log("과속 카메라 ${n}개 저장")
         _ui.update { it.copy(cameraCount = n, cameraUpdatedAt = cameras.updatedAt, toast = "✅ 과속 카메라 ${n}개를 등록했습니다") }

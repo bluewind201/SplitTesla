@@ -32,28 +32,29 @@ data class CameraStatus(
     val sectionRemainingM: Double? = null,
     /** Highest steady speed for the rest of the section that keeps the average at the limit. */
     val sectionSafeKmh: Double? = null,
+    /** Our heading when this was computed; recorded with "not for this direction". */
+    val headingDeg: Double? = null,
 )
 
 /**
  * Decides when to warn about cameras from a stream of GPS fixes, the way
- * navigation apps do without a map. The dataset has no enforcement direction,
- * so direction is inferred from where the camera sits relative to the path we
- * are about to drive (our heading, bent by how fast we are turning):
+ * navigation apps do without a map: a camera counts when it lies ahead within
+ * [sideM] (plus a little per metre ahead) of the path we are about to drive,
+ * that path bent by how fast we are turning, and the distance to it is
+ * shrinking across recent fixes.
  *
- * - Korea drives on the right and camera poles stand on the right of the
- *   traffic they watch, so a camera more than [leftM] to our left belongs to
- *   the opposite carriageway, unless the dataset marks it two-way.
- * - On the right it may be up to [rightM] (plus a little per metre ahead)
- *   away; further than that it is on a side road.
- * - The distance to it must be shrinking across recent fixes.
+ * The public dataset gives no usable enforcement direction: both directions
+ * are usually listed at one shared point, often the middle of a junction, so
+ * which side of the road a point lies on says nothing. Cameras the driver has
+ * marked as "not for this direction" are skipped through [ignored].
  *
  * Each camera warns once early and once at [finalM].
  */
 class CameraAlerter(
     private val index: CameraIndex,
     private val finalM: Double = 100.0,
-    private val leftM: Double = 10.0,
-    private val rightM: Double = 25.0,
+    private val sideM: Double = 30.0,
+    private val ignored: (cameraId: String, headingDeg: Double) -> Boolean = { _, _ -> false },
 ) {
     private val warnedEarly = HashSet<String>()
     private val warnedFinal = HashSet<String>()
@@ -93,6 +94,7 @@ class CameraAlerter(
         val candidates = if (!moving) emptyList() else index.near(lat, lon, early + 50)
             .map { it to Geo.distanceM(lat, lon, it.latitude, it.longitude) }
             .filter { (c, d) -> onPath(lat, lon, heading!!, curvature, c, d) || (d < 30 && c.id == lastAhead?.id) }
+            .filter { (c, _) -> !ignored(c.id, heading!!) }
         rememberDistances(candidates)
         // Once it is beside us the distance stops shrinking; keep it so passing is noticed.
         val ahead = candidates.filter { (c, d) -> closing(c.id) || (d < 30 && c.id == lastAhead?.id) }.minByOrNull { it.second }
@@ -132,7 +134,7 @@ class CameraAlerter(
         val safe = if (inSection != null && remaining != null) {
             sectionSafeKmh(inSection.sectionLengthM!!.toDouble(), inSection.limitKmh, remaining, (timeMs - sectionStartMs) / 1000.0)
         } else null
-        status = CameraStatus(ahead?.first, ahead?.second, avg?.takeIf { inSection != null }, inSection?.limitKmh, remaining, safe)
+        status = CameraStatus(ahead?.first, ahead?.second, avg?.takeIf { inSection != null }, inSection?.limitKmh, remaining, safe, heading)
         return alerts
     }
 
@@ -155,9 +157,9 @@ class CameraAlerter(
     }
 
     /**
-     * Ahead of us, on our side of the road, and close to the path we are
-     * about to drive. [curvature] bends that path, so a camera on our own
-     * carriageway through a long bend is not mistaken for one across the road.
+     * Ahead of us and close to the path we are about to drive. [curvature]
+     * bends that path, so a camera through a long bend is not mistaken for
+     * one on a side road.
      */
     private fun onPath(lat: Double, lon: Double, heading: Double, curvature: Double, c: SpeedCamera, d: Double): Boolean {
         val angle = Math.toRadians(Geo.signedAngle(heading, Geo.bearing(lat, lon, c.latitude, c.longitude)))
@@ -165,12 +167,10 @@ class CameraAlerter(
         if (along <= 0) return false
         val bend = curvature * along
         // Too sharp a turn to predict the road that far: only drop what is clearly off to the side.
-        if (abs(bend) > 0.6) return abs(d * sin(angle)) <= rightM + along * 0.12
-        val right = d * sin(angle) - curvature * along * along / 2
+        if (abs(bend) > 0.6) return abs(d * sin(angle)) <= sideM + along * 0.12
+        val side = d * sin(angle) - curvature * along * along / 2
         // Heading and curvature errors grow with distance, so allow a little more far out.
-        val slack = along * 0.03
-        val leftLimit = if (c.twoWay) rightM + slack else leftM + slack
-        return right >= -leftLimit && right <= rightM + slack * 2
+        return abs(side) <= sideM + along * 0.05
     }
 
     private fun rememberDistances(candidates: List<Pair<SpeedCamera, Double>>) {
