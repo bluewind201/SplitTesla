@@ -86,6 +86,7 @@ fun SplitDashboard(vm: AppViewModel, ui: UiState, onMenu: () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize().background(Neon.bg).padding(horizontal = 10.dp, vertical = 6.dp)) {
         // Wide enough (a 2/3 split or a tablet): cards beside the gauge instead of under it.
         val wide = maxWidth >= 600.dp
+        val cardsHeight = if (maxHeight < 360.dp) 92.dp else 112.dp
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             TopBar(vm, ui, c, onMenu)
             if (wide) {
@@ -102,7 +103,7 @@ fun SplitDashboard(vm: AppViewModel, ui: UiState, onMenu: () -> Unit) {
                     GaugeArea(vm, ui, c, Modifier.weight(1.15f).fillMaxHeight())
                     CameraCard(vm, ui, c, camera, running, Modifier.weight(1f).fillMaxHeight())
                 }
-                Row(Modifier.height(if (maxHeight < 360.dp) 92.dp else 112.dp).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.height(cardsHeight).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     RouteCard(ui, assistant, Modifier.weight(1f).fillMaxHeight())
                     CarCard(c, Modifier.weight(1f).fillMaxHeight())
                 }
