@@ -128,7 +128,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** True while the app is on screen, including split screen beside a map. */
     var isForeground = false
         private set
-    var inMultiWindow = false
+    private val _multiWindow = MutableStateFlow(false)
+    /** Split screen (or a pop-up window) beside another app, usually the navi. */
+    val multiWindow: StateFlow<Boolean> = _multiWindow.asStateFlow()
+    var inMultiWindow: Boolean
+        get() = _multiWindow.value
+        set(value) { _multiWindow.value = value }
 
     fun log(line: String) {
         val stamped = "${timeFormat.format(Date())} $line"
