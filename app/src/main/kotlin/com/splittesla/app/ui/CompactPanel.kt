@@ -26,6 +26,7 @@ import com.splittesla.app.AppViewModel
 import com.splittesla.app.UiState
 import com.splittesla.app.camera.CameraState
 import com.splittesla.app.ui.theme.Neon
+import com.splittesla.app.ui.theme.glassBackdrop
 import com.splittesla.app.ui.theme.Orbitron
 import kotlin.math.roundToInt
 
@@ -45,7 +46,7 @@ fun CompactPanel(vm: AppViewModel, ui: UiState) {
     val over = c.overLimit
 
     Column(
-        Modifier.fillMaxSize().background(Neon.bg).padding(horizontal = 10.dp, vertical = 8.dp),
+        Modifier.fillMaxSize().glassBackdrop().padding(horizontal = 10.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
     ) {

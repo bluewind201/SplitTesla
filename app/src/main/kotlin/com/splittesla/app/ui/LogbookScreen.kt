@@ -47,11 +47,13 @@ import com.splittesla.app.AppViewModel
 import com.splittesla.app.logbook.LogbookState
 import com.splittesla.app.ui.theme.Caption
 import com.splittesla.app.ui.theme.GlowButton
+import com.splittesla.app.ui.theme.glass
 import com.splittesla.app.ui.theme.Metric
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.app.ui.theme.Panel
 import com.splittesla.app.ui.theme.rememberPulse
+import com.splittesla.app.ui.theme.Glass
 import com.splittesla.core.logbook.ChargeType
 import com.splittesla.core.logbook.DueLevel
 import com.splittesla.core.logbook.EntryKind
@@ -248,7 +250,7 @@ private fun EntryRow(e: LogEntry, onClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
-            .background(Neon.surface, shape)
+            .glass(14.dp)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -331,7 +333,7 @@ private fun EntryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Neon.surfaceHi,
+        containerColor = Glass.dense,
         titleContentColor = Neon.text,
         textContentColor = Neon.text,
         title = { Text(if (initial.id == 0L) "기록 추가" else "기록 수정") },
@@ -400,7 +402,7 @@ private fun PriceDialog(prices: Map<ChargeType, Int>, onSet: (ChargeType, Int) -
     val values = remember { ChargeType.entries.associateWith { mutableStateOf((prices[it] ?: it.defaultWonPerKwh).toString()) } }
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Neon.surfaceHi,
+        containerColor = Glass.dense,
         titleContentColor = Neon.text,
         textContentColor = Neon.text,
         title = { Text("충전 단가 (원/kWh)") },

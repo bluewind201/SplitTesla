@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +53,7 @@ import com.splittesla.app.ui.theme.NeonBar
 import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.app.ui.theme.pressScale
 import com.splittesla.app.ui.theme.rememberPulse
+import com.splittesla.app.ui.theme.Glass
 import com.splittesla.core.tesla.StateCategory
 import com.tesla.generated.vcsec.Vcsec
 import kotlin.math.roundToInt
@@ -149,7 +151,7 @@ private fun LockButton(locked: Boolean?, enabled: Boolean, onClick: () -> Unit) 
                 .size(62.dp)
                 .drawBehind {
                     drawCircle(color.copy(alpha = 0.18f * pulse), radius = size.minDimension * 0.75f)
-                    drawCircle(Neon.bg.copy(alpha = 0.9f))
+                    drawCircle(Brush.verticalGradient(listOf(Glass.fillTop, Glass.fillBottom)))
                 }
                 .border(2.dp, color, CircleShape)
                 .clickable(interactionSource = source, indication = null, enabled = enabled, onClick = onClick),
