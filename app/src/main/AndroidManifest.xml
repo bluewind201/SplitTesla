@@ -62,5 +62,10 @@
             android:exported="false"
             android:stopWithTask="true"
             android:foregroundServiceType="location" />
+        <service
+            android:name=".navi.NaviService"
+            android:exported="false"
+            android:stopWithTask="true"
+            android:foregroundServiceType="location" />
     </application>
 </manifest>
