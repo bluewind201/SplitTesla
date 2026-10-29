@@ -183,6 +183,8 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                 )
             }
 
+            NaviSettingsCard()
+
             FoldSection(
                 "교통정보 API (사고·공사)",
                 summary = when {

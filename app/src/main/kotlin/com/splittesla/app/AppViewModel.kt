@@ -11,10 +11,13 @@ import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.logbook.LogbookController
 import com.splittesla.app.camera.CameraState
 import com.splittesla.app.camera.SpeedCameraService
+import com.splittesla.app.navi.CarFeed
+import com.splittesla.app.navi.NaviHub
 import com.splittesla.app.ble.TeslaLink
 import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.app.weather.Weather
 import com.splittesla.app.weather.WeatherRepository
+import com.splittesla.core.assistant.LatLon
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.s3xy.CommanderSession
 import com.splittesla.core.s3xy.CommanderStatus
@@ -124,6 +127,30 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Sends the car's destination to the phone's navigation app when it changes. */
     val routeSync = RouteSync(this, viewModelScope).also { it.start() }
+
+    init {
+        // In-app guidance reads battery, speed and the car's superchargers from both links.
+        NaviHub.init(app) { log(it) }
+        viewModelScope.launch {
+            _ui.collect { s ->
+                val d = s.live
+                val nav = s.nav
+                NaviHub.onCar(
+                    CarFeed(
+                        socPercent = d.socPercent?.toDouble() ?: s.charge?.takeIf { it.hasBatteryLevel() }?.batteryLevel?.toDouble(),
+                        remainingKwh = d.nominalRemainingKwh,
+                        fullKwh = d.nominalFullPackNowKwh,
+                        powerKw = d.batteryPowerKw,
+                        speedKmh = d.speedKmh?.toDouble() ?: nav?.speedKmh,
+                        outsideC = d.outsideTempC?.toDouble(),
+                        position = nav?.latitude?.let { lat -> nav.longitude?.let { LatLon(lat, it) } },
+                        superchargers = s.chargingSites,
+                        at = System.currentTimeMillis(),
+                    ),
+                )
+            }
+        }
+    }
 
     /** True while the app is on screen, including split screen beside a map. */
     var isForeground = false

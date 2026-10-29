@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
+import com.splittesla.app.navi.NaviHub
+import com.splittesla.app.navi.NaviUi
+import com.splittesla.core.navi.GuidanceAnnouncer
 import com.splittesla.app.assistant.AssistantUi
 import com.splittesla.app.camera.CameraState
 import com.splittesla.app.ui.gauge.GaugeStyle
@@ -254,6 +257,8 @@ private fun CameraCard(vm: AppViewModel, ui: UiState, c: Cockpit, camera: Camera
 /** The car's own route from BLE: destination, minutes and km left, delay, battery on arrival. */
 @Composable
 private fun RouteCard(ui: UiState, assistant: AssistantUi, modifier: Modifier) {
+    val navi by NaviHub.state.collectAsState()
+    if (navi.guiding) return NaviCard(navi, modifier)
     val nav = ui.nav?.takeIf { it.hasRoute }
     Card(modifier) {
         Text("경로", style = Caption)
@@ -276,6 +281,29 @@ private fun RouteCard(ui: UiState, assistant: AssistantUi, modifier: Modifier) {
         Text(
             listOfNotNull(delay, energy, weather).joinToString(" · ").ifEmpty { " " },
             fontSize = 11.sp, color = if (delay != null) Neon.amber else Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** In-app guidance in the route card's place: next turn, then time, distance and battery left. */
+@Composable
+private fun NaviCard(navi: NaviUi, modifier: Modifier) {
+    val p = navi.progress
+    val guide = p?.nextGuideIndex?.let { navi.route?.guides?.getOrNull(it) }
+    Card(modifier, Neon.lime) {
+        Text("길안내 · ${navi.route?.goal?.name ?: ""}", style = Caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(guide?.maneuver?.symbol ?: "↑", fontSize = 26.sp, color = Neon.lime, fontWeight = FontWeight.Bold)
+            Text(p?.nextGuideDistanceM?.let(::distanceText) ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Neon.text)
+        }
+        Text(guide?.let { GuidanceAnnouncer.speakable(it) } ?: "직진", fontSize = 12.sp, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(
+            listOfNotNull(
+                p?.let { arrivalClock(it.remainingMs / 60_000.0) },
+                p?.let { distanceText(it.remainingM) },
+                navi.socAtArrival?.let { "도착 ${it.roundToInt()}%" },
+            ).joinToString(" · "),
+            fontSize = 11.sp, color = Neon.muted, maxLines = 1,
         )
     }
 }

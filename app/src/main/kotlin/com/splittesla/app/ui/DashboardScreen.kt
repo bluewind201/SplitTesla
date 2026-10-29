@@ -38,6 +38,7 @@ import com.splittesla.app.UiState
 import com.splittesla.app.camera.CameraState
 import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.app.ui.gauge.LimitSign
+import com.splittesla.app.navi.NaviHub
 import com.splittesla.app.ui.gauge.Speedometer
 import com.splittesla.app.ui.theme.Caption
 import com.splittesla.app.ui.theme.GlowButton
@@ -74,6 +75,8 @@ fun DashboardScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
             BatteryPanel(c, Modifier.weight(1f).fillMaxWidth())
         }
         Column(Modifier.weight(0.48f).fillMaxHeight(), horizontalAlignment = Alignment.CenterHorizontally) {
+            val navi by NaviHub.state.collectAsState()
+            if (navi.guiding) TurnCard(navi, Modifier.fillMaxWidth(), compact = true)
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 val source = remember { MutableInteractionSource() }
                 AnimatedContent(

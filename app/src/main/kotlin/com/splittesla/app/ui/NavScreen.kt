@@ -57,6 +57,8 @@ fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                 )
             }
 
+            NaviPanel(ui)
+
             CameraSection(vm, ui)
 
             Section("주행") {

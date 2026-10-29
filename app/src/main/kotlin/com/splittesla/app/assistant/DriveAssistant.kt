@@ -4,6 +4,7 @@ import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
 import com.splittesla.app.camera.CameraState
+import com.splittesla.app.navi.NaviHub
 import com.splittesla.app.ui.Cockpit
 import com.splittesla.app.weather.Weather
 import com.splittesla.app.weather.WeatherRepository
@@ -11,6 +12,7 @@ import com.splittesla.core.assistant.Geo
 import com.splittesla.core.assistant.LatLon
 import com.splittesla.core.assistant.VoiceAction
 import com.splittesla.core.assistant.VoiceRules
+import com.splittesla.core.navi.NaviPlace
 import com.splittesla.core.tesla.NavigationInfo
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -221,9 +223,15 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
                     return
                 }
                 say(reply ?: "${action.place}(으)로 안내를 시작합니다.")
-                RouteHandoff.navigate(context, prefs.naviApp, place, here(ui), vm::log)
+                if (NaviHub.handlesVoice) NaviHub.navigateTo(place) { say(it) }
+                else RouteHandoff.navigate(context, prefs.naviApp, place, here(ui), vm::log)
             }
             is VoiceAction.AddStop -> {
+                if (NaviHub.handlesVoice && NaviHub.state.value.guiding) {
+                    say(reply ?: "${action.place}를 경유지로 넣습니다.")
+                    NaviHub.addStopTo(action.place) { say(it) }
+                    return
+                }
                 val nav = ui.nav
                 val dest = nav?.let { n -> n.destinationLat?.let { lat -> n.destinationLon?.let { LatLon(lat, it) } } }
                 if (nav == null || dest == null) {
@@ -282,6 +290,10 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             return
         }
         say(reply ?: "${site.name} 슈퍼차저로 안내합니다. ${site.distanceKm.roundToInt()}킬로미터, 빈 자리 ${site.availableStalls}개예요.")
+        val spot = NaviPlace("${site.name} 슈퍼차저", LatLon(site.latitude, site.longitude), site.address, "슈퍼차저")
+        // Guiding here already: the charger becomes a stop on the way.
+        if (NaviHub.handlesVoice && NaviHub.state.value.guiding) return NaviHub.addStop(spot)
+        if (NaviHub.handlesVoice) return NaviHub.preview(spot) { NaviHub.start() }
         RouteHandoff.toPoint(context, prefs.naviApp, LatLon(site.latitude, site.longitude), "${site.name} 슈퍼차저")
     }
 
