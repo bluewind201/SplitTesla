@@ -70,15 +70,7 @@ import kotlin.math.roundToInt
 fun NaviPanel(ui: UiState) {
     val navi by NaviHub.state.collectAsState()
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { NaviHub.start() }
-    val startGuidance = {
-        permissions.launch(
-            buildList {
-                add(Manifest.permission.ACCESS_FINE_LOCATION)
-                add(Manifest.permission.ACCESS_COARSE_LOCATION)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
-            }.toTypedArray(),
-        )
-    }
+    val startGuidance = { permissions.launch(naviPermissions()) }
 
     Section("길안내 (네이버 경로)") {
         navi.busy?.let { Text("$it…", color = Neon.cyan, fontSize = 13.sp) }
@@ -90,6 +82,13 @@ fun NaviPanel(ui: UiState) {
         }
     }
 }
+
+/** What guidance asks for before it starts: location, and on Android 13+ the ongoing notification. */
+fun naviPermissions(): Array<String> = buildList {
+    add(Manifest.permission.ACCESS_FINE_LOCATION)
+    add(Manifest.permission.ACCESS_COARSE_LOCATION)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
+}.toTypedArray()
 
 @Composable
 private fun SearchView(ui: UiState, navi: NaviUi) {
@@ -119,7 +118,7 @@ private fun SearchView(ui: UiState, navi: NaviUi) {
 }
 
 @Composable
-private fun PlaceRow(p: NaviPlace, distanceFrom: LatLon?, onClick: () -> Unit) {
+fun PlaceRow(p: NaviPlace, distanceFrom: LatLon?, onClick: () -> Unit) {
     Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 6.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(p.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
@@ -135,6 +134,14 @@ private fun PreviewView(navi: NaviUi, startGuidance: () -> Unit) {
     val route = navi.route ?: return
     Text(route.goal.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Neon.text)
     RouteMap(navi, follow = false, Modifier.fillMaxWidth().height(220.dp))
+    RouteChoices(navi)
+    ButtonGrid(navi.busy == null, "안내 시작" to startGuidance, "취소" to NaviHub::clear)
+}
+
+/** The previewed route options with time, distance, toll and battery on arrival; tap to pick one. */
+@Composable
+fun RouteChoices(navi: NaviUi) {
+    val route = navi.route ?: return
     navi.alternatives.forEach { r ->
         val active = r.option == route.option
         val soc = navi.alternativeSoc[r.option]
@@ -153,7 +160,6 @@ private fun PreviewView(navi: NaviUi, startGuidance: () -> Unit) {
             soc?.let { Text("도착 ${it.roundToInt()}%", fontSize = 13.sp, color = socColor(it)) }
         }
     }
-    ButtonGrid(navi.busy == null, "안내 시작" to startGuidance, "취소" to NaviHub::clear)
 }
 
 @Composable

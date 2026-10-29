@@ -158,7 +158,7 @@ fun Toggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
 }
 
 @Composable
-fun Field(value: String, onChange: (String) -> Unit, label: String, secret: Boolean = false, onDone: (() -> Unit)? = null) {
+fun Field(value: String, onChange: (String) -> Unit, label: String, secret: Boolean = false, onDone: (() -> Unit)? = null, modifier: Modifier = Modifier) {
     OutlinedTextField(
         value = value,
         onValueChange = onChange,
@@ -178,6 +178,6 @@ fun Field(value: String, onChange: (String) -> Unit, label: String, secret: Bool
             unfocusedContainerColor = Glass.fillBottom,
             cursorColor = Neon.lime,
         ),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     )
 }

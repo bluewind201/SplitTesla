@@ -213,6 +213,14 @@ object NaviHub {
         scope.launch { if (!_state.value.guiding) _state.value = NaviUi() }
     }
 
+    /** Drops the guidance in progress and guides to [place] instead. */
+    fun replaceDestination(place: NaviPlace) {
+        scope.launch {
+            halt(null)
+            preview(place) { start() }
+        }
+    }
+
     /** Calls each API once with the saved keys and reports what works. */
     fun testKeys() {
         scope.launch {

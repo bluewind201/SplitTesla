@@ -255,6 +255,9 @@ private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: Link
             CircularProgressIndicator(Modifier.size(16.dp), color = Neon.lime, strokeWidth = 2.dp)
             Text("$busy…", fontSize = 12.sp, color = Neon.muted)
         }
+        var searching by remember { mutableStateOf(false) }
+        SearchPill({ searching = true })
+        if (searching) DestinationDialog { searching = false }
         LinkPill("S3XY", commander.label, commander.color(), commander == LinkState.CONNECTING || commander == LinkState.NEEDS_PAIRING) {
             if (commander == LinkState.CONNECTED) vm.disconnectCommander() else vm.connectCommander()
         }
