@@ -63,7 +63,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
+import com.splittesla.app.ui.theme.Glass
 import com.splittesla.app.ui.theme.GlowButton
+import com.splittesla.app.ui.theme.glass
+import com.splittesla.app.ui.theme.glassBackdrop
 import com.splittesla.app.ui.theme.LinkPill
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
@@ -107,7 +110,7 @@ fun SplitTeslaApp(vm: AppViewModel) {
     }
 
     SplitTheme {
-        Box(Modifier.fillMaxSize().background(Neon.bg)) {
+        Box(Modifier.fillMaxSize().glassBackdrop()) {
             // Split screen beside the navi shows the dashboard alone; a very narrow window only the strip.
             BoxWithConstraints(Modifier.fillMaxSize()) {
             if (maxWidth < 380.dp) {
@@ -142,7 +145,7 @@ fun SplitTeslaApp(vm: AppViewModel) {
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp)) { data ->
                 Snackbar(
                     data,
-                    containerColor = Neon.surfaceHi,
+                    containerColor = Glass.dense,
                     contentColor = Neon.text,
                     shape = RoundedCornerShape(14.dp),
                 )
@@ -155,7 +158,13 @@ fun SplitTeslaApp(vm: AppViewModel) {
 private fun Rail(selected: Tab, onSelect: (Tab) -> Unit) {
     Column(
         // Eight tabs can outgrow a phone held sideways, so the rail scrolls when it must.
-        Modifier.fillMaxHeight().width(76.dp).verticalScroll(rememberScrollState()).padding(vertical = 8.dp),
+        Modifier
+            .fillMaxHeight()
+            .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
+            .width(76.dp)
+            .glass(22.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -183,7 +192,7 @@ private fun RailItem(tab: Tab, selected: Boolean, onClick: () -> Unit) {
             Modifier
                 .padding(start = 6.dp)
                 .pressScale(source, 0.9f)
-                .background(if (selected) Neon.lime.copy(alpha = 0.10f) else Color.Transparent, RoundedCornerShape(14.dp))
+                .then(if (selected) Modifier.glass(14.dp, tint = Neon.lime.copy(alpha = 0.6f), edge = Neon.lime.copy(alpha = 0.45f)) else Modifier)
                 .clickable(interactionSource = source, indication = null, onClick = onClick)
                 .padding(horizontal = 10.dp, vertical = 3.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

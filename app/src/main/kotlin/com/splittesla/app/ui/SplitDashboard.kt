@@ -51,6 +51,8 @@ import com.splittesla.app.ui.gauge.LimitSign
 import com.splittesla.app.ui.gauge.Speedometer
 import com.splittesla.app.ui.theme.Caption
 import com.splittesla.app.ui.theme.GlowButton
+import com.splittesla.app.ui.theme.glass
+import com.splittesla.app.ui.theme.glassBackdrop
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.NeonBar
 import com.splittesla.app.ui.theme.Orbitron
@@ -86,7 +88,7 @@ fun SplitDashboard(vm: AppViewModel, ui: UiState, onMenu: () -> Unit) {
     }
     val c = if (ui.demo) Cockpit.demo(demoTime) else Cockpit.from(ui, camera, gpsSpeed)
 
-    BoxWithConstraints(Modifier.fillMaxSize().background(Neon.bg).padding(horizontal = 10.dp, vertical = 6.dp)) {
+    BoxWithConstraints(Modifier.fillMaxSize().glassBackdrop().padding(horizontal = 10.dp, vertical = 6.dp)) {
         // Wide enough (a 2/3 split or a tablet): cards beside the gauge instead of under it.
         val wide = maxWidth >= 600.dp
         val cardsHeight = if (maxHeight < 360.dp) 92.dp else 112.dp
@@ -198,8 +200,7 @@ private fun Card(modifier: Modifier, accent: Color? = null, onClick: (() -> Unit
     val shape = RoundedCornerShape(14.dp)
     Column(
         modifier
-            .background(Neon.surface, shape)
-            .border(1.dp, accent?.copy(alpha = 0.7f) ?: Neon.stroke, shape)
+            .glass(14.dp, edge = accent?.copy(alpha = 0.75f))
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(horizontal = 10.dp, vertical = 7.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),

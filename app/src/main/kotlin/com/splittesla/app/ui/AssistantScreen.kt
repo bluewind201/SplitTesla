@@ -32,6 +32,7 @@ import com.splittesla.app.assistant.CompanionNavi
 import com.splittesla.app.assistant.LlmProvider
 import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Neon
+import com.splittesla.app.ui.theme.Glass
 
 /**
  * The assistant: spoken driving notes and typed commands on the left, the AI
@@ -172,7 +173,9 @@ fun Field(value: String, onChange: (String) -> Unit, label: String, secret: Bool
             focusedLabelColor = Neon.lime,
             unfocusedLabelColor = Neon.muted,
             focusedBorderColor = Neon.lime,
-            unfocusedBorderColor = Neon.stroke,
+            unfocusedBorderColor = Glass.edgeLit,
+            focusedContainerColor = Glass.fillTop,
+            unfocusedContainerColor = Glass.fillBottom,
             cursorColor = Neon.lime,
         ),
         modifier = Modifier.fillMaxWidth(),

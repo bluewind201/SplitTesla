@@ -53,6 +53,7 @@ import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.app.ui.theme.Rajdhani
 import com.splittesla.app.ui.theme.rememberPulse
+import com.splittesla.app.ui.theme.Glass
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.min
@@ -116,7 +117,8 @@ private fun TrackGauge(d: GaugeData, blink: Float, modifier: Modifier) {
             val c = center
             if (d.over) glowCircle(c, r, Neon.red, blink)
 
-            drawCircle(Brush.radialGradient(listOf(Neon.surfaceHi, Neon.bg), c, r), r, c)
+            // Glass dial: light at the centre, darker towards the rim.
+            drawCircle(Brush.radialGradient(listOf(Color.White.copy(alpha = 0.08f), Color.Black.copy(alpha = 0.35f)), c, r), r, c)
             drawCircle(Neon.strokeHi, r, c, style = Stroke(2.dp.toPx()))
             drawCircle(Neon.stroke, r * 0.97f, c, style = Stroke(1.dp.toPx()))
 
@@ -157,7 +159,7 @@ private fun TrackGauge(d: GaugeData, blink: Float, modifier: Modifier) {
             tick(c, a, from, to, 6.dp.toPx(), needleColor.copy(alpha = 0.35f))
             tick(c, a, from, to, 3.dp.toPx(), needleColor)
 
-            drawCircle(Neon.bg, r * 0.40f, c)
+            drawCircle(Color.Black.copy(alpha = 0.55f), r * 0.40f, c)
             drawCircle(Brush.sweepGradient(listOf(Neon.strokeHi, Neon.stroke, Neon.strokeHi), c), r * 0.40f, c, style = Stroke(2.dp.toPx()))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -184,7 +186,7 @@ private fun F1Gauge(d: GaugeData, blink: Float, modifier: Modifier) {
                 .drawBehind {
                     if (d.over) glowRoundRect(Neon.red, 28.dp.toPx(), blink)
                     // Carbon-like weave: faint diagonal lines over the dark face.
-                    drawRoundRect(Brush.verticalGradient(listOf(Color(0xFF15171C), Color(0xFF0A0B0E))), cornerRadius = CornerRadius(28.dp.toPx()))
+                    drawRoundRect(Brush.verticalGradient(listOf(Color(0xCC15171C), Color(0xB30A0B0E))), cornerRadius = CornerRadius(28.dp.toPx()))
                     val step = 6.dp.toPx()
                     var x = -size.height
                     while (x < size.width) {
@@ -278,7 +280,7 @@ private fun PowerBar(powerKw: Float?, soc: Int?, mode: String?) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Caption("BATT")
                 Spacer(Modifier.width(8.dp))
-                Box(Modifier.weight(1f).height(4.dp).background(Neon.stroke, RoundedCornerShape(2.dp))) {
+                Box(Modifier.weight(1f).height(4.dp).background(Glass.track, RoundedCornerShape(2.dp))) {
                     Box(Modifier.fillMaxWidth(soc / 100f).fillMaxHeight().background(if (soc < 20) Neon.red else Neon.lime, RoundedCornerShape(2.dp)))
                 }
                 Spacer(Modifier.width(8.dp))

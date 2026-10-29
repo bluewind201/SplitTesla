@@ -2,7 +2,6 @@
 
 package com.splittesla.app.ui.theme
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -13,7 +12,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -37,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -72,6 +71,51 @@ fun DrawScope.glowRect(color: Color, corner: Float, strength: Float, spread: Flo
     }
 }
 
+/**
+ * A pane of frosted glass behind the content. [tint] colours the glass
+ * (an active button, a warning) with strength from its alpha; [edge]
+ * replaces the white rim. Brushes are built once per size.
+ */
+fun Modifier.glass(corner: Dp, tint: Color? = null, edge: Color? = null): Modifier = drawWithCache {
+    val r = corner.toPx()
+    val w = 1.dp.toPx()
+    val fill = Brush.verticalGradient(listOf(Glass.fillTop, Glass.fillBottom))
+    val tinted = tint?.takeIf { it.alpha > 0f }?.let { Brush.verticalGradient(listOf(it.copy(alpha = 0.26f * it.alpha), it.copy(alpha = 0.08f * it.alpha))) }
+    val sheen = Brush.verticalGradient(listOf(Glass.sheen, Color.Transparent), endY = size.height * 0.45f)
+    val rim = Brush.linearGradient(
+        if (edge != null) listOf(edge, edge.copy(alpha = edge.alpha * 0.3f)) else listOf(Glass.edgeLit, Glass.edgeDim),
+        start = Offset.Zero,
+        end = Offset(size.width, size.height),
+    )
+    onDrawBehind {
+        drawRoundRect(fill, cornerRadius = CornerRadius(r))
+        tinted?.let { drawRoundRect(it, cornerRadius = CornerRadius(r)) }
+        drawRoundRect(sheen, cornerRadius = CornerRadius(r))
+        drawRoundRect(
+            rim,
+            topLeft = Offset(w / 2, w / 2),
+            size = Size(size.width - w, size.height - w),
+            cornerRadius = CornerRadius((r - w / 2).coerceAtLeast(0f)),
+            style = Stroke(w),
+        )
+    }
+}
+
+/** The backdrop the glass sits on: near-black with large soft glows the panes pick up. */
+fun Modifier.glassBackdrop(): Modifier = drawWithCache {
+    val reach = maxOf(size.width, size.height)
+    val base = Brush.verticalGradient(listOf(Glass.backdropTop, Glass.backdropBottom))
+    val glows = listOf(
+        Triple(Offset(size.width * 0.10f, size.height * 0.02f), reach * 0.50f, Neon.lime.copy(alpha = 0.09f)),
+        Triple(Offset(size.width * 0.58f, size.height * 0.55f), reach * 0.45f, Neon.blue.copy(alpha = 0.11f)),
+        Triple(Offset(size.width * 0.95f, size.height * 1.00f), reach * 0.55f, Neon.cyan.copy(alpha = 0.10f)),
+    ).map { (c, radius, color) -> Triple(c, radius, Brush.radialGradient(listOf(color, Color.Transparent), c, radius)) }
+    onDrawBehind {
+        drawRect(base)
+        glows.forEach { (c, radius, brush) -> drawCircle(brush, radius, c) }
+    }
+}
+
 /** Shrinks while pressed and springs back, like a physical key. */
 @Composable
 fun Modifier.pressScale(source: MutableInteractionSource, pressed: Float = 0.94f): Modifier {
@@ -84,7 +128,7 @@ fun Modifier.pressScale(source: MutableInteractionSource, pressed: Float = 0.94f
     return this.scale(s)
 }
 
-/** Card surface used across the app: dark glass with a hairline border. */
+/** Card surface used across the app: a frosted glass pane, its rim in [accent] when given. */
 @Composable
 fun Panel(
     modifier: Modifier = Modifier,
@@ -96,8 +140,7 @@ fun Panel(
     val shape = RoundedCornerShape(20.dp)
     Column(
         modifier
-            .background(Brush.verticalGradient(listOf(Neon.surfaceHi, Neon.surface)), shape)
-            .border(1.dp, accent?.copy(alpha = 0.55f) ?: Neon.stroke, shape)
+            .glass(20.dp, edge = accent?.copy(alpha = 0.6f))
             .padding(padding),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -113,8 +156,9 @@ fun Panel(
 }
 
 /**
- * Pill button with a neon edge. Pressing shrinks it, lights the halo and gives
- * a haptic tick. [filled] is for the one main action on a panel.
+ * Glass key with a neon tint. Pressing shrinks it, tints the glass, lights
+ * the halo and gives a haptic tick. [filled] is the one main action on a
+ * panel: solid accent glass with dark text.
  */
 @Composable
 fun GlowButton(
@@ -140,23 +184,38 @@ fun GlowButton(
         tween(180),
         label = "glow",
     )
-    val bg by animateColorAsState(
+    val tint by animateFloatAsState(
         when {
-            filled -> accent.copy(alpha = if (enabled) 1f else 0.3f)
-            active -> accent.copy(alpha = 0.18f)
-            down -> accent.copy(alpha = 0.12f)
-            else -> Neon.surfaceHi
+            !enabled -> 0f
+            active -> 1f
+            down -> 0.75f
+            else -> 0f
         },
         tween(150),
-        label = "bg",
+        label = "tint",
     )
     val shape = RoundedCornerShape(14.dp)
+    val pane = if (filled) {
+        val solid = if (enabled) listOf(accent, accent.copy(alpha = 0.78f)) else listOf(accent.copy(alpha = 0.3f), accent.copy(alpha = 0.2f))
+        Modifier
+            .background(Brush.verticalGradient(solid), shape)
+            .glass(14.dp, edge = Color.White.copy(alpha = 0.55f))
+    } else {
+        Modifier.glass(
+            14.dp,
+            tint = accent.copy(alpha = tint),
+            edge = when {
+                !enabled -> Glass.edgeDim
+                active || down -> accent.copy(alpha = 0.9f)
+                else -> null
+            },
+        )
+    }
     Box(
         modifier
             .pressScale(source)
             .drawBehind { glowRect(accent, 14.dp.toPx(), glow) }
-            .background(bg, shape)
-            .border(1.dp, if (enabled) accent.copy(alpha = if (filled || active || down) 0.9f else 0.35f) else Neon.stroke, shape)
+            .then(pane)
             .combinedClickable(
                 interactionSource = source,
                 indication = null,
@@ -190,8 +249,7 @@ fun LinkPill(name: String, label: String, color: Color, pulsing: Boolean, onClic
     Row(
         Modifier
             .pressScale(source)
-            .background(Neon.surfaceHi, shape)
-            .border(1.dp, color.copy(alpha = 0.5f), shape)
+            .glass(50.dp, edge = color.copy(alpha = 0.5f))
             .combinedClickable(interactionSource = source, indication = null, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -233,7 +291,7 @@ fun NeonBar(fraction: Float, color: Color, modifier: Modifier = Modifier) {
         modifier
             .fillMaxWidth()
             .height(6.dp)
-            .background(Neon.stroke, RoundedCornerShape(3.dp))
+            .background(Glass.track, RoundedCornerShape(3.dp))
             .drawBehind {
                 val w = size.width * f
                 drawRoundRect(color.copy(alpha = 0.25f), topLeft = Offset(0f, -3.dp.toPx()), size = Size(w, size.height + 6.dp.toPx()), cornerRadius = CornerRadius(6.dp.toPx()))

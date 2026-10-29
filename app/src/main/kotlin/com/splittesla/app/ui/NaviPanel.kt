@@ -46,6 +46,7 @@ import com.splittesla.app.navi.NaviPhase
 import com.splittesla.app.navi.NaviUi
 import com.splittesla.app.ui.theme.Caption
 import com.splittesla.app.ui.theme.GlowButton
+import com.splittesla.app.ui.theme.glass
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.core.assistant.LatLon
@@ -139,7 +140,7 @@ private fun PreviewView(navi: NaviUi, startGuidance: () -> Unit) {
         val soc = navi.alternativeSoc[r.option]
         Row(
             Modifier.fillMaxWidth()
-                .border(1.dp, if (active) Neon.lime else Neon.stroke, RoundedCornerShape(12.dp))
+                .glass(12.dp, tint = if (active) Neon.lime.copy(alpha = 0.6f) else null, edge = if (active) Neon.lime else null)
                 .clickable { NaviHub.choose(r.option) }
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -217,7 +218,7 @@ fun TurnCard(navi: NaviUi, modifier: Modifier = Modifier, compact: Boolean = fal
     val then = i?.let { route.guides.getOrNull(it + 1) }?.takeIf { (it.distanceM) <= 300 }
     val shape = RoundedCornerShape(if (compact) 14.dp else 18.dp)
     Row(
-        modifier.background(Neon.surfaceHi, shape).border(1.dp, Neon.lime.copy(alpha = 0.6f), shape).padding(horizontal = 14.dp, vertical = if (compact) 6.dp else 10.dp),
+        modifier.glass(if (compact) 14.dp else 18.dp, tint = Neon.lime.copy(alpha = 0.35f), edge = Neon.lime.copy(alpha = 0.6f)).padding(horizontal = 14.dp, vertical = if (compact) 6.dp else 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -261,7 +262,8 @@ fun RouteMap(navi: NaviUi, follow: Boolean, modifier: Modifier = Modifier) {
     val route = navi.route ?: return
     val shape = RoundedCornerShape(16.dp)
     val model = remember(route) { MapModel(route) }
-    Box(modifier.background(Neon.bg, shape).border(1.dp, Neon.stroke, shape)) {
+    // Darker glass so the route lines stand out.
+    Box(modifier.background(Color.Black.copy(alpha = 0.45f), shape).glass(16.dp)) {
         Canvas(Modifier.fillMaxSize().padding(8.dp)) {
             val car = navi.position
             val (cx, cy, scale) = if (follow && car != null) {
