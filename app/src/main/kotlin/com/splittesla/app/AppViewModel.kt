@@ -320,11 +320,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                         CameraState.commanderSpeedKmh = it
                         CameraState.commanderSpeedAt = System.currentTimeMillis()
                     }
+                    delta.speedLimit?.let { CameraState.commanderLimitKmh = it }
                     queueLive(delta)
                 },
                 onRawPush = { bytes -> if (_ui.value.logRawPushes) log("PUSH ${bytes.hex()}") },
                 onDisconnect = {
                     log("Commander 연결 끊김")
+                    CameraState.commanderLimitKmh = null
                     _ui.update { it.copy(commander = LinkState.DISCONNECTED) }
                 },
                 log = ::log,
@@ -686,6 +688,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     val ignoredCameraCount: Int get() = cameras.ignoredCount
+
+    var cameraRoadCheck: Boolean
+        get() = cameras.roadLimitCheck
+        set(value) {
+            cameras.roadLimitCheck = value
+        }
+
+    var cameraLearning: Boolean
+        get() = cameras.learnMisses
+        set(value) {
+            cameras.learnMisses = value
+        }
 
     fun clearIgnoredCameras() {
         cameras.clearIgnored()

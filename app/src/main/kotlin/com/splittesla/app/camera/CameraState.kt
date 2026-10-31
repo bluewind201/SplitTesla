@@ -19,4 +19,7 @@ object CameraState {
     /** Latest speed from the Commander's CAN stream; better than GPS speed in tunnels. */
     @Volatile var commanderSpeedKmh: Long? = null
     @Volatile var commanderSpeedAt: Long = 0
+
+    /** The road's limit from Tesla's map over the Commander; valid while its speed keeps arriving. */
+    @Volatile var commanderLimitKmh: Long? = null
 }

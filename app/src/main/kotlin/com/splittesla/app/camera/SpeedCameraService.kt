@@ -25,9 +25,11 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.splittesla.app.MainActivity
 import com.splittesla.app.R
+import com.splittesla.app.navi.NaviHub
 import com.splittesla.core.camera.CameraAlert
 import com.splittesla.core.camera.CameraAlerter
 import com.splittesla.core.camera.CameraIndex
+import com.splittesla.core.navi.RouteCamera
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -44,6 +46,11 @@ import kotlin.math.roundToInt
 class SpeedCameraService : Service(), LocationListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var alerter: CameraAlerter? = null
+    private var repo: CameraRepository? = null
+
+    // The guided route's cameras, as ids, rebuilt when NaviHub loads a new list.
+    private var routeCameras: List<RouteCamera>? = null
+    private var routeCameraIds: Set<String> = emptySet()
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private val locations get() = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -70,14 +77,23 @@ class SpeedCameraService : Service(), LocationListener {
             if (ttsReady) tts?.setLanguage(Locale.KOREAN)
         }
         scope.launch {
-            val repo = CameraRepository(this@SpeedCameraService)
+            val repo = CameraRepository(this@SpeedCameraService).also { this@SpeedCameraService.repo = it }
             val cameras = repo.load()
             if (cameras.isEmpty()) {
                 CameraState.lastAlert.value = "카메라 데이터가 없습니다. 먼저 데이터를 가져오세요"
                 stopSelf()
                 return@launch
             }
-            alerter = CameraAlerter(CameraIndex(cameras), ignored = repo::isIgnored)
+            alerter = CameraAlerter(
+                CameraIndex(cameras),
+                ignored = repo::isIgnored,
+                onMiss = { cam, heading ->
+                    if (repo.learnMisses && repo.recordMiss(cam.id, heading)) {
+                        CameraState.lastAlert.value = "옆 도로 카메라로 보여 이 방향에서는 더 알리지 않습니다: ${cam.place.ifBlank { cam.id }}"
+                    }
+                },
+                onDrivenPast = { cam, heading -> repo.recordPass(cam.id, heading) },
+            )
             if (ContextCompat.checkSelfPermission(this@SpeedCameraService, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
             ) {
@@ -99,7 +115,17 @@ class SpeedCameraService : Service(), LocationListener {
         val canSpeed = CameraState.commanderSpeedKmh?.takeIf { now - CameraState.commanderSpeedAt < 3000 }
         val speed = canSpeed?.toDouble() ?: (location.speed * 3.6)
         val heading = if (location.hasBearing()) location.bearing.toDouble() else null
-        val alerts = alerter.update(location.latitude, location.longitude, heading, speed, now)
+        // Guiding: only the cameras on the route, unless we have left it.
+        val navi = NaviHub.state.value
+        if (navi.cameras !== routeCameras) {
+            routeCameras = navi.cameras
+            routeCameraIds = navi.cameras.map { it.camera.id }.toSet()
+        }
+        alerter.routeCameraIds = routeCameraIds.takeIf { navi.guiding && navi.progress?.offRoute != true && it.isNotEmpty() }
+        val roadLimit = CameraState.commanderLimitKmh
+            ?.takeIf { canSpeed != null && repo?.roadLimitCheck == true }
+            ?.toInt()?.takeIf { it in 20..130 }
+        val alerts = alerter.update(location.latitude, location.longitude, heading, speed, now, roadLimit)
         CameraState.status.value = alerter.status
         alerts.forEach(::announce)
         val s = alerter.status

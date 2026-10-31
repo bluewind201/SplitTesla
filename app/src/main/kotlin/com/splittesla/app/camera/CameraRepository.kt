@@ -134,7 +134,61 @@ class CameraRepository(private val context: Context) {
 
     val ignoredCount: Int get() = prefs.getStringSet("camera_ignored", emptySet()).orEmpty().size
 
-    fun clearIgnored() = prefs.edit().remove("camera_ignored").apply()
+    fun clearIgnored() = prefs.edit().remove("camera_ignored").remove("camera_misses").apply()
+
+    /** Skip cameras whose limit is far from the car's map limit for the road (needs the Commander). */
+    var roadLimitCheck: Boolean
+        get() = prefs.getBoolean("camera_road_check", true)
+        set(value) = prefs.edit().putBoolean("camera_road_check", value).apply()
+
+    /** Quiet a camera on a heading once it has slid off to the side [MISSES_TO_MUTE] times in a row. */
+    var learnMisses: Boolean
+        get() = prefs.getBoolean("camera_learn", true)
+        set(value) = prefs.edit().putBoolean("camera_learn", value).apply()
+
+    /**
+     * An announced camera slid off to the side without being driven past.
+     * True when that made [MISSES_TO_MUTE] in a row on this heading and the
+     * camera is now ignored there (the restore button brings it back).
+     */
+    fun recordMiss(id: String, headingDeg: Double): Boolean {
+        val entries = missEntries()
+        val hit = entries.firstOrNull { it.id == id && angleDiff(it.heading, headingDeg) <= 45 }
+        val heading = hit?.heading ?: headingDeg
+        val count = (hit?.count ?: 0) + 1
+        val rest = entries.filterNot { it === hit }
+        if (count >= MISSES_TO_MUTE) {
+            saveMisses(rest)
+            ignore(id, heading)
+            return true
+        }
+        saveMisses(rest + Miss(id, heading, count))
+        return false
+    }
+
+    /** Driven right past on this heading: the camera does apply here, so its misses start over. */
+    fun recordPass(id: String, headingDeg: Double) {
+        val entries = missEntries()
+        val kept = entries.filterNot { it.id == id && angleDiff(it.heading, headingDeg) <= 45 }
+        if (kept.size != entries.size) saveMisses(kept)
+    }
+
+    private class Miss(val id: String, val heading: Double, val count: Int)
+
+    /** Stored as "id@heading#count". */
+    private fun missEntries(): List<Miss> =
+        prefs.getStringSet("camera_misses", emptySet()).orEmpty().mapNotNull { e ->
+            val hash = e.lastIndexOf('#')
+            val at = e.lastIndexOf('@', hash)
+            if (at < 0 || hash < 0) return@mapNotNull null
+            val heading = e.substring(at + 1, hash).toDoubleOrNull() ?: return@mapNotNull null
+            val count = e.substring(hash + 1).toIntOrNull() ?: return@mapNotNull null
+            Miss(e.substring(0, at), heading, count)
+        }
+
+    private fun saveMisses(list: List<Miss>) {
+        prefs.edit().putStringSet("camera_misses", list.map { "${it.id}@${it.heading.toInt()}#${it.count}" }.toSet()).apply()
+    }
 
     private fun ignoredEntries(): List<Pair<String, Double>> =
         prefs.getStringSet("camera_ignored", emptySet()).orEmpty().mapNotNull { e ->
@@ -156,6 +210,7 @@ class CameraRepository(private val context: Context) {
     }
 
     private companion object {
+        const val MISSES_TO_MUTE = 3
         const val API = "https://api.data.go.kr/openapi/tn_pubr_public_unmanned_traffic_camera_api"
         const val PAGE = 1000
     }
