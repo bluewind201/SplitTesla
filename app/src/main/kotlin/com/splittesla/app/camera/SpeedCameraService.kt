@@ -25,9 +25,11 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.splittesla.app.MainActivity
 import com.splittesla.app.R
+import com.splittesla.app.navi.NaviHub
 import com.splittesla.core.camera.CameraAlert
 import com.splittesla.core.camera.CameraAlerter
 import com.splittesla.core.camera.CameraIndex
+import com.splittesla.core.navi.RouteCamera
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -44,6 +46,11 @@ import kotlin.math.roundToInt
 class SpeedCameraService : Service(), LocationListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var alerter: CameraAlerter? = null
+    private var repo: CameraRepository? = null
+
+    // The guided route's cameras, as ids, rebuilt when NaviHub loads a new list.
+    private var routeCameras: List<RouteCamera>? = null
+    private var routeCameraIds: Set<String> = emptySet()
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private val locations get() = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -59,7 +66,8 @@ class SpeedCameraService : Service(), LocationListener {
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
         ServiceCompat.startForeground(this, NOTIFICATION_ID, notification("카메라 데이터를 불러오는 중"), type)
         if (alerter == null) start()
-        return START_STICKY
+        // Not sticky: once the app is closed the system must not bring the camera watch back by itself.
+        return START_NOT_STICKY
     }
 
     private fun start() {
@@ -69,13 +77,23 @@ class SpeedCameraService : Service(), LocationListener {
             if (ttsReady) tts?.setLanguage(Locale.KOREAN)
         }
         scope.launch {
-            val cameras = CameraRepository(this@SpeedCameraService).load()
+            val repo = CameraRepository(this@SpeedCameraService).also { this@SpeedCameraService.repo = it }
+            val cameras = repo.load()
             if (cameras.isEmpty()) {
                 CameraState.lastAlert.value = "카메라 데이터가 없습니다. 먼저 데이터를 가져오세요"
                 stopSelf()
                 return@launch
             }
-            alerter = CameraAlerter(CameraIndex(cameras))
+            alerter = CameraAlerter(
+                CameraIndex(cameras),
+                ignored = repo::isIgnored,
+                onMiss = { cam, heading ->
+                    if (repo.learnMisses && repo.recordMiss(cam.id, heading)) {
+                        CameraState.lastAlert.value = "옆 도로 카메라로 보여 이 방향에서는 더 알리지 않습니다: ${cam.place.ifBlank { cam.id }}"
+                    }
+                },
+                onDrivenPast = { cam, heading -> repo.recordPass(cam.id, heading) },
+            )
             if (ContextCompat.checkSelfPermission(this@SpeedCameraService, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
             ) {
@@ -91,18 +109,30 @@ class SpeedCameraService : Service(), LocationListener {
     override fun onLocationChanged(location: Location) {
         val alerter = alerter ?: return
         CameraState.gpsOk.value = true
+        CameraState.fix = location
         CameraState.gpsSpeedKmh.value = if (location.hasSpeed()) location.speed * 3.6f else null
         val now = System.currentTimeMillis()
         val canSpeed = CameraState.commanderSpeedKmh?.takeIf { now - CameraState.commanderSpeedAt < 3000 }
         val speed = canSpeed?.toDouble() ?: (location.speed * 3.6)
         val heading = if (location.hasBearing()) location.bearing.toDouble() else null
-        val alerts = alerter.update(location.latitude, location.longitude, heading, speed, now)
+        // Guiding: only the cameras on the route, unless we have left it.
+        val navi = NaviHub.state.value
+        if (navi.cameras !== routeCameras) {
+            routeCameras = navi.cameras
+            routeCameraIds = navi.cameras.map { it.camera.id }.toSet()
+        }
+        alerter.routeCameraIds = routeCameraIds.takeIf { navi.guiding && navi.progress?.offRoute != true && it.isNotEmpty() }
+        val roadLimit = CameraState.commanderLimitKmh
+            ?.takeIf { canSpeed != null && repo?.roadLimitCheck == true }
+            ?.toInt()?.takeIf { it in 20..130 }
+        val alerts = alerter.update(location.latitude, location.longitude, heading, speed, now, roadLimit)
         CameraState.status.value = alerter.status
         alerts.forEach(::announce)
         val s = alerter.status
         updateNotification(
             when {
-                s.sectionAverageKmh != null -> "구간단속 평균 ${s.sectionAverageKmh!!.roundToInt()} / 제한 ${s.sectionLimitKmh}"
+                s.sectionAverageKmh != null -> "구간단속 평균 ${s.sectionAverageKmh!!.roundToInt()} / 제한 ${s.sectionLimitKmh}" +
+                    (s.sectionRemainingM?.let { " · 남은 ${"%.1f".format(it / 1000)}km" } ?: "")
                 s.ahead != null -> "${s.distanceM!!.roundToInt()}m 앞 카메라 · 제한 ${s.ahead!!.limitKmh}"
                 else -> "주변 카메라 감시 중"
             },
@@ -124,10 +154,12 @@ class SpeedCameraService : Service(), LocationListener {
 
     private fun announce(alert: CameraAlert) {
         val limit = alert.camera.limitKmh
+        val zone = alert.camera.zone?.let { "$it " }.orEmpty()
+        val kind = if (alert.camera.signal) "신호 과속" else "과속"
         val text = when (alert) {
             is CameraAlert.Approaching ->
-                "${(alert.distanceM / 50).roundToInt() * 50}미터 앞 과속 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
-            is CameraAlert.Final -> "100미터 앞 단속 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
+                "${(alert.distanceM / 50).roundToInt() * 50}미터 앞 ${zone}$kind 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
+            is CameraAlert.Final -> "100미터 앞 ${zone}단속 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
             is CameraAlert.SectionStart -> "구간단속 시작, 제한속도 $limit"
             is CameraAlert.SectionEnd -> "구간단속 종료, 평균 속도 ${alert.averageKmh.roundToInt()}킬로미터"
         }
@@ -172,6 +204,12 @@ class SpeedCameraService : Service(), LocationListener {
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification(text))
     }
 
+    /** Swiped away from recents: the app is closed, so stop watching. */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        stopSelf()
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
         locations.removeUpdates(this)
         tts?.shutdown()
@@ -179,6 +217,7 @@ class SpeedCameraService : Service(), LocationListener {
         CameraState.running.value = false
         CameraState.gpsOk.value = false
         CameraState.gpsSpeedKmh.value = null
+        CameraState.fix = null
         CameraState.status.value = com.splittesla.core.camera.CameraStatus()
         super.onDestroy()
     }

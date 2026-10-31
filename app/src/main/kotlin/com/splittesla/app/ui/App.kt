@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +24,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
@@ -41,8 +44,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -59,22 +62,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
+import com.splittesla.app.UiState
+import com.splittesla.app.camera.CameraState
+import com.splittesla.app.ui.theme.Glass
+import com.splittesla.app.ui.theme.GlowButton
+import com.splittesla.app.ui.theme.glass
+import com.splittesla.app.ui.theme.glassBackdrop
 import com.splittesla.app.ui.theme.LinkPill
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.app.ui.theme.Rajdhani
 import com.splittesla.app.ui.theme.SplitTheme
 import com.splittesla.app.ui.theme.pressScale
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 private enum class Tab(val title: String, val english: String) {
     DASH("계기판", "COCKPIT"),
     CAR("차량", "VEHICLE"),
     S3XY("S3XY", "S3XY COMMANDER"),
     NAV("내비", "NAVIGATION"),
+    AI("AI", "AI ASSISTANT"),
     DATA("데이터", "TELEMETRY"),
     LOGBOOK("차계부", "LOGBOOK"),
     SETTINGS("설정", "SETTINGS"),
@@ -87,20 +93,44 @@ fun SplitTeslaApp(vm: AppViewModel) {
     var tabIndex by rememberSaveable { mutableIntStateOf(0) }
     val tab = Tab.entries[tabIndex]
     val snackbar = remember { SnackbarHostState() }
+    val multiWindow by vm.multiWindow.collectAsState()
+    // The tabs were asked for while split; leaving split screen resets it.
+    var menuInSplit by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(multiWindow) { if (!multiWindow) menuInSplit = false }
     LaunchedEffect(ui.toast) {
         ui.toast?.let {
             vm.consumeToast()
             snackbar.currentSnackbarData?.dismiss()
-            snackbar.showSnackbar(it, duration = SnackbarDuration.Short)
+            // Registration results stay up longer so they aren't missed.
+            snackbar.showSnackbar(it, duration = if (it.startsWith("✅") || it.startsWith("❌")) SnackbarDuration.Long else SnackbarDuration.Short)
         }
     }
 
     SplitTheme {
-        Box(Modifier.fillMaxSize().background(Neon.bg)) {
-            Row(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize().glassBackdrop()) {
+            // Split screen beside the navi shows the dashboard alone; a very narrow window only the strip.
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+            if (maxWidth < 380.dp) {
+                CompactPanel(vm, ui)
+            } else if (multiWindow && !menuInSplit) {
+                SplitDashboard(vm, ui) { menuInSplit = true }
+            } else if (tab == Tab.DASH && ui.cockpitLayout == CockpitLayout.IMMERSIVE) {
+                // Layout C: the dashboard has the whole screen; its menu button slides the tabs in.
+                var drawer by remember { mutableStateOf(false) }
+                Box(Modifier.fillMaxSize()) {
+                    DashboardScreen(vm, ui, Modifier.fillMaxSize().padding(8.dp)) { drawer = true }
+                    if (drawer) {
+                        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable { drawer = false })
+                        Rail(tab) {
+                            tabIndex = it.ordinal
+                            drawer = false
+                        }
+                    }
+                }
+            } else Row(Modifier.fillMaxSize()) {
                 Rail(tab) { tabIndex = it.ordinal }
                 Column(Modifier.fillMaxSize()) {
-                    TopStrip(tab, vm, ui.commander, ui.car, ui.busy)
+                    TopStrip(tab, vm, ui, if (multiWindow) ({ menuInSplit = false }) else null)
                     AnimatedContent(
                         targetState = tab,
                         transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
@@ -113,6 +143,7 @@ fun SplitTeslaApp(vm: AppViewModel) {
                             Tab.CAR -> CarScreen(vm, ui, modifier)
                             Tab.S3XY -> ActionsScreen(vm, ui, modifier)
                             Tab.NAV -> NavScreen(vm, ui, modifier)
+                            Tab.AI -> AssistantScreen(vm, modifier)
                             Tab.DATA -> TelemetryScreen(ui, modifier)
                             Tab.LOGBOOK -> LogbookScreen(vm, modifier)
                             Tab.SETTINGS -> SettingsScreen(vm, ui, modifier)
@@ -120,10 +151,11 @@ fun SplitTeslaApp(vm: AppViewModel) {
                     }
                 }
             }
+            }
             SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp)) { data ->
                 Snackbar(
                     data,
-                    containerColor = Neon.surfaceHi,
+                    containerColor = Glass.dense,
                     contentColor = Neon.text,
                     shape = RoundedCornerShape(14.dp),
                 )
@@ -135,9 +167,16 @@ fun SplitTeslaApp(vm: AppViewModel) {
 @Composable
 private fun Rail(selected: Tab, onSelect: (Tab) -> Unit) {
     Column(
-        Modifier.fillMaxHeight().width(76.dp).padding(vertical = 10.dp),
+        // Eight tabs can outgrow a phone held sideways, so the rail scrolls when it must.
+        Modifier
+            .fillMaxHeight()
+            .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
+            .width(76.dp)
+            .glass(22.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Logo()
         Tab.entries.forEach { t -> RailItem(t, t == selected) { onSelect(t) } }
@@ -163,7 +202,7 @@ private fun RailItem(tab: Tab, selected: Boolean, onClick: () -> Unit) {
             Modifier
                 .padding(start = 6.dp)
                 .pressScale(source, 0.9f)
-                .background(if (selected) Neon.lime.copy(alpha = 0.10f) else Color.Transparent, RoundedCornerShape(14.dp))
+                .then(if (selected) Modifier.glass(14.dp, tint = Neon.lime.copy(alpha = 0.6f), edge = Neon.lime.copy(alpha = 0.45f)) else Modifier)
                 .clickable(interactionSource = source, indication = null, onClick = onClick)
                 .padding(horizontal = 10.dp, vertical = 3.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -194,6 +233,15 @@ private fun TabIcon(tab: Tab, tint: Color) {
         }
         Tab.S3XY -> Icon(Icons.Filled.Star, null, m, tint)
         Tab.NAV -> Icon(Icons.Filled.Place, null, m, tint)
+        Tab.AI -> Canvas(m) {
+            // Speech bubble: the assistant talks, it no longer listens.
+            val w = size.width
+            val h = size.height
+            val s = 2.dp.toPx()
+            drawRoundRect(tint, Offset(w * 0.08f, h * 0.14f), Size(w * 0.84f, h * 0.56f), CornerRadius(h * 0.18f), style = Stroke(s))
+            drawLine(tint, Offset(w * 0.30f, h * 0.70f), Offset(w * 0.22f, h * 0.90f), s, StrokeCap.Round)
+            drawLine(tint, Offset(w * 0.22f, h * 0.90f), Offset(w * 0.46f, h * 0.70f), s, StrokeCap.Round)
+        }
         Tab.DATA -> Icon(Icons.Filled.List, null, m, tint)
         Tab.LOGBOOK -> Icon(Icons.Filled.DateRange, null, m, tint)
         Tab.SETTINGS -> Icon(Icons.Filled.Settings, null, m, tint)
@@ -201,41 +249,48 @@ private fun TabIcon(tab: Tab, tint: Color) {
 }
 
 @Composable
-private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: LinkState, busy: String?) {
+private fun TopStrip(tab: Tab, vm: AppViewModel, ui: UiState, onSplitDash: (() -> Unit)?) {
+    val commander = ui.commander
+    val car = ui.car
+    val busy = ui.busy
     Row(
         Modifier.fillMaxWidth().height(52.dp).padding(start = 4.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Column {
-            Text(tab.english, fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 3.sp, color = Neon.muted)
-            Text(tab.title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Neon.text)
+        if (tab == Tab.DASH) {
+            // The dashboard's title gives way to its status icons.
+            DashStatus(vm, ui, Modifier.weight(1f))
+        } else {
+            Column {
+                Text(tab.english, fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 3.sp, color = Neon.muted)
+                Text(tab.title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Neon.text)
+            }
+            Spacer(Modifier.weight(1f))
         }
-        Spacer(Modifier.weight(1f))
+        onSplitDash?.let { GlowButton("계기판만", it, accent = Neon.cyan) }
         if (busy != null) {
             CircularProgressIndicator(Modifier.size(16.dp), color = Neon.lime, strokeWidth = 2.dp)
             Text("$busy…", fontSize = 12.sp, color = Neon.muted)
         }
+        var searching by remember { mutableStateOf(false) }
+        SearchPill({ searching = true })
+        if (searching) DestinationDialog { searching = false }
         LinkPill("S3XY", commander.label, commander.color(), commander == LinkState.CONNECTING || commander == LinkState.NEEDS_PAIRING) {
             if (commander == LinkState.CONNECTED) vm.disconnectCommander() else vm.connectCommander()
         }
         LinkPill("CAR", car.label, car.color(), car == LinkState.CONNECTING) {
             if (car == LinkState.CONNECTED) vm.disconnectCar() else vm.connectCar()
         }
-        Clock()
+        StatusClock()
     }
 }
 
 @Composable
-private fun Clock() {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            now = System.currentTimeMillis()
-            delay(1000)
-        }
-    }
-    Text(SimpleDateFormat("HH:mm", Locale.KOREA).format(Date(now)), fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Neon.text)
+private fun DashStatus(vm: AppViewModel, ui: UiState, modifier: Modifier) {
+    val camera by CameraState.status.collectAsState()
+    val gpsSpeed by CameraState.gpsSpeedKmh.collectAsState()
+    CockpitStatus(vm, ui, Cockpit.from(ui, camera, gpsSpeed), modifier)
 }
 
 fun LinkState.color(): Color = when (this) {

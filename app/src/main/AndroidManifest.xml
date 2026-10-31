@@ -22,6 +22,23 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Optional: lets a changed Tesla destination open the navigation app while
+         this app is in the background. Without it a notification is shown. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- Android 11+ package visibility: the TTS engine and map apps -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <package android:name="com.nhn.android.nmap" />
+        <package android:name="net.daum.android.map" />
+        <package android:name="com.skt.tmap.ku" />
+        <package android:name="com.skt.skaf.l001mtm091" />
+        <package android:name="com.locnall.KimGiSa" />
+        <package android:name="com.waze" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -43,6 +60,12 @@
         <service
             android:name=".camera.SpeedCameraService"
             android:exported="false"
+            android:stopWithTask="true"
+            android:foregroundServiceType="location" />
+        <service
+            android:name=".navi.NaviService"
+            android:exported="false"
+            android:stopWithTask="true"
             android:foregroundServiceType="location" />
     </application>
 </manifest>

@@ -34,6 +34,28 @@ object Neon {
     val blue = Color(0xFF4D7CFF)
 }
 
+/**
+ * Frosted glass over the glow backdrop: a light translucent fill, a sheen
+ * on the upper part and a hairline edge lit from the top left.
+ */
+object Glass {
+    val fillTop = Color.White.copy(alpha = 0.10f)
+    val fillBottom = Color.White.copy(alpha = 0.035f)
+    val sheen = Color.White.copy(alpha = 0.07f)
+    val edgeLit = Color.White.copy(alpha = 0.34f)
+    val edgeDim = Color.White.copy(alpha = 0.06f)
+
+    /** Empty part of a bar or track. */
+    val track = Color.White.copy(alpha = 0.10f)
+
+    /** Dialogs and snackbars: nearly opaque so text stays readable over anything. */
+    val dense = Color(0xEB161A22)
+
+    /** Behind the glass: near-black with soft lime, blue and cyan glows. */
+    val backdropTop = Color(0xFF0B0F17)
+    val backdropBottom = Color(0xFF040508)
+}
+
 /** Display face for numbers and English labels; Korean text falls back to the system font. */
 val Orbitron = FontFamily(
     Font(R.font.orbitron_semibold, FontWeight.SemiBold),

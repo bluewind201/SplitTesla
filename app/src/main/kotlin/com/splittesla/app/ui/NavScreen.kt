@@ -18,6 +18,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,6 +31,7 @@ import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
+import com.splittesla.app.assistant.NaviApp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -54,6 +57,8 @@ fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                 )
             }
 
+            NaviPanel(ui)
+
             CameraSection(vm, ui)
 
             Section("주행") {
@@ -62,41 +67,47 @@ fun NavScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     BigValue("속도", speed?.let { "$it" } ?: "—", "km/h")
                     BigValue(
-                        "제한속도",
+                        "도로 제한속도 (테슬라)",
                         limit?.takeIf { it > 0 }?.toString() ?: "—",
                         "km/h",
                         warn = speed != null && limit != null && limit > 0 && speed > limit,
                     )
                 }
-                if (ui.commander != LinkState.CONNECTED) {
-                    Text("제한속도는 S3XY 연결 시 표시됩니다.", style = MaterialTheme.typography.bodySmall)
-                }
+                Text(
+                    if (ui.commander != LinkState.CONNECTED) "도로 제한속도는 S3XY 연결 시 테슬라 지도 값으로 표시됩니다."
+                    else "도로 제한속도는 테슬라 지도 값입니다. 단속카메라는 위의 공공데이터로 따로 알립니다.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
             }
         }
         Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Section("네이버·카카오 길안내") {
+            Section("폰 내비 길안내") {
                 val lat = nav?.destinationLat
                 val lon = nav?.destinationLon
+                val assistant by vm.assistant.state.collectAsState()
+                val shared by vm.routeSync.last.collectAsState()
+                Text(
+                    if (assistant.autoShareRoute) "자동 공유 켜짐: 차에서 목적지가 바뀌면 ${assistant.naviApp.label}(으)로 바로 보냅니다."
+                    else "자동 공유 꺼짐 (설정 탭에서 켜기)",
+                    fontSize = 12.sp,
+                    color = if (assistant.autoShareRoute) Neon.green else Neon.muted,
+                )
+                shared?.let { Text("최근 전송: $it", fontSize = 12.sp, color = Neon.cyan) }
                 if (lat != null && lon != null) {
                     val name = nav?.destination ?: "목적지"
                     Text("차에 설정된 목적지($name)로 폰 내비를 바로 시작합니다.", fontSize = 12.sp, color = Neon.muted)
                     ButtonGrid(
                         true,
-                        "네이버지도 길안내" to { NaviLaunch.naver(context, lat, lon, name) },
-                        "카카오맵 길안내" to { NaviLaunch.kakao(context, lat, lon) },
+                        *NaviApp.entries.map { a -> a.label to { NaviLaunch.route(context, a, lat, lon, name) } }.toTypedArray(),
                         "다른 지도 앱" to { openMap(context, lat, lon, name) },
                     )
                 } else {
                     Text(
-                        "차에 목적지를 설정하고 아래 새로고침을 누르면 그 목적지로 바로 길안내합니다. 지금은 지도 앱만 엽니다.",
+                        "차에 목적지를 설정하면 그 목적지로 바로 길안내합니다. 지금은 지도 앱만 엽니다.",
                         fontSize = 12.sp,
                         color = Neon.muted,
                     )
-                    ButtonGrid(
-                        true,
-                        "네이버지도 열기" to { NaviLaunch.openNaver(context) },
-                        "카카오맵 열기" to { NaviLaunch.openKakao(context) },
-                    )
+                    ButtonGrid(true, *NaviApp.entries.map { a -> "${a.label} 열기" to { NaviLaunch.open(context, a) } }.toTypedArray())
                 }
             }
             Section("경로") {

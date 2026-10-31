@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Neon
+import com.splittesla.app.ui.theme.Glass
 
 /** A wrapping row of command buttons: label to action. */
 @OptIn(ExperimentalLayoutApi::class)
@@ -45,7 +46,7 @@ fun rememberConfirmer(): Confirmer {
     confirmer.pending?.let { (question, action) ->
         AlertDialog(
             onDismissRequest = confirmer::dismiss,
-            containerColor = Neon.surfaceHi,
+            containerColor = Glass.dense,
             title = { Text("실행할까요?") },
             text = { Text(question, color = Neon.muted) },
             confirmButton = { GlowButton("실행", { confirmer.dismiss(); action() }, filled = true) },

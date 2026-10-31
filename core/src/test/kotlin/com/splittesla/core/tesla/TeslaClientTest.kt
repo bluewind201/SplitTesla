@@ -195,6 +195,8 @@ class TeslaClientTest {
         val car = FakeCar()
         val client = connect(car)
         val nav = client.navigation()
+        // Drive and location are asked for separately to stay under the 1 KB reply limit.
+        assertEquals(listOf("GETVEHICLEDATA", "GETVEHICLEDATA"), car.executed)
         assertEquals("Seoul Station", nav.destination)
         assertEquals(12.5, nav.minutesToArrival)
         assertEquals(16.09, nav.kmToArrival!!, 0.01)

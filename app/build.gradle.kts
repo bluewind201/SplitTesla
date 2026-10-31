@@ -12,12 +12,19 @@ android {
         applicationId = "com.splittesla.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        // Each CI build counts up, so every published APK is a clear update over the last.
+        versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
         versionName = "0.1.0"
+        // NAVER Map's native library is ~20 MB per ABI; phones are arm64, so ship only that.
+        ndk { abiFilters += "arm64-v8a" }
     }
 
-    // A fixed test key so each CI build installs over the previous one. A new
+    // A fixed key so each CI build installs over the previous one. A new
     // signature would force an uninstall, which deletes the paired Tesla key.
+    // Shared builds use the private release key (registered with Google's
+    // developer verification); CI decodes it from secrets and passes its path
+    // here. Without it the build falls back to the committed test key.
+    val releaseKeystore = System.getenv("SPLITTESLA_KEYSTORE")?.let(::file)?.takeIf { it.exists() }
     signingConfigs {
         getByName("debug") {
             storeFile = file("debug.keystore")
@@ -25,12 +32,20 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = System.getenv("SPLITTESLA_KEYSTORE_PASSWORD")
+                keyAlias = "splittesla"
+                keyPassword = System.getenv("SPLITTESLA_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 
@@ -67,4 +82,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("com.naver.maps:map-sdk:3.23.3")
 }

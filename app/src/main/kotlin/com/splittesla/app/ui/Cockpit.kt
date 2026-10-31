@@ -16,6 +16,7 @@ enum class Closure { FRONT_LEFT, FRONT_RIGHT, REAR_LEFT, REAR_RIGHT, FRUNK, TRUN
 data class Cockpit(
     val speedKmh: Float?,
     val speedSource: String,
+    /** The road's limit from Tesla's own map data, read from the Commander. */
     val limitKmh: Int?,
     val cameraLimitKmh: Int?,
     val cameraDistanceM: Double?,
@@ -36,8 +37,13 @@ data class Cockpit(
     val turnRight: Boolean,
     val brake: Boolean,
 ) {
-    /** The tightest limit that applies right now: a camera ahead or the road's limit. */
-    val activeLimit: Int? get() = listOfNotNull(limitKmh, cameraLimitKmh).filter { it > 0 }.minOrNull()
+    /**
+     * The limit the dashboard enforces: the speed camera ahead (or the section
+     * being driven) from the public data.go.kr camera list. The car's own
+     * map limit ([limitKmh], from Tesla over the Commander) is only shown
+     * beside it, never used as a camera.
+     */
+    val activeLimit: Int? get() = cameraLimitKmh?.takeIf { it > 0 }
     val overLimit: Boolean
         get() {
             val s = speedKmh ?: return false
@@ -91,7 +97,7 @@ data class Cockpit(
             val wave = (kotlin.math.sin(t * 0.35) * 0.5 + 0.5).toFloat()
             val speed = 15f + wave * 135f
             return Cockpit(
-                speedKmh = speed, speedSource = "DEMO", limitKmh = 110, cameraLimitKmh = null, cameraDistanceM = null,
+                speedKmh = speed, speedSource = "DEMO", limitKmh = 110, cameraLimitKmh = 110, cameraDistanceM = 450.0,
                 gear = "D", driveMode = "SPORT", regen = "STANDARD", locked = true, open = emptySet(),
                 socPercent = 78, rangeKm = 412, powerKw = (kotlin.math.cos(t * 0.35) * 160).toFloat(),
                 outsideTempC = 17f, insideTempC = 21f, blindLeft = speed > 120, blindRight = false,

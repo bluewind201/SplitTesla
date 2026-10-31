@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.UiState
 import com.splittesla.app.camera.CameraState
+import com.splittesla.app.ui.theme.Neon
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,7 +52,12 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
         uri?.let(vm::importCameras)
     }
 
-    Section("과속카메라 알림") {
+    FoldSection(
+        "과속카메라 알림 (공공데이터)",
+        summary = (if (running) "켜짐" else "꺼짐") + if (ui.cameraCount > 0) " · ${ui.cameraCount}개" else " · 데이터 없음",
+        summaryColor = if (running) Neon.green else Neon.muted,
+        startOpen = running || ui.cameraCount == 0,
+    ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Column(Modifier.weight(1f)) {
                 Text(if (running) "켜짐" else "꺼짐", style = MaterialTheme.typography.titleMedium)
@@ -90,7 +96,11 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
                     color = if (speed != null && speed > ahead.limitKmh) MaterialTheme.colorScheme.error
                     else MaterialTheme.colorScheme.onSurface,
                 )
+                ahead.zone?.let { Text(it, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error) }
                 if (ahead.place.isNotBlank()) Text(ahead.place, style = MaterialTheme.typography.bodySmall)
+                status.headingDeg?.let { heading ->
+                    TextButton(onClick = { vm.ignoreCamera(ahead.id, heading) }) { Text("반대 방향 카메라예요 (이 방향에선 끄기)") }
+                }
             } else {
                 Text("앞쪽에 카메라 없음", style = MaterialTheme.typography.bodyMedium)
             }
@@ -101,12 +111,32 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
                     "${avg.roundToInt()} / 제한 $limit km/h",
                     highlight = if (limit != null && avg > limit) MaterialTheme.colorScheme.error else null,
                 )
+                status.sectionRemainingM?.let { ValueRow("구간 남은 거리", "%.1f km".format(it / 1000)) }
+                status.sectionSafeKmh?.let { ValueRow("남은 구간 권장 속도", "${it.roundToInt()} km/h 이하") }
             }
         }
         lastAlert?.let { Text("최근 알림: $it", style = MaterialTheme.typography.bodySmall) }
 
         val updated = ui.cameraUpdatedAt.takeIf { it > 0 }?.let { SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(Date(it)) }
         ValueRow("카메라 데이터", if (ui.cameraCount > 0) "${ui.cameraCount}개 ($updated)" else "없음")
+        var roadCheck by rememberSaveable { mutableStateOf(vm.cameraRoadCheck) }
+        Toggle("테슬라 지도 제한속도로 옆 도로 카메라 거르기", roadCheck) {
+            roadCheck = it
+            vm.cameraRoadCheck = it
+        }
+        var learning by rememberSaveable { mutableStateOf(vm.cameraLearning) }
+        Toggle("옆으로 빠지는 카메라 3번이면 그 방향에서 자동으로 끄기", learning) {
+            learning = it
+            vm.cameraLearning = it
+        }
+        Text(
+            "길안내 중에는 경로 위 카메라만 알립니다. S3XY가 연결돼 있으면 테슬라 지도의 도로 제한속도와 카메라 제한속도가 " +
+                "30 이상 다를 때 고가·옆길 카메라로 보고 넘깁니다(어린이·노인보호구역은 항상 알림). " +
+                "계기판의 카메라 카드를 길게 누르면 그 카메라를 이 방향에서 바로 끕니다.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        val ignored = vm.ignoredCameraCount
+        if (ignored > 0) TextButton(onClick = vm::clearIgnoredCameras) { Text("방향 제외한 카메라 ${ignored}개 되살리기") }
         TextButton(onClick = { showData = !showData }) { Text(if (showData) "데이터 받기 접기" else "카메라 데이터 받기·갱신") }
         if (showData) {
             Text(
@@ -125,7 +155,18 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            ButtonGrid(ui.busy == null && key.isNotBlank(), "API로 받기" to { vm.downloadCameras(key) })
+            ButtonGrid(
+                ui.busy == null && key.isNotBlank(),
+                "연결 테스트" to { vm.testCameraKey(key) },
+                "API로 받기" to { vm.downloadCameras(key) },
+            )
+            ui.cameraTest?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (it.startsWith("✅")) Neon.green else if (it.startsWith("❌")) Neon.red else Neon.muted,
+                )
+            }
         }
     }
 }

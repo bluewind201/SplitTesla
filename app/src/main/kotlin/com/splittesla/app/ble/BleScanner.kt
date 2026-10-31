@@ -68,7 +68,9 @@ class BleScanner(private val context: Context) {
                 found.completeExceptionally(GattException("스캔 실패 code=$errorCode"))
             }
         }
-        val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
+        // Not LOW_LATENCY: a constant full-time scan shares the 2.4 GHz radio with
+        // Bluetooth audio and the phone's Wi-Fi hotspot, and made YouTube stutter.
+        val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build()
         scanner.startScan(filters, settings, callback)
         return try {
             withTimeoutOrNull(timeoutMillis) { found.await() }

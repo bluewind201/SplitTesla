@@ -6,6 +6,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Pushes close together used to publish latest-apk at the same time, and one
+# run's delete raced the other's create. Only the newest run per branch goes on.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,12 +26,36 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Core protocol tests
         run: ./gradlew -p core test
+      # Release build, signed with the private key when the repo secrets are
+      # set (SIGNING_KEYSTORE_BASE64, SIGNING_KEYSTORE_PASSWORD). A release
+      # build is not debuggable, so adb can't read the stored car key.
       - name: Build APK
-        run: ./gradlew :app:assembleDebug
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SPLITTESLA_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
+        run: |
+          # Secrets pasted from secrets.txt may carry the "KEYSTORE_PASSWORD="
+          # label, spaces or a line break, so keep only the value.
+          pw=$(printf '%s' "$SPLITTESLA_KEYSTORE_PASSWORD" | sed -n 's/^KEYSTORE_PASSWORD=//; /./{p;q}' | tr -d ' \t\r\n')
+          export SPLITTESLA_KEYSTORE_PASSWORD="$pw"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/release.jks"
+            # A wrong secret falls back to the test key instead of failing
+            # every branch's build.
+            if keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$pw" -alias splittesla >/dev/null 2>&1; then
+              export SPLITTESLA_KEYSTORE="$RUNNER_TEMP/release.jks"
+              echo "Signing with the release key"
+            else
+              echo "::warning::Release keystore didn't open (password length ${#pw}); using the test key"
+            fi
+          else
+            echo "::warning::Signing secrets not set; using the test key"
+          fi
+          ./gradlew :app:assembleRelease
       - uses: actions/upload-artifact@v4
         with:
-          name: SplitTesla-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: SplitTesla-apk
+          path: app/build/outputs/apk/release/*.apk
       # Direct .apk download on the "latest-apk" prerelease. Only the top of the
       # branch stack (design -> logbook -> AI voice) publishes, so the link
       # always has every feature.
@@ -34,7 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk SplitTesla.apk
+          cp app/build/outputs/apk/release/app-release.apk SplitTesla.apk
           gh release delete latest-apk --yes --cleanup-tag || true
           gh release create latest-apk SplitTesla.apk --prerelease --target "$GITHUB_SHA" \
             --title "SplitTesla 테스트 APK" --notes "브랜치 ${GITHUB_REF_NAME}, 커밋 ${GITHUB_SHA::7}"

@@ -2,6 +2,7 @@ package com.splittesla.app
 
 import android.content.Context
 import android.util.Base64
+import com.splittesla.app.ui.CockpitLayout
 import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.tesla.TeslaKey
@@ -18,6 +19,20 @@ class Prefs(context: Context) {
     var gaugeStyle: GaugeStyle
         get() = GaugeStyle.entries.firstOrNull { it.name == prefs.getString("gauge_style", null) } ?: GaugeStyle.TRACK
         set(value) = prefs.edit().putString("gauge_style", value.name).apply()
+
+    var cockpitLayout: CockpitLayout
+        get() = CockpitLayout.entries.firstOrNull { it.name == prefs.getString("cockpit_layout", null) } ?: CockpitLayout.BALANCED
+        set(value) = prefs.edit().putString("cockpit_layout", value.name).apply()
+
+    /** The car accepted this phone's key; remembered so the settings screen can say so before connecting. */
+    var keyPaired: Boolean
+        get() = prefs.getBoolean("key_paired", false)
+        set(value) = prefs.edit().putBoolean("key_paired", value).apply()
+
+    /** Speed camera alerts were left on; they start again with the app. */
+    var cameraAlerts: Boolean
+        get() = prefs.getBoolean("camera_alerts", false)
+        set(value) = prefs.edit().putBoolean("camera_alerts", value).apply()
 
     /** S3XY actions pinned to the top of the actions tab. */
     var favorites: Set<CommanderAction>

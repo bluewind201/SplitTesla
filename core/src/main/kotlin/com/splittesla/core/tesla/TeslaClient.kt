@@ -104,6 +104,21 @@ class TeslaClient(
         transport.send(envelope.toByteArray())
     }
 
+    /**
+     * True once the car knows this phone's key. Before the key card is tapped
+     * and the request approved, the car answers the security handshake with
+     * "unknown key".
+     */
+    suspend fun isKeyPaired(): Boolean = mutex.withLock {
+        sessions.remove(Domain.DOMAIN_VEHICLE_SECURITY)
+        try {
+            ensureSession(Domain.DOMAIN_VEHICLE_SECURITY)
+            true
+        } catch (_: KeyNotPairedException) {
+            false
+        }
+    }
+
     // ── Infotainment: the car must be awake ──
 
     suspend fun chargeStart() = infotainment {
@@ -178,12 +193,20 @@ class TeslaClient(
         return response.vehicleData
     }
 
-    /** Active route and GPS position in one round trip. */
+    /**
+     * Active route and GPS position. Asked for in two requests: together the
+     * reply can pass the 1 KB BLE message limit, and the car then refuses
+     * with MESSAGEFAULT_ERROR_RESPONSE_MTU_EXCEEDED. Position is optional.
+     */
     suspend fun navigation(): NavigationInfo {
-        val get = CarServer.GetVehicleData.newBuilder()
-            .setGetDriveState(CarServer.GetDriveState.getDefaultInstance())
-            .setGetLocationState(CarServer.GetLocationState.getDefaultInstance())
-        return NavigationInfo.from(infotainment { setGetVehicleData(get) }.vehicleData)
+        val drive = state(StateCategory.DRIVE)
+        val merged = Vehicle.VehicleData.newBuilder(drive)
+        try {
+            merged.setLocationState(state(StateCategory.LOCATION).locationState)
+        } catch (_: TeslaFaultException) {
+            // Route without position still answers "how long until we arrive".
+        }
+        return NavigationInfo.from(merged.build())
     }
 
     /** Superchargers near the car, nearest first. [radiusMiles] follows the car's unit. */

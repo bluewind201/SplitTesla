@@ -104,6 +104,15 @@ class GattClient(
         op { it.discoverServices() }
     }
 
+    /**
+     * Asks for long connection intervals. The car link only carries the odd
+     * command, and a busy BLE link takes airtime from Bluetooth audio and
+     * the Wi-Fi hotspot on the same 2.4 GHz radio.
+     */
+    fun preferLowPower() {
+        gatt?.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER)
+    }
+
     suspend fun requestMtu(size: Int): Int = (op { it.requestMtu(size) } as? Int) ?: mtu
 
     fun characteristic(service: UUID, characteristic: UUID): BluetoothGattCharacteristic? =

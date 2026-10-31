@@ -4,15 +4,22 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import android.net.Uri
+import com.splittesla.app.assistant.DriveAssistant
+import com.splittesla.app.assistant.RouteSync
 import com.splittesla.app.ble.CommanderLink
 import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.logbook.LogbookController
 import com.splittesla.app.camera.CameraState
 import com.splittesla.app.camera.SpeedCameraService
+import com.splittesla.app.navi.CarFeed
+import com.splittesla.app.navi.NaviHub
 import com.splittesla.app.ble.TeslaLink
+import com.splittesla.app.ui.CockpitLayout
 import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.app.weather.Weather
+import com.splittesla.app.weather.RegionRepository
 import com.splittesla.app.weather.WeatherRepository
+import com.splittesla.core.assistant.LatLon
 import com.splittesla.core.s3xy.CommanderAction
 import com.splittesla.core.s3xy.CommanderSession
 import com.splittesla.core.s3xy.CommanderStatus
@@ -60,6 +67,10 @@ data class UiState(
     val toast: String? = null,
     val logRawPushes: Boolean = false,
     val vin: String = "",
+    /** The car has accepted this phone's key. */
+    val keyPaired: Boolean = false,
+    /** Waiting for the driver to tap the key card and approve on the car's screen. */
+    val keyPairing: Boolean = false,
     val favorites: Set<CommanderAction> = emptySet(),
     val nav: NavigationInfo? = null,
     val navUpdatedAt: Long? = null,
@@ -68,9 +79,14 @@ data class UiState(
     val cameraCount: Int = 0,
     val cameraUpdatedAt: Long = 0,
     val cameraApiKey: String = "",
+    /** Result of the last speed camera API connection test. */
+    val cameraTest: String? = null,
     val weather: Weather? = null,
     val gaugeStyle: GaugeStyle = GaugeStyle.TRACK,
+    val cockpitLayout: CockpitLayout = CockpitLayout.BALANCED,
     val demo: Boolean = false,
+    /** District and neighbourhood, such as "분당구 정자동". */
+    val region: String? = null,
 )
 
 /**
@@ -85,14 +101,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Prefs(app)
     private val cameras = CameraRepository(app)
     private val weatherRepo = WeatherRepository(app)
+    private val regions = RegionRepository(app)
     private val _ui = MutableStateFlow(
         UiState(
             vin = prefs.vin,
+            keyPaired = prefs.keyPaired,
             favorites = prefs.favorites,
             cameraCount = cameras.count,
             cameraUpdatedAt = cameras.updatedAt,
             cameraApiKey = cameras.apiKey,
             gaugeStyle = prefs.gaugeStyle,
+            cockpitLayout = prefs.cockpitLayout,
         ),
     )
     val ui: StateFlow<UiState> = _ui.asStateFlow()
@@ -110,6 +129,52 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     val teslaPublicKeyHex: String by lazy { prefs.teslaKey.publicKeyBytes.joinToString("") { "%02x".format(it) } }
 
+    /** Assistant: spoken driving notes and typed commands. */
+    val assistant = DriveAssistant(this, viewModelScope)
+
+    /** Sends the car's destination to the phone's navigation app when it changes. */
+    val routeSync = RouteSync(this, viewModelScope).also { it.start() }
+
+    init {
+        // In-app guidance reads battery, speed and the car's superchargers from both links.
+        NaviHub.init(app) { log(it) }
+        viewModelScope.launch {
+            while (isActive) {
+                NaviHub.bestPosition()?.let { p -> regions.nameAt(p)?.let { r -> _ui.update { it.copy(region = r) } } }
+                delay(60_000)
+            }
+        }
+        viewModelScope.launch {
+            _ui.collect { s ->
+                val d = s.live
+                val nav = s.nav
+                NaviHub.onCar(
+                    CarFeed(
+                        socPercent = d.socPercent?.toDouble() ?: s.charge?.takeIf { it.hasBatteryLevel() }?.batteryLevel?.toDouble(),
+                        remainingKwh = d.nominalRemainingKwh,
+                        fullKwh = d.nominalFullPackNowKwh,
+                        powerKw = d.batteryPowerKw,
+                        speedKmh = d.speedKmh?.toDouble() ?: nav?.speedKmh,
+                        outsideC = d.outsideTempC?.toDouble(),
+                        position = nav?.latitude?.let { lat -> nav.longitude?.let { LatLon(lat, it) } },
+                        superchargers = s.chargingSites,
+                        at = System.currentTimeMillis(),
+                    ),
+                )
+            }
+        }
+    }
+
+    /** True while the app is on screen, including split screen beside a map. */
+    var isForeground = false
+        private set
+    private val _multiWindow = MutableStateFlow(false)
+    /** Split screen (or a pop-up window) beside another app, usually the navi. */
+    val multiWindow: StateFlow<Boolean> = _multiWindow.asStateFlow()
+    var inMultiWindow: Boolean
+        get() = _multiWindow.value
+        set(value) { _multiWindow.value = value }
+
     fun log(line: String) {
         val stamped = "${timeFormat.format(Date())} $line"
         _log.update { (it + stamped).takeLast(1000) }
@@ -117,10 +182,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun consumeToast() = _ui.update { it.copy(toast = null) }
 
+    fun toast(text: String) = _ui.update { it.copy(toast = text) }
+
     fun setVin(vin: String) {
         val changed = vin != prefs.vin
         prefs.vin = vin
-        _ui.update { it.copy(vin = prefs.vin, toast = "VIN 저장됨") }
+        _ui.update { it.copy(vin = prefs.vin, toast = "✅ VIN을 저장했습니다") }
         // A different car needs a fresh connection.
         if (changed && car != null) disconnectCar()
     }
@@ -128,6 +195,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun setGaugeStyle(style: GaugeStyle) {
         prefs.gaugeStyle = style
         _ui.update { it.copy(gaugeStyle = style) }
+    }
+
+    fun setCockpitLayout(layout: CockpitLayout) {
+        prefs.cockpitLayout = layout
+        _ui.update { it.copy(cockpitLayout = layout) }
     }
 
     fun setDemo(on: Boolean) = _ui.update { it.copy(demo = on) }
@@ -178,7 +250,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Set when the user taps a link off; auto connect leaves that link alone until they tap it on. */
     private var commanderOff = false
     private var carOff = false
-    private var foreground = false
     private var autoJob: Job? = null
 
     /**
@@ -191,7 +262,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         autoJob = viewModelScope.launch {
             var failures = 0
             while (isActive) {
-                if (foreground) {
+                if (isForeground) {
                     val s = _ui.value
                     val idle = setOf(LinkState.DISCONNECTED, LinkState.FAILED)
                     val tries = buildList {
@@ -202,14 +273,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     val failed = _ui.value.commander == LinkState.FAILED || _ui.value.car == LinkState.FAILED
                     failures = if (tries.isNotEmpty() && failed) failures + 1 else 0
                 }
-                // Retry quickly at first, then ease off while the car is out of range.
-                delay(if (failures < 3) 15_000L else 60_000L)
+                // Retry quickly at first, then ease off while the car is out of range:
+                // 15 s, 30 s, 1 min, 2 min, then every 3 min. Scanning disturbs
+                // Bluetooth audio and the hotspot, so a car that isn't there
+                // should not be searched for nonstop.
+                delay(minOf(15_000L shl minOf(failures, 4), 180_000L))
             }
         }
     }
 
     fun setForeground(on: Boolean) {
-        foreground = on
+        isForeground = on
     }
 
     private suspend fun autoTry(name: String, block: suspend () -> Unit) {
@@ -242,15 +316,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 context = getApplication(),
                 phoneUuid = prefs.commanderPhoneUuid,
                 onData = { delta ->
-                    _ui.update { it.copy(live = delta.mergedOnto(it.live), pushCount = it.pushCount + 1) }
-                    _ui.value.live.speedKmh?.let {
+                    delta.speedKmh?.let {
                         CameraState.commanderSpeedKmh = it
                         CameraState.commanderSpeedAt = System.currentTimeMillis()
                     }
+                    delta.speedLimit?.let { CameraState.commanderLimitKmh = it }
+                    queueLive(delta)
                 },
                 onRawPush = { bytes -> if (_ui.value.logRawPushes) log("PUSH ${bytes.hex()}") },
                 onDisconnect = {
                     log("Commander 연결 끊김")
+                    CameraState.commanderLimitKmh = null
                     _ui.update { it.copy(commander = LinkState.DISCONNECTED) }
                 },
                 log = ::log,
@@ -272,7 +348,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
      */
     private suspend fun registerAndSubscribe(session: CommanderSession) {
         var status = session.sendUuid()
-        if (status != CommanderStatus.SUCCESS) {
+        val wasNew = status != CommanderStatus.SUCCESS
+        if (wasNew) {
             log("Commander가 이 폰을 모릅니다 ($status). 핸들 오른쪽 스크롤 버튼을 두 번 누르세요")
             _ui.update { it.copy(commander = LinkState.NEEDS_PAIRING, toast = "핸들 오른쪽 스크롤 버튼을 두 번 누르세요") }
             val deadline = System.currentTimeMillis() + 60_000
@@ -285,7 +362,35 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         log("Commander 등록 완료")
         val sub = session.subscribe()
         log("실시간 데이터 구독: $sub")
-        _ui.update { it.copy(commander = LinkState.CONNECTED) }
+        _ui.update {
+            it.copy(commander = LinkState.CONNECTED, toast = if (wasNew) "✅ S3XY Commander에 이 폰을 등록했습니다" else it.toast)
+        }
+    }
+
+    // The Commander streams many CAN frames a second. Redrawing the screen for
+    // each one kept the phone busy enough to stutter video, so pushes are
+    // merged and shown at most four times a second.
+    private val liveLock = Any()
+    private var pendingLive: VehicleData? = null
+    private var pendingPushes = 0
+    private var liveFlush: Job? = null
+
+    private fun queueLive(delta: VehicleData) {
+        synchronized(liveLock) {
+            pendingLive = pendingLive?.let { delta.mergedOnto(it) } ?: delta
+            pendingPushes++
+            if (liveFlush?.isActive == true) return
+            liveFlush = viewModelScope.launch {
+                delay(250)
+                val (live, n) = synchronized(liveLock) {
+                    val out = pendingLive to pendingPushes
+                    pendingLive = null
+                    pendingPushes = 0
+                    out
+                }
+                if (live != null) _ui.update { it.copy(live = live.mergedOnto(it.live), pushCount = it.pushCount + n) }
+            }
+        }
     }
 
     fun disconnectCommander() {
@@ -331,6 +436,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             link.connect()
             val client = link.client ?: error("차량 BLE 세션을 열지 못했습니다")
             _ui.update { it.copy(car = LinkState.CONNECTED) }
+            checkKey(client)
             loadCarState(client)
             return client
         } catch (e: Exception) {
@@ -376,7 +482,77 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun sendAddKeyRequest() = withCar("키 등록 요청", silent = true) {
         it.sendAddKeyRequest()
         log("키 등록 요청을 보냈습니다. 센터 콘솔에 키 카드를 대고 화면에서 승인하세요")
-        _ui.update { s -> s.copy(toast = "키 카드를 센터 콘솔에 대고 차량 화면에서 승인하세요") }
+        _ui.update { s -> s.copy(toast = "키 카드를 센터 콘솔에 대고 차량 화면에서 승인하세요", keyPairing = true) }
+        watchKeyApproval(it)
+    }
+
+    private var keyJob: Job? = null
+
+    /** Checks every few seconds for two minutes whether the driver approved the key on the car. */
+    private fun watchKeyApproval(client: TeslaClient) {
+        keyJob?.cancel()
+        keyJob = viewModelScope.launch {
+            val deadline = System.currentTimeMillis() + 120_000
+            try {
+                while (isActive && System.currentTimeMillis() < deadline) {
+                    delay(4000)
+                    val paired = try {
+                        client.isKeyPaired()
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        log("키 등록 확인 중 오류: ${e.message}")
+                        false
+                    }
+                    if (paired) {
+                        onKeyPaired(true)
+                        return@launch
+                    }
+                }
+                _ui.update { it.copy(toast = "아직 키 등록이 확인되지 않았습니다. 승인 후 '등록 확인'을 눌러 보세요") }
+            } finally {
+                _ui.update { it.copy(keyPairing = false) }
+            }
+        }
+    }
+
+    private fun onKeyPaired(announce: Boolean) {
+        val before = prefs.keyPaired
+        prefs.keyPaired = true
+        log("차량이 이 폰의 키를 인식했습니다")
+        _ui.update {
+            it.copy(
+                keyPaired = true,
+                keyPairing = false,
+                toast = if (announce || !before) "✅ 테슬라 키 등록 완료! 이제 이 폰으로 차를 제어할 수 있습니다" else it.toast,
+            )
+        }
+    }
+
+    /** Learns the key state quietly after each connection, so the settings screen stays right. */
+    private fun checkKey(client: TeslaClient) {
+        viewModelScope.launch {
+            try {
+                if (client.isKeyPaired()) {
+                    onKeyPaired(announce = false)
+                } else {
+                    prefs.keyPaired = false
+                    _ui.update { it.copy(keyPaired = false) }
+                }
+            } catch (e: Exception) {
+                log("키 등록 상태 확인 실패: ${e.message}")
+            }
+        }
+    }
+
+    /** "등록 확인" button: asks the car whether it knows this phone's key. */
+    fun verifyKey() = withCar("키 등록 확인", silent = true) {
+        if (it.isKeyPaired()) {
+            onKeyPaired(announce = true)
+        } else {
+            prefs.keyPaired = false
+            _ui.update { s -> s.copy(keyPaired = false, toast = "아직 등록되지 않았습니다. '키 등록 요청' 후 키 카드를 대고 승인하세요") }
+        }
     }
 
     fun refreshCar() = withCar("차량 상태", silent = true) {
@@ -487,9 +663,52 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         onCamerasLoaded(cameras.download(cameras.apiKey))
     }
 
+    /** Saves the key and asks the API for one row, to show whether the key works. */
+    fun testCameraKey(key: String) = run("카메라 API 연결 테스트", silent = true) {
+        cameras.apiKey = key
+        _ui.update { it.copy(cameraApiKey = cameras.apiKey, cameraTest = "연결 확인 중…") }
+        val result = try {
+            val total = cameras.test(cameras.apiKey)
+            log("카메라 API 연결 테스트 성공: 전국 ${total}개")
+            "✅ 연결 성공 · 전국 카메라 ${total}개 조회 가능"
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log("카메라 API 연결 테스트 실패: ${e.message}")
+            "❌ 연결 실패: ${e.message}"
+        }
+        _ui.update { it.copy(cameraTest = result, toast = result) }
+    }
+
+    /** The camera ahead watches the other direction; skip it when driving this way from now on. */
+    fun ignoreCamera(id: String, headingDeg: Double) {
+        cameras.ignore(id, headingDeg)
+        log("카메라 $id 를 이 방향(${headingDeg.toInt()}°)에서 제외")
+        _ui.update { it.copy(toast = "이 방향으로 갈 때는 이 카메라를 알리지 않습니다") }
+    }
+
+    val ignoredCameraCount: Int get() = cameras.ignoredCount
+
+    var cameraRoadCheck: Boolean
+        get() = cameras.roadLimitCheck
+        set(value) {
+            cameras.roadLimitCheck = value
+        }
+
+    var cameraLearning: Boolean
+        get() = cameras.learnMisses
+        set(value) {
+            cameras.learnMisses = value
+        }
+
+    fun clearIgnoredCameras() {
+        cameras.clearIgnored()
+        _ui.update { it.copy(toast = "제외한 카메라를 모두 되살렸습니다") }
+    }
+
     private fun onCamerasLoaded(n: Int) {
         log("과속 카메라 ${n}개 저장")
-        _ui.update { it.copy(cameraCount = n, cameraUpdatedAt = cameras.updatedAt, toast = "과속 카메라 ${n}개를 저장했습니다") }
+        _ui.update { it.copy(cameraCount = n, cameraUpdatedAt = cameras.updatedAt, toast = "✅ 과속 카메라 ${n}개를 등록했습니다") }
         // A running service keeps its old list; restart it to pick up the new one.
         if (CameraState.running.value) {
             SpeedCameraService.stop(getApplication())
@@ -499,11 +718,24 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setCameraAlerts(on: Boolean) {
         if (!on) {
+            prefs.cameraAlerts = false
             SpeedCameraService.stop(getApplication())
         } else if (cameras.count == 0) {
-            _ui.update { it.copy(toast = "먼저 카메라 데이터를 가져오세요") }
+            _ui.update { it.copy(toast = "먼저 내비 탭에서 공공데이터 카메라 데이터를 받으세요") }
         } else {
+            prefs.cameraAlerts = true
             SpeedCameraService.start(getApplication())
+        }
+    }
+
+    /** Starts the alerts again on app start when they were left on, so the dashboard has camera data. */
+    fun resumeCameraAlerts(locationAllowed: Boolean) {
+        if (prefs.cameraAlerts && locationAllowed && cameras.count > 0 && !CameraState.running.value) {
+            try {
+                SpeedCameraService.start(getApplication())
+            } catch (e: Exception) {
+                log("과속카메라 알림 다시 켜기 실패: ${e.message}")
+            }
         }
     }
 
@@ -531,6 +763,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     override fun onCleared() {
+        assistant.shutdown()
         commander?.disconnect()
         car?.disconnect()
     }

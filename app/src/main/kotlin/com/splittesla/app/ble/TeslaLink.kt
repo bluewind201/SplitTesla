@@ -52,6 +52,7 @@ class TeslaLink(
         val mtu = runCatching { g.requestMtu(512) }.getOrDefault(23)
         val block = minOf(mtu, TeslaBleConstants.MAX_MESSAGE_SIZE) - 3
         log("차량 BLE 연결, MTU=$mtu")
+        g.preferLowPower()
 
         client = TeslaClient(
             transport = { message ->
