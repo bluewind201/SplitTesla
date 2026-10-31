@@ -119,6 +119,22 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
 
         val updated = ui.cameraUpdatedAt.takeIf { it > 0 }?.let { SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(Date(it)) }
         ValueRow("카메라 데이터", if (ui.cameraCount > 0) "${ui.cameraCount}개 ($updated)" else "없음")
+        var roadCheck by rememberSaveable { mutableStateOf(vm.cameraRoadCheck) }
+        Toggle("테슬라 지도 제한속도로 옆 도로 카메라 거르기", roadCheck) {
+            roadCheck = it
+            vm.cameraRoadCheck = it
+        }
+        var learning by rememberSaveable { mutableStateOf(vm.cameraLearning) }
+        Toggle("옆으로 빠지는 카메라 3번이면 그 방향에서 자동으로 끄기", learning) {
+            learning = it
+            vm.cameraLearning = it
+        }
+        Text(
+            "길안내 중에는 경로 위 카메라만 알립니다. S3XY가 연결돼 있으면 테슬라 지도의 도로 제한속도와 카메라 제한속도가 " +
+                "30 이상 다를 때 고가·옆길 카메라로 보고 넘깁니다(어린이·노인보호구역은 항상 알림). " +
+                "계기판의 카메라 카드를 길게 누르면 그 카메라를 이 방향에서 바로 끕니다.",
+            style = MaterialTheme.typography.bodySmall,
+        )
         val ignored = vm.ignoredCameraCount
         if (ignored > 0) TextButton(onClick = vm::clearIgnoredCameras) { Text("방향 제외한 카메라 ${ignored}개 되살리기") }
         TextButton(onClick = { showData = !showData }) { Text(if (showData) "데이터 받기 접기" else "카메라 데이터 받기·갱신") }

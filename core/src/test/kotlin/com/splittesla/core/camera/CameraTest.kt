@@ -31,13 +31,20 @@ class CameraTest {
     }
 
     /** Drives north along longitude 127.0 at [kmh], one fix per second. */
-    private fun drive(alerter: CameraAlerter, fromLat: Double, toLat: Double, kmh: Double, startMs: Long = 0): List<Pair<Double, CameraAlert>> {
+    private fun drive(
+        alerter: CameraAlerter,
+        fromLat: Double,
+        toLat: Double,
+        kmh: Double,
+        startMs: Long = 0,
+        roadLimitKmh: Int? = null,
+    ): List<Pair<Double, CameraAlert>> {
         val stepDeg = kmh / 3.6 / 111_195.0
         val out = ArrayList<Pair<Double, CameraAlert>>()
         var lat = fromLat
         var t = startMs
         while (lat < toLat) {
-            alerter.update(lat, 127.0, 0.0, kmh, t).forEach { out += lat to it }
+            alerter.update(lat, 127.0, 0.0, kmh, t, roadLimitKmh).forEach { out += lat to it }
             lat += stepDeg
             t += 1000
         }
@@ -199,5 +206,66 @@ class CameraTest {
         assertEquals(SectionRole.START, cams[3].section)
         assertEquals(SectionRole.END, cams[4].section)
         assertEquals(cams, CameraStore.decode(CameraStore.encode(cams)))
+    }
+
+    @Test
+    fun whileGuidingOnlyCamerasOnTheRouteAreAnnounced() {
+        val cams = CameraIndex(CameraCsv.parse(csv))
+        val elsewhere = CameraAlerter(cams).apply { routeCameraIds = setOf("C3") }
+        assertTrue(drive(elsewhere, 37.49, 37.505, 90.0).isEmpty())
+        val onRoute = CameraAlerter(cams).apply { routeCameraIds = setOf("C1") }
+        assertTrue(drive(onRoute, 37.49, 37.505, 90.0).any { it.second is CameraAlert.Final })
+    }
+
+    @Test
+    fun carMapLimitFarFromTheCamerasMeansAnotherRoad() {
+        val cams = CameraIndex(CameraCsv.parse(csv))
+        // On a 100 road (an expressway above), C1's 60 belongs to the street below.
+        assertTrue(drive(CameraAlerter(cams), 37.49, 37.505, 90.0, roadLimitKmh = 100).isEmpty())
+        // 70 against 60 is ordinary map disagreement: still warned.
+        assertTrue(drive(CameraAlerter(cams), 37.49, 37.505, 90.0, roadLimitKmh = 70).any { it.second is CameraAlert.Final })
+        // A school zone camera is kept whatever the car's map says.
+        val zone = drive(CameraAlerter(cams), 37.69, 37.705, 50.0, roadLimitKmh = 70)
+        assertTrue(zone.any { it.second.camera.id == "C5" && it.second is CameraAlert.Final })
+    }
+
+    @Test
+    fun cameraThatSlidesOffToTheSideIsReportedAsMissed() {
+        // 40 m east of our road, on a parallel street: announced from afar, then it drops away.
+        val side = SpeedCamera("P", 37.5000, 127.0 + 40 / metresPerDegLon, 60, "옆길")
+        val missed = ArrayList<Double>()
+        val passed = ArrayList<String>()
+        val alerter = CameraAlerter(CameraIndex(listOf(side)), onMiss = { _, h -> missed += h }, onDrivenPast = { c, _ -> passed += c.id })
+        val alerts = drive(alerter, 37.49, 37.505, 72.0)
+        assertTrue(alerts.any { it.second is CameraAlert.Approaching }, "got $alerts")
+        assertEquals(1, missed.size)
+        assertEquals(0.0, missed.single(), 1.0)
+        assertTrue(passed.isEmpty())
+    }
+
+    @Test
+    fun cameraDrivenRightPastIsConfirmedNotMissed() {
+        val missed = ArrayList<String>()
+        val passed = ArrayList<String>()
+        val alerter = CameraAlerter(CameraIndex(CameraCsv.parse(csv)), onMiss = { c, _ -> missed += c.id }, onDrivenPast = { c, _ -> passed += c.id })
+        drive(alerter, 37.49, 37.505, 90.0)
+        assertEquals(listOf("C1"), passed)
+        assertTrue(missed.isEmpty())
+    }
+
+    @Test
+    fun turningOffBeforeTheCameraSaysNothingAboutIt() {
+        val missed = ArrayList<String>()
+        val alerter = CameraAlerter(CameraIndex(CameraCsv.parse(csv)), onMiss = { c, _ -> missed += c.id })
+        // North towards C1 until ~200 m short of it, then east along a side street.
+        drive(alerter, 37.49, 37.4982, 72.0)
+        var lon = 127.0
+        var t = 100_000L
+        repeat(15) {
+            alerter.update(37.4982, lon, 90.0, 72.0, t)
+            lon += 20 / metresPerDegLon
+            t += 1000
+        }
+        assertTrue(missed.isEmpty(), "got $missed")
     }
 }

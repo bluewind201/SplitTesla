@@ -307,6 +307,7 @@ fun GuideCard(navi: NaviUi, modifier: Modifier, overlay: Boolean = false) {
  * The speed camera ahead from the public list, or the section being driven.
  * [tall] stacks it for the narrow column of layout C.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CameraCard(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier, tall: Boolean = false) {
     val running by CameraState.running.collectAsState()
@@ -339,7 +340,14 @@ fun CameraCard(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier, ta
             else -> Text("앞쪽 카메라 없음", fontSize = 12.sp, color = Neon.muted)
         }
     }
-    val tap = if (!running) Modifier.clickable { vm.setCameraAlerts(true) } else Modifier
+    val heading = camera.headingDeg
+    val tap = Modifier.combinedClickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = null,
+        onClick = { if (!running) vm.setCameraAlerts(true) },
+        // A camera on another road: a long press quiets it for this direction.
+        onLongClick = if (running && ahead != null && heading != null) ({ vm.ignoreCamera(ahead.id, heading) }) else null,
+    )
     val edge = when {
         over -> Neon.red.copy(alpha = blink)
         running && ahead != null -> Neon.amber.copy(alpha = 0.6f)

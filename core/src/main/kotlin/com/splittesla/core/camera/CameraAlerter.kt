@@ -48,6 +48,16 @@ data class CameraStatus(
  * which side of the road a point lies on says nothing. Cameras the driver has
  * marked as "not for this direction" are skipped through [ignored].
  *
+ * Three more checks cut warnings for cameras on other roads:
+ * - while guiding, [routeCameraIds] limits warnings to cameras on the route;
+ * - the car's own map limit for the road (from the Commander) that differs
+ *   from a camera's by [ROAD_MISMATCH_KMH] or more marks a camera on a road
+ *   beside, above or across ours (protected-zone cameras are always kept);
+ * - a camera that was announced but then slid off to the side while we drove
+ *   straight on, never getting within [PASSED_NEAR_M], is reported through
+ *   [onMiss]; one driven right past goes to [onDrivenPast]. The caller counts
+ *   them and marks a camera [ignored] for that heading after repeated misses.
+ *
  * Each camera warns once early and once at [finalM].
  */
 class CameraAlerter(
@@ -55,7 +65,18 @@ class CameraAlerter(
     private val finalM: Double = 100.0,
     private val sideM: Double = 30.0,
     private val ignored: (cameraId: String, headingDeg: Double) -> Boolean = { _, _ -> false },
+    private val onMiss: (camera: SpeedCamera, headingDeg: Double) -> Unit = { _, _ -> },
+    private val onDrivenPast: (camera: SpeedCamera, headingDeg: Double) -> Unit = { _, _ -> },
 ) {
+    /** While guiding: the cameras on the route. Null warns for any camera on the road ahead. */
+    var routeCameraIds: Set<String>? = null
+
+    /** Heading when each camera was first announced, kept until it is passed or missed. */
+    private val announcedHeading = HashMap<String, Double>()
+
+    /** Closest we have been to each announced camera. */
+    private val closestM = HashMap<String, Double>()
+
     private val warnedEarly = HashSet<String>()
     private val warnedFinal = HashSet<String>()
     private var lastAhead: SpeedCamera? = null
@@ -76,9 +97,10 @@ class CameraAlerter(
 
     /**
      * Feeds one fix. [headingDeg] is the GPS course; it is only trusted while
-     * moving faster than walking pace.
+     * moving faster than walking pace. [roadLimitKmh] is the limit the car's
+     * own map gives for the road being driven, when the Commander reports it.
      */
-    fun update(lat: Double, lon: Double, headingDeg: Double?, speedKmh: Double, timeMs: Long): List<CameraAlert> {
+    fun update(lat: Double, lon: Double, headingDeg: Double?, speedKmh: Double, timeMs: Long, roadLimitKmh: Int? = null): List<CameraAlert> {
         val alerts = ArrayList<CameraAlert>()
         lastFix?.let { (pLat, pLon) -> if (section != null) sectionMeters += Geo.distanceM(pLat, pLon, lat, lon) }
         lastFix = lat to lon
@@ -95,6 +117,8 @@ class CameraAlerter(
             .map { it to Geo.distanceM(lat, lon, it.latitude, it.longitude) }
             .filter { (c, d) -> onPath(lat, lon, heading!!, curvature, c, d) || (d < 30 && c.id == lastAhead?.id) }
             .filter { (c, _) -> !ignored(c.id, heading!!) }
+            .filter { (c, _) -> routeCameraIds?.contains(c.id) ?: true }
+            .filter { (c, _) -> !onOtherRoad(c, roadLimitKmh) }
         rememberDistances(candidates)
         // Once it is beside us the distance stops shrinking; keep it so passing is noticed.
         val ahead = candidates.filter { (c, d) -> closing(c.id) || (d < 30 && c.id == lastAhead?.id) }.minByOrNull { it.second }
@@ -102,6 +126,9 @@ class CameraAlerter(
         // The camera we were closing in on is now behind us: it was passed.
         val passed = lastAhead?.takeIf { prev -> ahead?.first?.id != prev.id && lastDistance < 80 }
         if (passed != null) onPassed(passed, timeMs, alerts)
+        lastAhead?.takeIf { prev -> ahead?.first?.id != prev.id }?.let { prev ->
+            learn(prev, lat, lon, heading.takeIf { moving }, curvature)
+        }
 
         if (ahead != null) {
             val (cam, d) = ahead
@@ -111,6 +138,10 @@ class CameraAlerter(
                 alerts += CameraAlert.Final(cam, d, over)
             } else if (d <= early && d > finalM && warnedEarly.add(cam.id)) {
                 alerts += CameraAlert.Approaching(cam, d, over)
+            }
+            if (cam.id in warnedEarly) {
+                announcedHeading.getOrPut(cam.id) { heading!! }
+                closestM[cam.id] = minOf(closestM[cam.id] ?: d, d)
             }
             lastAhead = cam
             lastDistance = d
@@ -124,6 +155,8 @@ class CameraAlerter(
             val nearby = index.near(lat, lon, 1500.0).map { it.id }.toSet()
             warnedEarly.retainAll(nearby)
             warnedFinal.retainAll(nearby)
+            announcedHeading.keys.retainAll(nearby)
+            closestM.keys.retainAll(nearby)
         }
 
         val s = section
@@ -137,6 +170,42 @@ class CameraAlerter(
         status = CameraStatus(ahead?.first, ahead?.second, avg?.takeIf { inSection != null }, inSection?.limitKmh, remaining, safe, heading)
         return alerts
     }
+
+    /**
+     * The camera we were heading for is no longer ahead. Driven right past it:
+     * it applies here. Still moving the same way but it has slid off to the
+     * side of our path without us getting near: it was on another road.
+     * Anything else (a turn, a stop, a filter) says nothing about the camera.
+     */
+    private fun learn(cam: SpeedCamera, lat: Double, lon: Double, heading: Double?, curvature: Double) {
+        val announcedAt = announcedHeading[cam.id] ?: return
+        val closest = closestM[cam.id] ?: return
+        if (closest <= PASSED_NEAR_M) {
+            forget(cam.id)
+            onDrivenPast(cam, announcedAt)
+            return
+        }
+        if (heading == null || Geo.angleDiff(heading, announcedAt) > STRAIGHT_ON_DEG) return
+        val d = Geo.distanceM(lat, lon, cam.latitude, cam.longitude)
+        if (onPath(lat, lon, heading, curvature, cam, d)) return
+        // Already beside or behind us: we may have gone past it on a wide road, so no verdict.
+        if (Geo.angleDiff(heading, Geo.bearing(lat, lon, cam.latitude, cam.longitude)) >= 90) return
+        forget(cam.id)
+        onMiss(cam, announcedAt)
+    }
+
+    private fun forget(id: String) {
+        announcedHeading.remove(id)
+        closestM.remove(id)
+    }
+
+    /**
+     * The car's map puts this road's limit far from the camera's, so the
+     * camera watches a road beside, above or across ours. Protected-zone
+     * cameras are kept: the car's map often lacks the zone's lower limit.
+     */
+    private fun onOtherRoad(c: SpeedCamera, roadLimitKmh: Int?): Boolean =
+        roadLimitKmh != null && c.zone == null && abs(c.limitKmh - roadLimitKmh) >= ROAD_MISMATCH_KMH
 
     /** Course over the last few fixes, once they span [MIN_TRACK_M]. */
     private fun trackHeading(lat: Double, lon: Double): Double? {
@@ -198,6 +267,15 @@ class CameraAlerter(
         private const val MIN_TRACK_M = 25.0
         private const val CLOSING_FIXES = 3
         private const val MAX_CURVATURE = 1 / 30.0
+
+        /** Car map limit and camera limit this far apart: the camera is on another road. */
+        const val ROAD_MISMATCH_KMH = 30
+
+        /** Closer than this to an announced camera counts as driving past it. */
+        const val PASSED_NEAR_M = 40.0
+
+        /** Course change still counted as carrying straight on. */
+        private const val STRAIGHT_ON_DEG = 25.0
 
         /**
          * Highest steady speed for the [remainingM] left of a [lengthM] section
