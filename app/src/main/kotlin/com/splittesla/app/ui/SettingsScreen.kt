@@ -40,6 +40,8 @@ import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
 import com.splittesla.app.assistant.NaviApp
+import com.splittesla.app.ui.gauge.GaugeStyle
+import com.splittesla.app.ui.theme.Caption
 import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Neon
 
@@ -180,6 +182,26 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                     "차 화면에서 목적지를 정하거나 바꾸면 10초 안에 고른 앱이 그 목적지로 안내를 시작합니다(차량 BLE 연결 필요). " +
                         "폰 내비는 자기 경로를 다시 계산하므로 테슬라와 경로가 다를 수 있고, 테슬라의 경유지는 전달되지 않습니다. " +
                         "카카오맵은 경로 화면까지 열리고 '안내 시작'을 한 번 눌러야 합니다. 반대로 폰 내비의 경로를 차로 보내는 것은 원격 API 전용이라 안 됩니다.",
+                )
+            }
+
+            FoldSection("계기판", summary = "${ui.cockpitLayout.letter} ${ui.cockpitLayout.title} · ${ui.gaugeStyle.title}") {
+                Text("배치", style = Caption)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CockpitLayout.entries.forEach { l ->
+                        GlowButton("${l.letter} ${l.title}", { vm.setCockpitLayout(l) }, active = l == ui.cockpitLayout)
+                    }
+                }
+                Text("게이지", style = Caption)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GaugeStyle.entries.forEach { g -> GlowButton(g.title, { vm.setGaugeStyle(g) }, active = g == ui.gaugeStyle) }
+                    GlowButton("DEMO", { vm.setDemo(!ui.demo) }, active = ui.demo, accent = Neon.cyan)
+                }
+                Hint(
+                    "A 균형형: 게이지 | 안내·카메라·도착 | 세로 지도. B 센터 게이지: 안내·카메라 | 게이지 | 세로 지도. " +
+                        "C 몰입형: 탭 메뉴를 숨기고 게이지를 가장 크게, 메뉴는 왼쪽 위 ≡ 버튼. " +
+                        "계기판에서 게이지를 누르면 모양이, 길게 누르면 배치가 바뀝니다. " +
+                        "지도는 길안내 API의 NCP 키를 쓰며, NCP 콘솔의 같은 애플리케이션에서 Dynamic Map을 켜고 Android 패키지 com.splittesla.app을 등록해야 나옵니다.",
                 )
             }
 

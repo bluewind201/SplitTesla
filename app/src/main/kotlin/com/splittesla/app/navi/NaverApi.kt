@@ -78,6 +78,17 @@ class NaverApi(private val prefs: NaviPrefs) {
         return results.getJSONObject(0).optJSONObject("code")?.optString("id")?.takeIf { it.length >= 5 }
     }
 
+    /** District and neighbourhood at [p], such as "분당구 정자동". */
+    suspend fun areaName(p: LatLon): String? {
+        requireMaps()
+        val json = JSONObject(get("$MAPS/map-reversegeocode/v2/gc?coords=${lngLat(p)}&orders=legalcode&output=json", mapsHeaders()))
+        val region = json.optJSONArray("results")?.optJSONObject(0)?.optJSONObject("region") ?: return null
+        // area2 can be "성남시 분당구"; its last word is enough beside the neighbourhood.
+        val district = region.optJSONObject("area2")?.optString("name")?.substringAfterLast(' ')
+        val town = region.optJSONObject("area3")?.optString("name")
+        return listOfNotNull(district, town).filter { it.isNotBlank() }.joinToString(" ").ifBlank { null }
+    }
+
     /** Businesses and landmarks from NAVER local search (5 at most per query, NAVER's limit). */
     suspend fun localSearch(query: String, near: LatLon?): List<NaviPlace> {
         if (!prefs.hasSearch) return emptyList()

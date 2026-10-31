@@ -14,8 +14,10 @@ import com.splittesla.app.camera.SpeedCameraService
 import com.splittesla.app.navi.CarFeed
 import com.splittesla.app.navi.NaviHub
 import com.splittesla.app.ble.TeslaLink
+import com.splittesla.app.ui.CockpitLayout
 import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.app.weather.Weather
+import com.splittesla.app.weather.RegionRepository
 import com.splittesla.app.weather.WeatherRepository
 import com.splittesla.core.assistant.LatLon
 import com.splittesla.core.s3xy.CommanderAction
@@ -81,7 +83,10 @@ data class UiState(
     val cameraTest: String? = null,
     val weather: Weather? = null,
     val gaugeStyle: GaugeStyle = GaugeStyle.TRACK,
+    val cockpitLayout: CockpitLayout = CockpitLayout.BALANCED,
     val demo: Boolean = false,
+    /** District and neighbourhood, such as "분당구 정자동". */
+    val region: String? = null,
 )
 
 /**
@@ -96,6 +101,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Prefs(app)
     private val cameras = CameraRepository(app)
     private val weatherRepo = WeatherRepository(app)
+    private val regions = RegionRepository(app)
     private val _ui = MutableStateFlow(
         UiState(
             vin = prefs.vin,
@@ -105,6 +111,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             cameraUpdatedAt = cameras.updatedAt,
             cameraApiKey = cameras.apiKey,
             gaugeStyle = prefs.gaugeStyle,
+            cockpitLayout = prefs.cockpitLayout,
         ),
     )
     val ui: StateFlow<UiState> = _ui.asStateFlow()
@@ -131,6 +138,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     init {
         // In-app guidance reads battery, speed and the car's superchargers from both links.
         NaviHub.init(app) { log(it) }
+        viewModelScope.launch {
+            while (isActive) {
+                NaviHub.bestPosition()?.let { p -> regions.nameAt(p)?.let { r -> _ui.update { it.copy(region = r) } } }
+                delay(60_000)
+            }
+        }
         viewModelScope.launch {
             _ui.collect { s ->
                 val d = s.live
@@ -182,6 +195,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun setGaugeStyle(style: GaugeStyle) {
         prefs.gaugeStyle = style
         _ui.update { it.copy(gaugeStyle = style) }
+    }
+
+    fun setCockpitLayout(layout: CockpitLayout) {
+        prefs.cockpitLayout = layout
+        _ui.update { it.copy(cockpitLayout = layout) }
     }
 
     fun setDemo(on: Boolean) = _ui.update { it.copy(demo = on) }
