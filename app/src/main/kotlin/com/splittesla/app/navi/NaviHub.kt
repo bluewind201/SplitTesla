@@ -314,11 +314,14 @@ object NaviHub {
     }
 
     private fun handleFix(fix: Location) {
+        val here = LatLon(fix.latitude, fix.longitude)
+        val t = tracker
+        // In and around tunnels the chip still reports fixes, wandering beside the road or running
+        // straight on through a bend. While guiding, a vague one is no fix: the car's speed carries on.
+        if (t != null && fix.hasAccuracy() && fix.accuracy > VAGUE_FIX_M) return
         lastFix = fix
         lastFixAt = System.currentTimeMillis()
-        val here = LatLon(fix.latitude, fix.longitude)
         if (!CameraState.running.value) CameraState.fix = fix
-        val t = tracker
         if (t == null || !_state.value.guiding) {
             _state.update { it.copy(position = here, bearing = fix.takeIf { it.hasBearing() }?.bearing, gpsOk = true) }
             return
@@ -359,8 +362,9 @@ object NaviHub {
         _state.update {
             it.copy(
                 progress = p,
-                position = here ?: it.position,
-                bearing = bearing ?: it.bearing,
+                // On the route the car is drawn on the line, facing along the road, the way navi apps do.
+                position = if (!p.offRoute) t.snapped() else here ?: it.position,
+                bearing = if (!p.offRoute) t.heading().toFloat() else bearing ?: it.bearing,
                 gpsOk = System.currentTimeMillis() - lastFixAt < 4000,
                 kwhToGo = kwh,
                 socAtArrival = soc,
@@ -528,6 +532,9 @@ object NaviHub {
     }
 
     private val SEOUL_CITY_HALL = LatLon(37.5663, 126.9779)
+
+    /** Fixes vaguer than this are ignored while guiding; tunnels and their mouths produce them. */
+    private const val VAGUE_FIX_M = 60f
 
     fun minutes(ms: Long): String {
         val m = (ms / 60_000.0).roundToInt().coerceAtLeast(1)

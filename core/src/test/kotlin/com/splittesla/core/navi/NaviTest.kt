@@ -76,6 +76,41 @@ class NaviTest {
         assertTrue(t.advance(600.0).arrived)
     }
 
+    @Test fun vagueFixesBesideTheRoadNeverMeanOffRoute() {
+        val t = RouteTracker(route)
+        val drift = LatLon(start.lat + 0.002, start.lon + 0.002) // ~176 m east, as in a tunnel mouth
+        repeat(5) { t.update(drift, accuracyM = 80.0) }
+        assertFalse(t.progress().offRoute)
+    }
+
+    @Test fun fixesRightAfterATunnelCannotStartANewSearch() {
+        val t = RouteTracker(route)
+        t.update(LatLon(start.lat + 0.0009044 * 2, start.lon))
+        t.advance(300.0)
+        val away = LatLon(start.lat + 0.006, start.lon + 0.002)
+        repeat(RouteTracker.GRACE_FIXES) { assertFalse(t.update(away, accuracyM = 5.0).offRoute) }
+        // Once the grace is used up, really being elsewhere still counts.
+        repeat(3) { t.update(away, accuracyM = 5.0) }
+        assertTrue(t.progress().offRoute)
+    }
+
+    @Test fun firstFixAfterATunnelPullsAnOvershootBack() {
+        val t = RouteTracker(route)
+        t.update(LatLon(start.lat + 0.0009044 * 4, start.lon))
+        assertEquals(1000.0, t.advance(600.0).alongM, 6.0)
+        val p = t.update(LatLon(start.lat + 0.0009044 * 8, start.lon + 0.00003), accuracyM = 6.0)
+        assertEquals(800.0, p.alongM, 6.0)
+    }
+
+    @Test fun carIsDrawnOnTheLineFacingAlongTheRoad() {
+        val t = RouteTracker(route)
+        t.update(LatLon(start.lat + 0.0009044 * 4, start.lon + 0.0002), accuracyM = 10.0) // ~18 m east of the road
+        assertEquals(start.lon, t.snapped().lon, 1e-6)
+        assertEquals(0.0, t.heading(), 0.5)
+        val east = RouteGeometry((0..5).map { LatLon(start.lat, start.lon + it * 0.001) })
+        assertEquals(90.0, east.bearingAt(250.0), 0.5)
+    }
+
     @Test fun announcerSpeaksEachStageOnceAndAnnouncesArrival() {
         val t = RouteTracker(route)
         val a = GuidanceAnnouncer()

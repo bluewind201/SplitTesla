@@ -2,6 +2,7 @@ package com.splittesla.core.navi
 
 import com.splittesla.core.assistant.LatLon
 import kotlin.math.PI
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -47,6 +48,20 @@ class RouteGeometry(val path: List<LatLon>) {
         return best
     }
 
+    /** The road's direction at [alongM], in degrees clockwise from north. */
+    fun bearingAt(alongM: Double): Double {
+        if (path.size < 2) return 0.0
+        val d = alongM.coerceIn(0.0, lengthM)
+        var i = cumulative.indexOfFirst { it > d }.let { if (it <= 0) 1 else it }.coerceAtMost(path.size - 1)
+        // Duplicate points make a zero-length segment with no direction; look further on.
+        while (i < path.size - 1 && metres(path[i - 1], path[i]) < 0.5) i++
+        val a = path[i - 1]
+        val b = path[i]
+        val dx = (b.lon - a.lon) * cos(a.lat * PI / 180)
+        val dy = b.lat - a.lat
+        return (Math.toDegrees(atan2(dx, dy)) + 360) % 360
+    }
+
     /** The path point at [alongM] metres from the start. */
     fun pointAt(alongM: Double): LatLon {
         if (path.isEmpty()) return LatLon(0.0, 0.0)
@@ -90,8 +105,19 @@ data class RouteProgress(
  * line ahead of the last known spot, so a road running alongside or back over
  * the route does not make the progress jump. In a tunnel, [advance] moves the
  * progress forward by the distance driven (from the car's speed).
+ *
+ * Tunnels and their mouths are where GPS lies: fixes drift beside the road or
+ * run straight on through a bend. So a fix vaguer than [trustedAccuracyM]
+ * never counts towards leaving the route, and the first [GRACE_FIXES] fixes
+ * after a stretch of dead reckoning may pull the progress back but cannot
+ * trigger a new search.
  */
-class RouteTracker(val route: NaviRoute, private val offRouteM: Double = 45.0, private val offRouteFixes: Int = 3) {
+class RouteTracker(
+    val route: NaviRoute,
+    private val offRouteM: Double = 45.0,
+    private val offRouteFixes: Int = 3,
+    private val trustedAccuracyM: Double = 30.0,
+) {
     val geometry = RouteGeometry(route.path)
     private val guideAlong = route.guides.map { geometry.alongOf(it.pointIndex) }
     private val legStart = guideAlong.mapIndexed { i, _ -> if (i == 0) 0.0 else guideAlong[i - 1] }
@@ -99,6 +125,7 @@ class RouteTracker(val route: NaviRoute, private val offRouteM: Double = 45.0, p
     private var along = 0.0
     private var misses = 0
     private var lastLateral = 0.0
+    private var grace = 0
 
     val alongM: Double get() = along
 
@@ -113,16 +140,24 @@ class RouteTracker(val route: NaviRoute, private val offRouteM: Double = 45.0, p
             if (hit.lateralM <= limit) {
                 misses = 0
                 // Never slide backwards more than a little; a jittery fix is not a U-turn.
-                if (hit.alongM >= along - 30) {
+                // Coming out of a tunnel the estimate may have run ahead, so then allow more.
+                if (hit.alongM >= along - (if (grace > 0) MAX_TUNNEL_OVERSHOOT_M else 30.0)) {
                     along = hit.alongM
                     segment = hit.segment
                 }
-            } else {
+            } else if (grace == 0 && (accuracyM == null || accuracyM <= trustedAccuracyM)) {
                 misses++
             }
         }
+        if (grace > 0) grace--
         return progress()
     }
+
+    /** Where to draw the car: on the line at the current progress. */
+    fun snapped(): LatLon = geometry.pointAt(along)
+
+    /** The road's direction at the car, degrees clockwise from north. */
+    fun heading(): Double = geometry.bearingAt(along)
 
     /** Dead reckoning while GPS is out: move on by [metres] along the line. */
     fun advance(metres: Double): RouteProgress {
@@ -130,6 +165,8 @@ class RouteTracker(val route: NaviRoute, private val offRouteM: Double = 45.0, p
             along = (along + metres).coerceAtMost(geometry.lengthM)
             while (segment < route.path.size - 2 && geometry.cumulative[segment + 1] <= along) segment++
         }
+        misses = 0
+        grace = GRACE_FIXES
         return progress()
     }
 
@@ -173,4 +210,12 @@ class RouteTracker(val route: NaviRoute, private val offRouteM: Double = 45.0, p
     }.takeIf { it >= 0 }
 
     fun guideAlong(index: Int): Double = guideAlong[index]
+
+    companion object {
+        /** Fixes after a GPS gap that are not trusted to say we left the route. */
+        const val GRACE_FIXES = 8
+
+        /** How far behind the tunnel estimate the first good fix may put us. */
+        private const val MAX_TUNNEL_OVERSHOOT_M = 400.0
+    }
 }
