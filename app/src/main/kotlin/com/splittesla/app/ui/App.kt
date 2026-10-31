@@ -44,7 +44,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
+import com.splittesla.app.UiState
+import com.splittesla.app.camera.CameraState
 import com.splittesla.app.ui.theme.Glass
 import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.glass
@@ -73,10 +74,6 @@ import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.app.ui.theme.Rajdhani
 import com.splittesla.app.ui.theme.SplitTheme
 import com.splittesla.app.ui.theme.pressScale
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 private enum class Tab(val title: String, val english: String) {
     DASH("계기판", "COCKPIT"),
@@ -117,10 +114,23 @@ fun SplitTeslaApp(vm: AppViewModel) {
                 CompactPanel(vm, ui)
             } else if (multiWindow && !menuInSplit) {
                 SplitDashboard(vm, ui) { menuInSplit = true }
+            } else if (tab == Tab.DASH && ui.cockpitLayout == CockpitLayout.IMMERSIVE) {
+                // Layout C: the dashboard has the whole screen; its menu button slides the tabs in.
+                var drawer by remember { mutableStateOf(false) }
+                Box(Modifier.fillMaxSize()) {
+                    DashboardScreen(vm, ui, Modifier.fillMaxSize().padding(8.dp)) { drawer = true }
+                    if (drawer) {
+                        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable { drawer = false })
+                        Rail(tab) {
+                            tabIndex = it.ordinal
+                            drawer = false
+                        }
+                    }
+                }
             } else Row(Modifier.fillMaxSize()) {
                 Rail(tab) { tabIndex = it.ordinal }
                 Column(Modifier.fillMaxSize()) {
-                    TopStrip(tab, vm, ui.commander, ui.car, ui.busy, if (multiWindow) ({ menuInSplit = false }) else null)
+                    TopStrip(tab, vm, ui, if (multiWindow) ({ menuInSplit = false }) else null)
                     AnimatedContent(
                         targetState = tab,
                         transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
@@ -239,42 +249,48 @@ private fun TabIcon(tab: Tab, tint: Color) {
 }
 
 @Composable
-private fun TopStrip(tab: Tab, vm: AppViewModel, commander: LinkState, car: LinkState, busy: String?, onSplitDash: (() -> Unit)?) {
+private fun TopStrip(tab: Tab, vm: AppViewModel, ui: UiState, onSplitDash: (() -> Unit)?) {
+    val commander = ui.commander
+    val car = ui.car
+    val busy = ui.busy
     Row(
         Modifier.fillMaxWidth().height(52.dp).padding(start = 4.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Column {
-            Text(tab.english, fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 3.sp, color = Neon.muted)
-            Text(tab.title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Neon.text)
+        if (tab == Tab.DASH) {
+            // The dashboard's title gives way to its status icons.
+            DashStatus(vm, ui, Modifier.weight(1f))
+        } else {
+            Column {
+                Text(tab.english, fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 3.sp, color = Neon.muted)
+                Text(tab.title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Neon.text)
+            }
+            Spacer(Modifier.weight(1f))
         }
-        Spacer(Modifier.weight(1f))
         onSplitDash?.let { GlowButton("계기판만", it, accent = Neon.cyan) }
         if (busy != null) {
             CircularProgressIndicator(Modifier.size(16.dp), color = Neon.lime, strokeWidth = 2.dp)
             Text("$busy…", fontSize = 12.sp, color = Neon.muted)
         }
+        var searching by remember { mutableStateOf(false) }
+        SearchPill({ searching = true })
+        if (searching) DestinationDialog { searching = false }
         LinkPill("S3XY", commander.label, commander.color(), commander == LinkState.CONNECTING || commander == LinkState.NEEDS_PAIRING) {
             if (commander == LinkState.CONNECTED) vm.disconnectCommander() else vm.connectCommander()
         }
         LinkPill("CAR", car.label, car.color(), car == LinkState.CONNECTING) {
             if (car == LinkState.CONNECTED) vm.disconnectCar() else vm.connectCar()
         }
-        Clock()
+        StatusClock()
     }
 }
 
 @Composable
-private fun Clock() {
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            now = System.currentTimeMillis()
-            delay(1000)
-        }
-    }
-    Text(SimpleDateFormat("HH:mm", Locale.KOREA).format(Date(now)), fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = Neon.text)
+private fun DashStatus(vm: AppViewModel, ui: UiState, modifier: Modifier) {
+    val camera by CameraState.status.collectAsState()
+    val gpsSpeed by CameraState.gpsSpeedKmh.collectAsState()
+    CockpitStatus(vm, ui, Cockpit.from(ui, camera, gpsSpeed), modifier)
 }
 
 fun LinkState.color(): Color = when (this) {

@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -135,6 +136,9 @@ private fun TopBar(vm: AppViewModel, ui: UiState, c: Cockpit, onMenu: () -> Unit
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        var searching by remember { mutableStateOf(false) }
+        SearchPill({ searching = true }, label = false)
+        if (searching) DestinationDialog { searching = false }
         LinkDot("S3XY", ui.commander.color()) { if (ui.commander != LinkState.CONNECTED) vm.connectCommander() }
         LinkDot("CAR", ui.car.color()) { if (ui.car != LinkState.CONNECTED) vm.connectCar() }
         Text(c.gear ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Neon.lime)

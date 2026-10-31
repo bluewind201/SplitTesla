@@ -29,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -70,15 +71,7 @@ import kotlin.math.roundToInt
 fun NaviPanel(ui: UiState) {
     val navi by NaviHub.state.collectAsState()
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { NaviHub.start() }
-    val startGuidance = {
-        permissions.launch(
-            buildList {
-                add(Manifest.permission.ACCESS_FINE_LOCATION)
-                add(Manifest.permission.ACCESS_COARSE_LOCATION)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
-            }.toTypedArray(),
-        )
-    }
+    val startGuidance = { permissions.launch(naviPermissions()) }
 
     Section("길안내 (네이버 경로)") {
         navi.busy?.let { Text("$it…", color = Neon.cyan, fontSize = 13.sp) }
@@ -90,6 +83,13 @@ fun NaviPanel(ui: UiState) {
         }
     }
 }
+
+/** What guidance asks for before it starts: location, and on Android 13+ the ongoing notification. */
+fun naviPermissions(): Array<String> = buildList {
+    add(Manifest.permission.ACCESS_FINE_LOCATION)
+    add(Manifest.permission.ACCESS_COARSE_LOCATION)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
+}.toTypedArray()
 
 @Composable
 private fun SearchView(ui: UiState, navi: NaviUi) {
@@ -119,7 +119,7 @@ private fun SearchView(ui: UiState, navi: NaviUi) {
 }
 
 @Composable
-private fun PlaceRow(p: NaviPlace, distanceFrom: LatLon?, onClick: () -> Unit) {
+fun PlaceRow(p: NaviPlace, distanceFrom: LatLon?, onClick: () -> Unit) {
     Column(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 6.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(p.name, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
@@ -135,6 +135,14 @@ private fun PreviewView(navi: NaviUi, startGuidance: () -> Unit) {
     val route = navi.route ?: return
     Text(route.goal.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Neon.text)
     RouteMap(navi, follow = false, Modifier.fillMaxWidth().height(220.dp))
+    RouteChoices(navi)
+    ButtonGrid(navi.busy == null, "안내 시작" to startGuidance, "취소" to NaviHub::clear)
+}
+
+/** The previewed route options with time, distance, toll and battery on arrival; tap to pick one. */
+@Composable
+fun RouteChoices(navi: NaviUi) {
+    val route = navi.route ?: return
     navi.alternatives.forEach { r ->
         val active = r.option == route.option
         val soc = navi.alternativeSoc[r.option]
@@ -153,7 +161,6 @@ private fun PreviewView(navi: NaviUi, startGuidance: () -> Unit) {
             soc?.let { Text("도착 ${it.roundToInt()}%", fontSize = 13.sp, color = socColor(it)) }
         }
     }
-    ButtonGrid(navi.busy == null, "안내 시작" to startGuidance, "취소" to NaviHub::clear)
 }
 
 @Composable
@@ -264,53 +271,60 @@ fun RouteMap(navi: NaviUi, follow: Boolean, modifier: Modifier = Modifier) {
     val model = remember(route) { MapModel(route) }
     // Darker glass so the route lines stand out.
     Box(modifier.background(Color.Black.copy(alpha = 0.45f), shape).glass(16.dp)) {
-        Canvas(Modifier.fillMaxSize().padding(8.dp)) {
+        Canvas(Modifier.fillMaxSize().padding(8.dp).clipToBounds()) {
             val car = navi.position
-            val (cx, cy, scale) = if (follow && car != null) {
-                val (x, y) = model.xy(car)
-                Triple(x, y - 450.0, size.height / 1500.0)
+            // Following, the map turns with the road so the way ahead points up, the car low in the frame.
+            val headingUp = follow && car != null
+            val heading = if (headingUp) navi.bearing ?: 0f else 0f
+            val (cx, cy, scale) = if (headingUp) {
+                val (x, y) = model.xy(car!!)
+                Triple(x, y, size.height / 1500.0)
             } else {
                 val w = max(model.maxX - model.minX, 50.0)
                 val h = max(model.maxY - model.minY, 50.0)
                 Triple((model.minX + model.maxX) / 2, (model.minY + model.maxY) / 2, minOf(size.width / w, size.height / h) * 0.9)
             }
-            fun px(x: Double, y: Double) = Offset((size.width / 2 + (x - cx) * scale).toFloat(), (size.height / 2 + (y - cy) * scale).toFloat())
+            val anchor = if (headingUp) Offset(size.width / 2, size.height * 0.72f) else center
+            fun px(x: Double, y: Double) = Offset((anchor.x + (x - cx) * scale).toFloat(), (anchor.y + (y - cy) * scale).toFloat())
             val doneM = navi.progress?.alongM ?: 0.0
-            val width = if (follow) 9.dp.toPx() else 6.dp.toPx()
-            model.runs.forEach { run ->
-                val path = Path()
-                for (k in run.from..run.to) {
-                    val o = px(model.xs[k], model.ys[k])
-                    if (k == run.from) path.moveTo(o.x, o.y) else path.lineTo(o.x, o.y)
+            rotate(-heading, anchor) {
+                val width = if (follow) 9.dp.toPx() else 6.dp.toPx()
+                model.runs.forEach { run ->
+                    val path = Path()
+                    for (k in run.from..run.to) {
+                        val o = px(model.xs[k], model.ys[k])
+                        if (k == run.from) path.moveTo(o.x, o.y) else path.lineTo(o.x, o.y)
+                    }
+                    val driven = model.geometry.alongOf(run.to) <= doneM
+                    drawPath(
+                        path,
+                        if (driven) Neon.faint else congestionColor(run.congestion),
+                        style = Stroke(width, cap = StrokeCap.Round, join = StrokeJoin.Round),
+                    )
                 }
-                val driven = model.geometry.alongOf(run.to) <= doneM
-                drawPath(
-                    path,
-                    if (driven) Neon.faint else congestionColor(run.congestion),
-                    style = Stroke(width, cap = StrokeCap.Round, join = StrokeJoin.Round),
-                )
+                navi.cameras.forEach { c ->
+                    if (c.alongM < doneM) return@forEach
+                    val (x, y) = model.xy(LatLon(c.camera.latitude, c.camera.longitude))
+                    drawCircle(Neon.red, 4.dp.toPx(), px(x, y))
+                }
+                navi.chargeStops.forEach { s ->
+                    val (x, y) = model.xy(s.spot.point)
+                    drawCircle(if (s.spot.tesla) Neon.lime else Neon.green, 6.dp.toPx(), px(x, y), style = Stroke(2.dp.toPx()))
+                }
+                route.waypoints.forEach { w ->
+                    val (x, y) = model.xy(w.point)
+                    drawCircle(Neon.cyan, 5.dp.toPx(), px(x, y))
+                }
+                val (gx, gy) = model.xy(route.goal.point)
+                drawCircle(Neon.lime, 7.dp.toPx(), px(gx, gy))
+                drawCircle(Neon.bg, 3.dp.toPx(), px(gx, gy))
             }
-            navi.cameras.forEach { c ->
-                if (c.alongM < doneM) return@forEach
-                val (x, y) = model.xy(LatLon(c.camera.latitude, c.camera.longitude))
-                drawCircle(Neon.red, 4.dp.toPx(), px(x, y))
-            }
-            navi.chargeStops.forEach { s ->
-                val (x, y) = model.xy(s.spot.point)
-                drawCircle(if (s.spot.tesla) Neon.lime else Neon.green, 6.dp.toPx(), px(x, y), style = Stroke(2.dp.toPx()))
-            }
-            route.waypoints.forEach { w ->
-                val (x, y) = model.xy(w.point)
-                drawCircle(Neon.cyan, 5.dp.toPx(), px(x, y))
-            }
-            val (gx, gy) = model.xy(route.goal.point)
-            drawCircle(Neon.lime, 7.dp.toPx(), px(gx, gy))
-            drawCircle(Neon.bg, 3.dp.toPx(), px(gx, gy))
             if (car != null) {
                 val (x, y) = model.xy(car)
-                val o = px(x, y)
+                // The map is turned by -heading around the car, so the car itself is turned by the rest.
+                val o = if (headingUp) anchor else px(x, y)
                 val r = 11.dp.toPx()
-                rotate(navi.bearing ?: 0f, o) {
+                rotate((navi.bearing ?: 0f) - heading, o) {
                     val arrow = Path().apply {
                         moveTo(o.x, o.y - r)
                         lineTo(o.x + r * 0.75f, o.y + r * 0.8f)
@@ -323,7 +337,7 @@ fun RouteMap(navi: NaviUi, follow: Boolean, modifier: Modifier = Modifier) {
             }
         }
         Text(
-            if (follow) "N↑ 1.5km" else "${km(route.distanceM.toDouble())} · ${NaviHub.minutes(route.durationMs)}",
+            if (follow) "진행 방향 ↑ · 1.5km" else "${km(route.distanceM.toDouble())} · ${NaviHub.minutes(route.durationMs)}",
             style = Caption, modifier = Modifier.align(Alignment.TopEnd).padding(10.dp),
         )
     }
@@ -370,12 +384,12 @@ private fun congestionColor(c: Int) = when (c) {
     else -> Neon.cyan
 }
 
-private fun socColor(soc: Double) = when {
+internal fun socColor(soc: Double) = when {
     soc < 10 -> Neon.red
     soc < 20 -> Neon.amber
     else -> Neon.green
 }
 
-private fun km(m: Double): String = if (m >= 1000) "%.1fkm".format(m / 1000) else "${(m / 10).roundToInt() * 10}m"
+internal fun km(m: Double): String = if (m >= 1000) "%.1fkm".format(m / 1000) else "${(m / 10).roundToInt() * 10}m"
 
-private fun clock(msFromNow: Long): String = SimpleDateFormat("HH:mm", Locale.KOREA).format(Date(System.currentTimeMillis() + msFromNow))
+internal fun clock(msFromNow: Long): String = SimpleDateFormat("HH:mm", Locale.KOREA).format(Date(System.currentTimeMillis() + msFromNow))

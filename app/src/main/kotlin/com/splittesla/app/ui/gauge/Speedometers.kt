@@ -60,10 +60,11 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-enum class GaugeStyle(val title: String, val subtitle: String) {
-    TRACK("TRACK", "원형 바늘"),
-    F1("F1", "LED 시프트"),
-    HYPER("HYPER", "세그먼트"),
+/** [aspect] is width over height, so a layout can give each face the box it fills. */
+enum class GaugeStyle(val title: String, val subtitle: String, val aspect: Float) {
+    TRACK("TRACK", "원형 바늘", 1f),
+    F1("F1", "LED 시프트", 1.55f),
+    HYPER("HYPER", "세그먼트", 1.1f),
 }
 
 private const val MAX_KMH = 240f

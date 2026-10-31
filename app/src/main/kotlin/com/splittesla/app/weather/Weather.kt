@@ -15,6 +15,8 @@ data class Weather(
     val tempC: Double,
     val code: Int,
     val windKmh: Double?,
+    /** Where the wind blows from, degrees clockwise from north. */
+    val windFromDeg: Double?,
     val fetchedAt: Long,
 ) {
     val label: String get() = describe(code).first
@@ -54,7 +56,7 @@ class WeatherRepository(private val context: Context) {
         val url = URL(
             String.format(
                 Locale.US,
-                "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,weather_code,wind_speed_10m",
+                "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m",
                 lat, lon,
             ),
         )
@@ -68,6 +70,7 @@ class WeatherRepository(private val context: Context) {
                 tempC = current.getDouble("temperature_2m"),
                 code = current.getInt("weather_code"),
                 windKmh = current.optDouble("wind_speed_10m").takeIf { !it.isNaN() },
+                windFromDeg = current.optDouble("wind_direction_10m").takeIf { !it.isNaN() },
                 fetchedAt = System.currentTimeMillis(),
             )
         } finally {
