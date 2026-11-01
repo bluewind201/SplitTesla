@@ -155,7 +155,7 @@ object NaviHub {
                 val message = when {
                     hits.isNotEmpty() -> found.problem?.takeIf { it != NaverApi.NO_SEARCH_KEY }
                     found.problem == NaverApi.NO_SEARCH_KEY ->
-                        "'$q'을(를) 찾지 못했습니다. 이마트처럼 이름으로 찾으려면 설정 > 길안내 API에 NAVER 검색(지역) 키를 넣어 주세요"
+                        "'$q'을(를) 찾지 못했습니다. 이마트처럼 이름으로 찾으려면 설정 > 길안내 API에 NAVER API HUB 지역 검색 키를 넣어 주세요"
                     else -> found.problem ?: "'$q' 검색 결과가 없습니다"
                 }
                 _state.update { it.copy(results = hits, message = message) }
@@ -291,7 +291,7 @@ object NaviHub {
             } else {
                 out += "❌ NAVER Cloud Maps 키가 없습니다"
             }
-            if (prefs.hasSearch) check("장소 검색(검색 API 지역)") { "'스타벅스' ${api.localSearch("스타벅스", here).size}건" }
+            if (prefs.hasSearch) check("장소 검색(API HUB 지역)") { "'스타벅스' ${api.localSearch("스타벅스", here).size}건" }
             else out += "⚪ 장소 검색 키 없음 (주소와 휴대폰 검색으로 찾음)"
             val ev = prefs.evKey.ifBlank { CameraRepository(app).apiKey }
             if (ev.isNotBlank()) check("충전소(환경부)") { "종로구 급속 ${EvChargerApi.stations(ev, "11110").size}곳" }

@@ -89,11 +89,23 @@ class NaverApi(private val prefs: NaviPrefs) {
         return listOfNotNull(district, town).filter { it.isNotBlank() }.joinToString(" ").ifBlank { null }
     }
 
-    /** Businesses and landmarks from NAVER local search (5 at most per query, NAVER's limit). */
+    /**
+     * Businesses and landmarks by name from NAVER local search (5 at most per
+     * query, NAVER's limit). New keys come from NCP's NAVER API HUB; keys from
+     * the old NAVER Developers centre still work at its old address, which is
+     * tried when the API HUB turns the keys down.
+     */
     suspend fun localSearch(query: String, near: LatLon?): List<NaviPlace> {
         if (!prefs.hasSearch) return emptyList()
-        val headers = mapOf("X-Naver-Client-Id" to prefs.searchId, "X-Naver-Client-Secret" to prefs.searchSecret)
-        val json = JSONObject(get("$SEARCH/v1/search/local.json?query=${enc(query)}&display=5&sort=random", headers))
+        val params = "query=${enc(query)}&display=5&start=1&sort=random"
+        val body = try {
+            get("$API_HUB/search/v1/local?$params", mapOf("X-NCP-APIGW-API-KEY-ID" to prefs.searchId, "X-NCP-APIGW-API-KEY" to prefs.searchSecret))
+        } catch (hub: NaviApiException) {
+            runCatching {
+                get("$SEARCH/v1/search/local.json?$params", mapOf("X-Naver-Client-Id" to prefs.searchId, "X-Naver-Client-Secret" to prefs.searchSecret))
+            }.getOrElse { throw hub }
+        }
+        val json = JSONObject(body)
         val items = json.optJSONArray("items") ?: return emptyList()
         val out = ArrayList<NaviPlace>()
         for (i in 0 until items.length()) {
@@ -102,10 +114,13 @@ class NaverApi(private val prefs: NaviPrefs) {
             val road = o.optString("roadAddress").ifBlank { o.optString("address") }
             val x = o.optString("mapx").toDoubleOrNull()
             val y = o.optString("mapy").toDoubleOrNull()
-            // Current responses are WGS84 × 10^7; older KATECH values are small numbers, so look the address up instead.
-            val point = if (x != null && y != null && x > 1e8) LatLon(y / 1e7, x / 1e7)
-            else if (prefs.hasMaps && road.isNotBlank()) runCatching { geocode(road, near).firstOrNull()?.point }.getOrNull()
-            else null
+            // WGS84 either in degrees or × 10^7; older KATECH values are neither, so look the address up instead.
+            val point = when {
+                x == null || y == null -> null
+                x in 120.0..135.0 && y in 30.0..45.0 -> LatLon(y, x)
+                x > 1e8 -> LatLon(y / 1e7, x / 1e7)
+                else -> null
+            } ?: if (prefs.hasMaps && road.isNotBlank()) runCatching { geocode(road, near).firstOrNull()?.point }.getOrNull() else null
             point?.let { out += NaviPlace(name, it, road, o.optString("category").substringAfterLast(">")) }
         }
         return near?.let { n -> out.sortedBy { Geo.distanceKm(n, it.point) } } ?: out
@@ -193,6 +208,7 @@ class NaverApi(private val prefs: NaviPrefs) {
     companion object {
         private const val MAPS = "https://maps.apigw.ntruss.com"
         private const val SEARCH = "https://openapi.naver.com"
+        private const val API_HUB = "https://naverapihub.apigw.ntruss.com"
         const val NO_SEARCH_KEY = "이름 검색 키 없음"
 
         fun lngLat(p: LatLon) = "%.7f,%.7f".format(java.util.Locale.US, p.lon, p.lat)
