@@ -112,10 +112,33 @@ class NaverApi(private val prefs: NaviPrefs) {
     }
 
     /** Place search for the search box: businesses first, then addresses. */
-    suspend fun findPlaces(query: String, near: LatLon?): List<NaviPlace> {
-        val local = runCatching { localSearch(query, near) }.getOrElse { if (!prefs.hasMaps) throw it else emptyList() }
+    suspend fun findPlaces(query: String, near: LatLon?): List<NaviPlace> = searchPlaces(query, near, null).places
+
+    /** What a place search found, and why NAVER's name search could not help when it could not. */
+    class Found(val places: List<NaviPlace>, val problem: String?)
+
+    /**
+     * Businesses and landmarks from NAVER local search plus addresses from
+     * geocoding, nearest first. Local search returns five at most per query, so
+     * the district ([area], such as "분당구") is also put in front of the query
+     * to bring in the nearby branches of a chain like 이마트.
+     */
+    suspend fun searchPlaces(query: String, near: LatLon?, area: String?): Found {
+        var problem: String? = null
+        val local = if (!prefs.hasSearch) {
+            problem = NO_SEARCH_KEY
+            emptyList()
+        } else {
+            try {
+                listOfNotNull(area?.let { "$it $query" }, query).distinct().flatMap { localSearch(it, near) }
+            } catch (e: Exception) {
+                problem = "장소 이름 검색 실패: ${e.message ?: e.javaClass.simpleName}"
+                emptyList()
+            }
+        }
         val addresses = if (prefs.hasMaps) runCatching { geocode(query, near) }.getOrDefault(emptyList()) else emptyList()
-        return (local + addresses).distinctBy { "%.4f,%.4f".format(it.point.lat, it.point.lon) }
+        val all = (local + addresses).distinctBy { "%.4f,%.4f".format(it.point.lat, it.point.lon) }
+        return Found(near?.let { n -> all.sortedBy { Geo.distanceKm(n, it.point) } } ?: all, problem)
     }
 
     private fun parseRoute(o: JSONObject, option: RouteOption, goal: NaviPlace, waypoints: List<NaviPlace>, now: Long): NaviRoute {
@@ -170,6 +193,7 @@ class NaverApi(private val prefs: NaviPrefs) {
     companion object {
         private const val MAPS = "https://maps.apigw.ntruss.com"
         private const val SEARCH = "https://openapi.naver.com"
+        const val NO_SEARCH_KEY = "이름 검색 키 없음"
 
         fun lngLat(p: LatLon) = "%.7f,%.7f".format(java.util.Locale.US, p.lon, p.lat)
         fun enc(s: String): String = URLEncoder.encode(s, "UTF-8")

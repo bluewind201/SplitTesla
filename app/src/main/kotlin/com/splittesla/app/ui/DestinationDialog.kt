@@ -142,6 +142,9 @@ fun DestinationDialog(onDismiss: () -> Unit) {
                         Field(query, { query = it }, "주소 또는 장소", onDone = search, modifier = Modifier.weight(1f).focusRequester(focus))
                         GlowButton("검색", search, enabled = idle && query.isNotBlank(), filled = true)
                     }
+                    if (!NaviHub.settings.hasSearch) {
+                        Text("이름 검색 키가 없어 주소와 휴대폰 검색으로 찾습니다", fontSize = 12.sp, color = Neon.muted)
+                    }
                     val choose: (NaviPlace) -> Unit = { p ->
                         if (navi.guiding) picked = p else NaviHub.preview(p)
                     }
