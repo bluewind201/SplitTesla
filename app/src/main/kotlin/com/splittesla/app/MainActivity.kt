@@ -1,7 +1,9 @@
 package com.splittesla.app
 
 import android.Manifest
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -39,6 +41,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applyOrientation(resources.configuration)
         // Car-mount layout: edge to edge with the status and navigation bars hidden (swipe to peek).
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowCompat.getInsetsController(window, window.decorView).apply {
@@ -62,6 +65,24 @@ class MainActivity : ComponentActivity() {
         // Fresh start only, not on rotation or when coming back from split screen.
         splitPending = savedInstanceState == null && !isInMultiWindowMode
         setContent { SplitTeslaApp(viewModel) }
+    }
+
+    /**
+     * Phones stay landscape for the car mount. A large screen (an unfolded
+     * foldable, a tablet) is left free to turn, as Android's large-screen
+     * guidance asks; every screen lays itself out for the shape it gets.
+     */
+    private fun applyOrientation(config: Configuration) {
+        requestedOrientation = if (config.smallestScreenWidthDp >= 600) {
+            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyOrientation(newConfig)
     }
 
     override fun onStart() {

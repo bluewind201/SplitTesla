@@ -49,7 +49,7 @@ object Glass {
     val track = Color.White.copy(alpha = 0.10f)
 
     /** Dialogs and snackbars: nearly opaque so text stays readable over anything. */
-    val dense = Color(0xEB161A22)
+    val dense = Color(0xF7161A22)
 
     /** Behind the glass: near-black with soft lime, blue and cyan glows. */
     val backdropTop = Color(0xFF0B0F17)
