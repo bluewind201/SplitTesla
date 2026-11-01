@@ -296,12 +296,13 @@ private fun SideSignal(turn: Boolean, blind: Boolean, left: Boolean, modifier: M
 
 /**
  * The next turn while guiding. Otherwise a way in: search for a destination,
- * or start the route being previewed.
+ * or start the route being previewed. [banner] puts it all on one line for a
+ * long, low slot.
  */
 @Composable
-fun GuideCard(navi: NaviUi, modifier: Modifier, overlay: Boolean = false) {
+fun GuideCard(navi: NaviUi, modifier: Modifier, overlay: Boolean = false, banner: Boolean = false) {
     if (navi.guiding) {
-        TurnCard(navi, modifier, compact = overlay)
+        if (banner) TurnBanner(navi, modifier) else TurnCard(navi, modifier, compact = overlay)
         return
     }
     var searching by remember { mutableStateOf(false) }
@@ -311,10 +312,17 @@ fun GuideCard(navi: NaviUi, modifier: Modifier, overlay: Boolean = false) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Icon(Icons.Filled.Search, null, Modifier.size(30.dp), Neon.lime)
-        Column {
-            val preview = navi.phase == NaviPhase.PREVIEW
-            Text(if (preview) navi.route?.goal?.name ?: "경로 미리보기" else "목적지 검색", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(if (preview) "탭해서 안내 시작" else "주소·장소로 바로 안내", fontSize = 12.sp, color = Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        val preview = navi.phase == NaviPhase.PREVIEW
+        val title = if (preview) navi.route?.goal?.name ?: "경로 미리보기" else "목적지 검색"
+        val hint = if (preview) "탭해서 안내 시작" else "주소·장소로 바로 안내"
+        if (banner) {
+            Text(title, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(hint, fontSize = 13.sp, color = Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        } else {
+            Column {
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(hint, fontSize = 12.sp, color = Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
     if (searching) DestinationDialog { searching = false }

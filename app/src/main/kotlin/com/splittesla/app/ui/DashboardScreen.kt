@@ -140,39 +140,46 @@ private fun WideCockpit(vm: AppViewModel, ui: UiState, c: Cockpit, navi: NaviUi,
     }
 }
 
-/** An unfolded foldable or a tablet: gauge over the cards, the map full height beside them. */
+/**
+ * An unfolded foldable or a tablet: the gauge with the camera sign standing
+ * beside it, the next turn as one long line underneath, and the map full
+ * height alongside (on the left for B).
+ */
 @Composable
 private fun SquareCockpit(vm: AppViewModel, ui: UiState, c: Cockpit, navi: NaviUi, onMenu: () -> Unit, height: Dp) {
-    val cards = (height * 0.22f).coerceIn(100.dp, 160.dp)
+    val banner = (height * 0.13f).coerceIn(64.dp, 96.dp)
     val mapLeft = ui.cockpitLayout == CockpitLayout.CENTER
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         CockpitTopLine(vm, ui, c, onMenu)
         Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = gap) {
             if (mapLeft) MapWithTrip(navi, c, Modifier.weight(0.85f).fillMaxHeight())
             Column(Modifier.weight(1.3f).fillMaxHeight(), verticalArrangement = gap) {
-                FitGauge(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
-                Row(Modifier.height(cards).fillMaxWidth(), horizontalArrangement = gap) {
-                    GuideCard(navi, Modifier.weight(1f).fillMaxHeight())
-                    CameraCard(vm, ui, c, Modifier.weight(1f).fillMaxHeight())
-                }
+                GaugeWithCamera(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
+                GuideCard(navi, Modifier.height(banner).fillMaxWidth(), banner = true)
             }
             if (!mapLeft) MapWithTrip(navi, c, Modifier.weight(0.85f).fillMaxHeight())
         }
     }
 }
 
-/** Portrait: gauge, cards, then the map, top to bottom. */
+/** Portrait: the gauge with its camera sign, the next turn in one line, then the map. */
 @Composable
 private fun TallCockpit(vm: AppViewModel, ui: UiState, c: Cockpit, navi: NaviUi, onMenu: () -> Unit, height: Dp) {
-    val cards = (height * 0.16f).coerceIn(96.dp, 150.dp)
+    val banner = (height * 0.09f).coerceIn(64.dp, 92.dp)
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         CockpitTopLine(vm, ui, c, onMenu)
-        FitGauge(vm, ui, c, Modifier.weight(1.1f).fillMaxWidth())
-        Row(Modifier.height(cards).fillMaxWidth(), horizontalArrangement = gap) {
-            GuideCard(navi, Modifier.weight(1f).fillMaxHeight())
-            CameraCard(vm, ui, c, Modifier.weight(1f).fillMaxHeight())
-        }
+        GaugeWithCamera(vm, ui, c, Modifier.weight(1.1f).fillMaxWidth())
+        GuideCard(navi, Modifier.height(banner).fillMaxWidth(), banner = true)
         MapWithTrip(navi, c, Modifier.weight(1f).fillMaxWidth())
+    }
+}
+
+/** The gauge with the speed camera sign standing in a narrow column beside it. */
+@Composable
+private fun GaugeWithCamera(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier) {
+    Row(modifier, horizontalArrangement = gap, verticalAlignment = Alignment.CenterVertically) {
+        FitGauge(vm, ui, c, Modifier.weight(1f).fillMaxHeight())
+        CameraCard(vm, ui, c, Modifier.weight(0.42f).fillMaxHeight(), tall = true)
     }
 }
 

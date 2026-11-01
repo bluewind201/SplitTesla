@@ -215,6 +215,33 @@ private fun Big(label: String, value: String, color: Color) {
     }
 }
 
+/**
+ * The next manoeuvre in a single line for a long, low slot: symbol, distance,
+ * wording (cut short if it must be), and the turn right after it.
+ */
+@Composable
+fun TurnBanner(navi: NaviUi, modifier: Modifier = Modifier) {
+    val route = navi.route ?: return
+    val p = navi.progress
+    val i = p?.nextGuideIndex
+    val guide = i?.let { route.guides.getOrNull(it) }
+    val then = i?.let { route.guides.getOrNull(it + 1) }?.takeIf { it.distanceM <= 300 }
+    Row(
+        modifier.glass(18.dp, tint = Neon.lime.copy(alpha = 0.35f), edge = Neon.lime.copy(alpha = 0.6f)).padding(horizontal = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Text(guide?.maneuver?.symbol ?: "↑", fontSize = 30.sp, color = Neon.lime, fontWeight = FontWeight.Bold)
+        Text(p?.nextGuideDistanceM?.let { km(it) } ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, color = Neon.text, maxLines = 1)
+        Text(
+            guide?.let { GuidanceAnnouncer.speakable(it) } ?: "${route.goal.name}까지 직진",
+            fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        if (then != null) Text("이어서 ${then.maneuver.symbol}", fontSize = 14.sp, color = Neon.cyan, maxLines = 1)
+    }
+}
+
 /** The next manoeuvre, big: symbol, distance, wording, and what follows right after. */
 @Composable
 fun TurnCard(navi: NaviUi, modifier: Modifier = Modifier, compact: Boolean = false) {
