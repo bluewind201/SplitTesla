@@ -99,10 +99,13 @@ internal fun camera(
     val lo = lon.toDoubleOrNull() ?: return null
     if (la !in 32.0..39.5 || lo !in 124.0..132.0) return null
     val kmh = limit.toDoubleOrNull()?.toInt()?.takeIf { it in 10..150 } ?: return null
-    // 단속구분: 1 speed, 2 signal; 3 and up are parking, bus lane and the like. Mobile units are not in the
-    // dataset, but drop anything labelled that way in case a provider adds them.
+    // 단속구분: 1 speed, 2 signal, "1+2" both at one camera; 3 and up are parking, bus lane and the
+    // like. Mobile units are not in the dataset (it has no field for them), but drop anything labelled
+    // that way in case a provider adds them.
     val k = kind.trim()
-    if (k.isNotEmpty() && k !in setOf("1", "2", "01", "02") && !k.contains("과속") && !k.contains("속도") && !k.contains("신호")) return null
+    val codes = k.split('+').map { it.trim().trimStart('0') }
+    val enforces = codes.any { it == "1" || it == "2" } || k.contains("과속") || k.contains("속도") || k.contains("신호")
+    if (k.isNotEmpty() && !enforces) return null
     if ("이동식" in place || "이동형" in place || "이동식" in k) return null
     // Section ends are often only named in the place text, e.g. "구월중학교직전(구간단속 시점)".
     val role = when {
@@ -124,7 +127,7 @@ internal fun camera(
     return SpeedCamera(
         id, la, lo, kmh, place, role, sectionLength.toDoubleOrNull()?.toInt()?.takeIf { it > 0 },
         zoneName,
-        signal = k == "2" || k == "02" || (k.contains("신호") && !k.contains("과속")),
+        signal = "2" in codes || (k.contains("신호") && !k.contains("과속")),
     )
 }
 

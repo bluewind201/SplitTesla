@@ -197,9 +197,14 @@ class CameraTest {
             7,구월중학교직전(구간단속 시점),37.45,126.70,1,60,3,,
             8,석천초등학교(구간단속 종점),37.46,126.70,1,60,3,,
             9,이동식 단속지점,37.47,126.70,1,60,3,,
+            10,중앙사거리 신호·과속 겸용,37.48,126.70,01+02,50,3,,
+            11,시청앞 사거리,37.49,126.70,1+2,60,3,,
+            12,기타 단속,37.50,126.70,99,50,3,,
             """.trimIndent(),
         )
-        assertEquals(listOf("1", "3", "4", "7", "8"), cams.map { it.id })
+        // Speed-and-signal cameras ("1+2") are real fixed cameras; 99 (other) and mobile entries are not.
+        assertEquals(listOf("1", "3", "4", "7", "8", "10", "11"), cams.map { it.id })
+        assertTrue(cams.first { it.id == "10" }.signal)
         assertTrue(cams[0].signal)
         assertEquals("노인보호구역", cams[1].zone)
         assertEquals("어린이보호구역", cams[2].zone)
