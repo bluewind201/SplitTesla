@@ -19,12 +19,12 @@ import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.speech.tts.TextToSpeech
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.splittesla.app.MainActivity
 import com.splittesla.app.R
+import com.splittesla.app.assistant.Speaker
 import com.splittesla.app.navi.NaviHub
 import com.splittesla.core.camera.CameraAlert
 import com.splittesla.core.camera.CameraAlerter
@@ -35,7 +35,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.util.Locale
 import kotlin.math.roundToInt
 
 /**
@@ -51,8 +50,7 @@ class SpeedCameraService : Service(), LocationListener {
     // The guided route's cameras, as ids, rebuilt when NaviHub loads a new list.
     private var routeCameras: List<RouteCamera>? = null
     private var routeCameraIds: Set<String> = emptySet()
-    private var tts: TextToSpeech? = null
-    private var ttsReady = false
+    private var speaker: Speaker? = null
     private val locations get() = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -72,10 +70,8 @@ class SpeedCameraService : Service(), LocationListener {
 
     private fun start() {
         CameraState.running.value = true
-        tts = TextToSpeech(this) { status ->
-            ttsReady = status == TextToSpeech.SUCCESS
-            if (ttsReady) tts?.setLanguage(Locale.KOREAN)
-        }
+        // The shared speaker: the voice picked in Settings, and music ducked while it talks.
+        speaker = Speaker(this)
         scope.launch {
             val repo = CameraRepository(this@SpeedCameraService).also { this@SpeedCameraService.repo = it }
             val cameras = repo.load()
@@ -164,7 +160,7 @@ class SpeedCameraService : Service(), LocationListener {
             is CameraAlert.SectionEnd -> "구간단속 종료, 평균 속도 ${alert.averageKmh.roundToInt()}킬로미터"
         }
         CameraState.lastAlert.value = text
-        if (ttsReady) tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "camera")
+        speaker?.speak(text, interrupt = true)
         val strong = alert is CameraAlert.Final || (alert is CameraAlert.Approaching && alert.overLimit)
         vibrate(if (strong) longArrayOf(0, 300, 150, 300, 150, 300) else longArrayOf(0, 250))
     }
@@ -212,7 +208,7 @@ class SpeedCameraService : Service(), LocationListener {
 
     override fun onDestroy() {
         locations.removeUpdates(this)
-        tts?.shutdown()
+        speaker?.shutdown()
         scope.cancel()
         CameraState.running.value = false
         CameraState.gpsOk.value = false

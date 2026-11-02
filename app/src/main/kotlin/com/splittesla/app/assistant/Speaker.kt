@@ -12,9 +12,15 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Korean text-to-speech that ducks music or a navigation app's voice while it
- * talks.
+ * talks, in the voice and speed picked in Settings ([VoiceChoice]).
  */
 class Speaker(context: Context, private val log: (String) -> Unit = {}) {
+    init {
+        VoiceChoice.load(context)
+    }
+
+    private var applied: VoiceChoice.Setting? = null
+
     private val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private val attributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
@@ -46,6 +52,7 @@ class Speaker(context: Context, private val log: (String) -> Unit = {}) {
             log("한국어 음성 데이터가 없습니다. 휴대폰 설정 > 텍스트 음성 변환에서 한국어를 설치하세요")
         }
         tts.setAudioAttributes(attributes)
+        applyVoice()
         tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) = Unit
             override fun onDone(utteranceId: String?) = finished()
@@ -63,10 +70,21 @@ class Speaker(context: Context, private val log: (String) -> Unit = {}) {
             queued = text
             return
         }
+        applyVoice()
         if (pending.getAndIncrement() == 0) {
             focus?.let { audio.requestAudioFocus(it) }
         }
         tts.speak(text, if (interrupt) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD, null, "say${counter++}")
+    }
+
+    /** Switches to the chosen voice and speed when they changed since the last prompt. */
+    private fun applyVoice() {
+        val want = VoiceChoice.setting.value
+        if (want == applied) return
+        applied = want
+        val voice = want.voiceName?.let { name -> runCatching { tts.voices }.getOrNull()?.firstOrNull { it.name == name } }
+        if (voice != null) tts.voice = voice else tts.setLanguage(Locale.KOREAN)
+        tts.setSpeechRate(want.rate)
     }
 
     private fun finished() {

@@ -185,6 +185,8 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                 )
             }
 
+            VoiceSettingsCard()
+
             FoldSection("계기판", summary = "${ui.cockpitLayout.letter} ${ui.cockpitLayout.title} · ${ui.gaugeStyle.title}") {
                 Text("배치", style = Caption)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
