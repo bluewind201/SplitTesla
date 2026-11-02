@@ -28,6 +28,7 @@ object CameraCsv {
         val sectionLen = col("과속단속구간길이")
         val zone = col("보호구역구분")
         val kind = col("단속구분")
+        val direction = col("도로노선방향")
         return rows.drop(1).mapIndexedNotNull { i, r ->
             fun at(c: Int?) = c?.let { r.getOrNull(it)?.trim() }.orEmpty()
             camera(
@@ -36,6 +37,7 @@ object CameraCsv {
                 place = at(place).ifEmpty { at(road) },
                 section = at(sectionPos), sectionLength = at(sectionLen), zone = at(zone),
                 kind = at(kind),
+                direction = at(direction),
             )
         }.let(::mergeSameSpot)
     }
@@ -94,6 +96,7 @@ internal fun camera(
     sectionLength: String,
     zone: String = "",
     kind: String = "",
+    direction: String = "",
 ): SpeedCamera? {
     val la = lat.toDoubleOrNull() ?: return null
     val lo = lon.toDoubleOrNull() ?: return null
@@ -128,6 +131,8 @@ internal fun camera(
         id, la, lo, kmh, place, role, sectionLength.toDoubleOrNull()?.toInt()?.takeIf { it > 0 },
         zoneName,
         signal = "2" in codes || (k.contains("신호") && !k.contains("과속")),
+        // 도로노선방향: 1 and 2 are one direction each, 3 both.
+        bothWays = direction.trim().trimStart('0') == "3" || direction.contains("양방향"),
     )
 }
 
@@ -144,6 +149,7 @@ fun mergeSameSpot(cameras: List<SpeedCamera>): List<SpeedCamera> =
                 sectionLengthM = same.firstNotNullOfOrNull { it.sectionLengthM },
                 zone = same.firstNotNullOfOrNull { it.zone },
                 signal = same.all { it.signal },
+                bothWays = same.size > 1 || same.any { it.bothWays },
             )
         }
 
@@ -151,7 +157,7 @@ fun mergeSameSpot(cameras: List<SpeedCamera>): List<SpeedCamera> =
 object CameraStore {
     fun encode(cameras: List<SpeedCamera>): String = buildString {
         cameras.forEach { c ->
-            append(listOf(c.id, c.latitude, c.longitude, c.limitKmh, c.section?.name.orEmpty(), c.sectionLengthM ?: "", c.place.replace('\t', ' '), c.zone.orEmpty(), if (c.signal) "S" else "")
+            append(listOf(c.id, c.latitude, c.longitude, c.limitKmh, c.section?.name.orEmpty(), c.sectionLengthM ?: "", c.place.replace('\t', ' '), c.zone.orEmpty(), if (c.signal) "S" else "", if (c.bothWays) "B" else "")
                 .joinToString("\t"))
             append('\n')
         }
@@ -165,6 +171,7 @@ object CameraStore {
             section = f[4].takeIf { it.isNotEmpty() }?.let(SectionRole::valueOf),
             sectionLengthM = f[5].toIntOrNull(), place = f[6], zone = f.getOrNull(7)?.takeIf { it.isNotEmpty() },
             signal = f.getOrNull(8) == "S",
+            bothWays = f.getOrNull(9) == "B",
         )
     }.toList()
 }

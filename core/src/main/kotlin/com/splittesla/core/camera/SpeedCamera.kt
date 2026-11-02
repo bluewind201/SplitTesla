@@ -21,6 +21,12 @@ data class SpeedCamera(
     val zone: String? = null,
     /** Listed as a signal (red light) camera that also has a speed limit. */
     val signal: Boolean = false,
+    /**
+     * Watches both directions: marked 양방향 (도로노선방향 3), or both
+     * directions' records share this spot. Such a camera is never taken for
+     * one on the other carriageway.
+     */
+    val bothWays: Boolean = false,
 )
 
 internal object Geo {

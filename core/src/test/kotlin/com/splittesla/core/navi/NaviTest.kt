@@ -138,9 +138,20 @@ class NaviTest {
         assertEquals(Maneuver.RIGHT, Maneuver.of(3, ""))
         assertEquals(Maneuver.LEFT, Maneuver.of(8, "비보호 좌회전"))
         assertEquals(Maneuver.DESTINATION, Maneuver.of(88, ""))
-        assertEquals(Maneuver.EXIT, Maneuver.of(60, "'서초IC' 출구로 진출"))
+        assertEquals(Maneuver.EXIT_RIGHT, Maneuver.of(60, "'서초IC' 출구로 진출"))
         assertEquals(Maneuver.TOLL, Maneuver.of(121, ""))
         assertEquals(Maneuver.KEEP_RIGHT, Maneuver.of(70, "오른쪽 방향으로 이동"))
+        // The codes that used to fall through to the wording and came out as curved arrows.
+        assertEquals(Maneuver.EXIT_RIGHT, Maneuver.of(67, "'판교IC' 오른쪽 고속도로 출구"))
+        assertEquals(Maneuver.EXIT_LEFT, Maneuver.of(58, ""))
+        assertEquals(Maneuver.KEEP_RIGHT, Maneuver.of(74, "오른쪽 지하차도 옆길"))
+        assertEquals(Maneuver.KEEP_LEFT, Maneuver.of(63, "왼쪽 고가차도 옆길"))
+        assertEquals(Maneuver.UNDERPASS, Maneuver.of(56, "지하차도 진입"))
+        assertEquals(Maneuver.MERGE_RIGHT, Maneuver.of(82, ""))
+        assertEquals(Maneuver.SLIGHT_LEFT, Maneuver.of(13, ""))
+        assertEquals(Maneuver.SHARP_RIGHT, Maneuver.of(16, ""))
+        assertEquals(Maneuver.ROUNDABOUT, Maneuver.of(97, ""))
+        assertEquals(Maneuver.EXIT_LEFT, Maneuver.of(200, "왼쪽 출구로 나가세요"))
     }
 
     @Test fun energyCurveGrowsWithSpeedAndCold() {
@@ -194,5 +205,23 @@ class NaviTest {
         val on = RouteCameras.along(RouteGeometry(path), CameraIndex(cams))
         assertEquals(listOf("b", "a"), on.map { it.camera.id })
         assertEquals("a", RouteCameras.next(on, 700.0)!!.camera.id)
+    }
+
+    @Test fun sideOfTheRouteIsSignedRightPositive() {
+        val g = RouteGeometry(path) // due north
+        assertTrue(g.project(LatLon(path[5].lat, path[5].lon + 0.0002))!!.rightM > 15) // east: right
+        assertTrue(g.project(LatLon(path[5].lat, path[5].lon - 0.0002))!!.rightM < -15) // west: left
+    }
+
+    @Test fun camerasWatchingTheOncomingLanesAreLeftOut() {
+        // Driving north, traffic keeps right: a pole ~13 m to the west watches southbound traffic.
+        val cams = listOf(
+            SpeedCamera("ours", path[4].lat, path[4].lon + 0.00015, 60, "우리 쪽"),
+            SpeedCamera("oncoming", path[8].lat, path[8].lon - 0.00015, 60, "반대편"),
+            SpeedCamera("both", path[12].lat, path[12].lon - 0.00015, 60, "양방향", bothWays = true),
+            SpeedCamera("gantry", path[16].lat, path[16].lon - 0.00004, 60, "도로 위"),
+        )
+        val on = RouteCameras.along(RouteGeometry(path), CameraIndex(cams))
+        assertEquals(listOf("ours", "both", "gantry"), on.map { it.camera.id })
     }
 }
