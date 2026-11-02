@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.size
 import com.splittesla.app.UiState
 import com.splittesla.app.navi.NaviHub
 import com.splittesla.app.navi.NaviPhase
@@ -231,14 +232,19 @@ fun TurnBanner(navi: NaviUi, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text(guide?.maneuver?.symbol ?: "↑", fontSize = 30.sp, color = Neon.lime, fontWeight = FontWeight.Bold)
+        ManeuverIcon(guide?.maneuver, Neon.lime, Modifier.size(46.dp))
         Text(p?.nextGuideDistanceM?.let { km(it) } ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, color = Neon.text, maxLines = 1)
         Text(
             guide?.let { GuidanceAnnouncer.speakable(it) } ?: "${route.goal.name}까지 직진",
             fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
-        if (then != null) Text("이어서 ${then.maneuver.symbol}", fontSize = 14.sp, color = Neon.cyan, maxLines = 1)
+        if (then != null) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("이어서", fontSize = 13.sp, color = Neon.cyan, maxLines = 1)
+                ManeuverIcon(then.maneuver, Neon.cyan, Modifier.size(26.dp))
+            }
+        }
     }
 }
 
@@ -256,7 +262,7 @@ fun TurnCard(navi: NaviUi, modifier: Modifier = Modifier, compact: Boolean = fal
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(guide?.maneuver?.symbol ?: "↑", fontSize = if (compact) 34.sp else 46.sp, color = Neon.lime, fontWeight = FontWeight.Bold)
+        ManeuverIcon(guide?.maneuver, Neon.lime, Modifier.size(if (compact) 40.dp else 58.dp))
         Column(Modifier.weight(1f)) {
             Text(
                 p?.nextGuideDistanceM?.let { km(it) } ?: "—",
@@ -270,7 +276,7 @@ fun TurnCard(navi: NaviUi, modifier: Modifier = Modifier, compact: Boolean = fal
         if (then != null) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("이어서", style = Caption)
-                Text(then.maneuver.symbol, fontSize = 22.sp, color = Neon.cyan)
+                ManeuverIcon(then.maneuver, Neon.cyan, Modifier.size(26.dp))
             }
         }
         if (compact && p != null) {

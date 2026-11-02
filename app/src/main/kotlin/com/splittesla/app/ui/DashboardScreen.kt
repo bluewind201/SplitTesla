@@ -141,9 +141,9 @@ private fun WideCockpit(vm: AppViewModel, ui: UiState, c: Cockpit, navi: NaviUi,
 }
 
 /**
- * An unfolded foldable or a tablet: the gauge with the camera sign standing
- * beside it, the next turn as one long line underneath, and the map full
- * height alongside (on the left for B).
+ * An unfolded foldable or a tablet: the next turn as one long line on top,
+ * the gauge with the camera sign standing beside it underneath, and the map
+ * full height alongside (on the left for B).
  */
 @Composable
 private fun SquareCockpit(vm: AppViewModel, ui: UiState, c: Cockpit, navi: NaviUi, onMenu: () -> Unit, height: Dp) {
@@ -154,22 +154,22 @@ private fun SquareCockpit(vm: AppViewModel, ui: UiState, c: Cockpit, navi: NaviU
         Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = gap) {
             if (mapLeft) MapWithTrip(navi, c, Modifier.weight(0.85f).fillMaxHeight())
             Column(Modifier.weight(1.3f).fillMaxHeight(), verticalArrangement = gap) {
-                GaugeWithCamera(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
                 GuideCard(navi, Modifier.height(banner).fillMaxWidth(), banner = true)
+                GaugeWithCamera(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
             }
             if (!mapLeft) MapWithTrip(navi, c, Modifier.weight(0.85f).fillMaxHeight())
         }
     }
 }
 
-/** Portrait: the gauge with its camera sign, the next turn in one line, then the map. */
+/** Portrait: the next turn in one line, the gauge with its camera sign, then the map. */
 @Composable
 private fun TallCockpit(vm: AppViewModel, ui: UiState, c: Cockpit, navi: NaviUi, onMenu: () -> Unit, height: Dp) {
     val banner = (height * 0.09f).coerceIn(64.dp, 92.dp)
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         CockpitTopLine(vm, ui, c, onMenu)
-        GaugeWithCamera(vm, ui, c, Modifier.weight(1.1f).fillMaxWidth())
         GuideCard(navi, Modifier.height(banner).fillMaxWidth(), banner = true)
+        GaugeWithCamera(vm, ui, c, Modifier.weight(1.1f).fillMaxWidth())
         MapWithTrip(navi, c, Modifier.weight(1f).fillMaxWidth())
     }
 }
