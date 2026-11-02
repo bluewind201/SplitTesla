@@ -19,6 +19,10 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history, so the publish step can tell whether this commit
+          # already contains the one behind the current latest-apk.
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -56,15 +60,25 @@ jobs:
         with:
           name: SplitTesla-apk
           path: app/build/outputs/apk/release/*.apk
-      # Direct .apk download on the "latest-apk" prerelease. Only the top of the
-      # branch stack (design -> logbook -> AI voice) publishes, so the link
-      # always has every feature.
+      # Direct .apk download on the "latest-apk" prerelease. Any branch may
+      # publish, but only when its commit contains the commit already behind
+      # latest-apk. So the link follows whichever branch is on top of the
+      # stack, never goes back to an older build (a lower versionCode makes
+      # Android refuse to install over the newer app), and a side branch
+      # can't replace it. Run the workflow by hand to force a publish.
       - name: Publish APK to latest-apk release
-        if: github.event_name != 'pull_request' && github.ref_name == 'claude/project-thread-ga7jmz'
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          current=$(gh release view latest-apk --json targetCommitish --jq .targetCommitish 2>/dev/null || true)
+          if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] && [ -n "$current" ] \
+             && ! git merge-base --is-ancestor "$current" "$GITHUB_SHA" 2>/dev/null; then
+            echo "latest-apk is at ${current::7}, which this branch doesn't contain; not publishing"
+            exit 0
+          fi
           cp app/build/outputs/apk/release/app-release.apk SplitTesla.apk
           gh release delete latest-apk --yes --cleanup-tag || true
           gh release create latest-apk SplitTesla.apk --prerelease --target "$GITHUB_SHA" \
-            --title "SplitTesla 테스트 APK" --notes "브랜치 ${GITHUB_REF_NAME}, 커밋 ${GITHUB_SHA::7}"
+            --title "SplitTesla 테스트 APK" \
+            --notes "브랜치 ${GITHUB_REF_NAME}, 커밋 ${GITHUB_SHA::7}, 빌드 ${GITHUB_RUN_NUMBER}"
