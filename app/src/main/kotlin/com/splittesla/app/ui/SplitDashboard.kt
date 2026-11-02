@@ -298,7 +298,7 @@ private fun NaviCard(navi: NaviUi, modifier: Modifier) {
     Card(modifier, Neon.lime) {
         Text("길안내 · ${navi.route?.goal?.name ?: ""}", style = Caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(guide?.maneuver?.symbol ?: "↑", fontSize = 26.sp, color = Neon.lime, fontWeight = FontWeight.Bold)
+            ManeuverIcon(guide?.maneuver, Neon.lime, Modifier.size(32.dp))
             Text(p?.nextGuideDistanceM?.let(::distanceText) ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Neon.text)
         }
         Text(guide?.let { GuidanceAnnouncer.speakable(it) } ?: "직진", fontSize = 12.sp, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)

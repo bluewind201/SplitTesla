@@ -6,8 +6,12 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sqrt
 
-/** Where a point falls on a route: metres from the start and metres off the line. */
-data class Projection(val alongM: Double, val lateralM: Double, val segment: Int)
+/**
+ * Where a point falls on a route: metres from the start and metres off the
+ * line; [rightM] is the same offset signed, positive to the right of the
+ * direction of travel and negative to the left.
+ */
+data class Projection(val alongM: Double, val lateralM: Double, val segment: Int, val rightM: Double = 0.0)
 
 /**
  * Distances along a route's path. Each segment is measured in a flat
@@ -42,7 +46,10 @@ class RouteGeometry(val path: List<LatLon>) {
             val dy = py - t * by
             val lateral = sqrt(dx * dx + dy * dy)
             if (best == null || lateral < best.lateralM) {
-                best = Projection(cumulative[i] + t * sqrt(len2), lateral, i)
+                // East-north axes: a negative cross product puts the point right of the segment.
+                val cross = bx * dy - by * dx
+                val side = if (cross > 0) -lateral else lateral
+                best = Projection(cumulative[i] + t * sqrt(len2), lateral, i, side)
             }
         }
         return best

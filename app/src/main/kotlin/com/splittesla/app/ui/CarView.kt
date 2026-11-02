@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.layout
@@ -65,7 +66,8 @@ class Hotspot(
     val onClick: () -> Unit,
 )
 
-private const val ASPECT = 2.37f
+/** Length over width of the drawn car. */
+internal const val CAR_ASPECT = 2.37f
 
 /**
  * Top-down car, nose to the right, drawn in code so open doors, frunk and
@@ -85,8 +87,8 @@ fun CarView(
     val pulse by t.animateFloat(0.3f, 1f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "open")
 
     BoxWithConstraints(modifier) {
-        val w = min(maxWidth.value * (1 - 2 * marginX), maxHeight.value * (1 - 2 * marginY) * ASPECT)
-        val h = w / ASPECT
+        val w = min(maxWidth.value * (1 - 2 * marginX), maxHeight.value * (1 - 2 * marginY) * CAR_ASPECT)
+        val h = w / CAR_ASPECT
         val left = (maxWidth.value - w) / 2f
         val top = (maxHeight.value - h) / 2f
 
@@ -156,19 +158,20 @@ private fun HotspotButton(spot: Hotspot) {
 
 // ── Drawing ──
 
-private class CarFrame(val r: Rect) {
+internal class CarFrame(val r: Rect) {
     fun x(u: Float) = r.left + u * r.width
     fun y(v: Float) = r.top + v * r.height
     fun p(u: Float, v: Float) = Offset(x(u), y(v))
 }
 
-private fun CarFrame.path(block: Path.(CarFrame) -> Unit): Path = Path().also { it.block(this) }
-private fun Path.m(f: CarFrame, u: Float, v: Float) = moveTo(f.x(u), f.y(v))
-private fun Path.l(f: CarFrame, u: Float, v: Float) = lineTo(f.x(u), f.y(v))
-private fun Path.c(f: CarFrame, u1: Float, v1: Float, u2: Float, v2: Float, u3: Float, v3: Float) =
+internal fun CarFrame.path(block: Path.(CarFrame) -> Unit): Path = Path().also { it.block(this) }
+internal fun Path.m(f: CarFrame, u: Float, v: Float) = moveTo(f.x(u), f.y(v))
+internal fun Path.l(f: CarFrame, u: Float, v: Float) = lineTo(f.x(u), f.y(v))
+internal fun Path.c(f: CarFrame, u1: Float, v1: Float, u2: Float, v2: Float, u3: Float, v3: Float) =
     cubicTo(f.x(u1), f.y(v1), f.x(u2), f.y(v2), f.x(u3), f.y(v3))
 
-private fun DrawScope.drawCar(rect: Rect, open: Set<Closure>, pulse: Float, headlights: Boolean) {
+/** [mirrorFold] 0 is open, 1 folded back against the body. */
+internal fun DrawScope.drawCar(rect: Rect, open: Set<Closure>, pulse: Float, headlights: Boolean, mirrorFold: Float = 0f) {
     val f = CarFrame(rect)
     val stroke = 1.5.dp.toPx()
 
@@ -184,8 +187,9 @@ private fun DrawScope.drawCar(rect: Rect, open: Set<Closure>, pulse: Float, head
     }
     val mirrorL = f.path { m(it, 0.60f, 0.07f); l(it, 0.63f, -0.04f); l(it, 0.655f, -0.04f); l(it, 0.66f, 0.06f); close() }
     val mirrorR = f.path { m(it, 0.60f, 0.93f); l(it, 0.63f, 1.04f); l(it, 0.655f, 1.04f); l(it, 0.66f, 0.94f); close() }
-    drawPath(mirrorL, Color(0xFF2A2E35))
-    drawPath(mirrorR, Color(0xFF2A2E35))
+    // Folding swings each mirror back about its hinge on the door.
+    rotate(-70f * mirrorFold, f.p(0.63f, 0.07f)) { drawPath(mirrorL, Color(0xFF2A2E35)) }
+    rotate(70f * mirrorFold, f.p(0.63f, 0.93f)) { drawPath(mirrorR, Color(0xFF2A2E35)) }
 
     val body = f.path {
         m(it, 0.06f, 0.07f)

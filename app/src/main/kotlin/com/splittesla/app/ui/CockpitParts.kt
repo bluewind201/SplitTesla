@@ -13,6 +13,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,9 +26,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,6 +50,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -73,6 +78,7 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.unit.min
 import kotlin.math.roundToInt
 
 /** The three dashboard arrangements the driver can pick from (Settings, or a long press on the gauge). */
@@ -205,13 +211,17 @@ fun StatusClock(fontSize: TextUnit = 16.sp) {
     Text(SimpleDateFormat("HH:mm", Locale.KOREA).format(Date(now)), fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = fontSize, color = Neon.text)
 }
 
-/** Layout C's own top line: the tab menu, the status icons, destination search, link dots and the clock. */
+/**
+ * The dashboard's only chrome: the menu button, the status icons, destination
+ * search, link dots and the clock.
+ */
 @Composable
-fun ImmersiveTopLine(vm: AppViewModel, ui: UiState, c: Cockpit, onMenu: () -> Unit) {
+fun CockpitTopLine(vm: AppViewModel, ui: UiState, c: Cockpit, onMenu: () -> Unit) {
     var searching by remember { mutableStateOf(false) }
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        RoundIcon({ Icon(Icons.Filled.Menu, "탭 메뉴", Modifier.size(18.dp), Neon.text) }, onMenu)
+        RoundIcon({ Icon(Icons.Filled.Menu, "메뉴", Modifier.size(18.dp), Neon.text) }, onMenu)
         CockpitStatus(vm, ui, c, Modifier.weight(1f))
+        if (ui.busy != null) CircularProgressIndicator(Modifier.size(16.dp), color = Neon.lime, strokeWidth = 2.dp)
         RoundIcon({ Icon(Icons.Filled.Search, "목적지 검색", Modifier.size(18.dp), Neon.text) }) { searching = true }
         StatusDot("S3XY", ui.commander) { if (ui.commander != LinkState.CONNECTED) vm.connectCommander() }
         StatusDot("CAR", ui.car) { if (ui.car != LinkState.CONNECTED) vm.connectCar() }
@@ -225,8 +235,9 @@ private fun RoundIcon(icon: @Composable () -> Unit, onClick: () -> Unit) {
     Box(Modifier.size(34.dp).glass(17.dp).clickable(onClick = onClick), contentAlignment = Alignment.Center) { icon() }
 }
 
+/** A link as a coloured dot and its name, for tight top bars. */
 @Composable
-private fun StatusDot(label: String, state: LinkState, onClick: () -> Unit) {
+fun StatusDot(label: String, state: LinkState, onClick: () -> Unit) {
     Row(Modifier.clickable(onClick = onClick), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(8.dp).background(state.color(), CircleShape))
         Text(" $label", fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Neon.muted)
@@ -235,31 +246,37 @@ private fun StatusDot(label: String, state: LinkState, onClick: () -> Unit) {
 
 /**
  * The speedometer in a box shaped for the chosen face. A tap changes the face,
- * a long press the dashboard layout.
+ * a long press the dashboard layout. The faces are drawn for about 320 dp;
+ * a bigger or smaller box scales everything in them (digits, ticks, badges)
+ * together, so a large screen gets a large gauge rather than small type.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GaugeBox(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier) {
     val source = remember { MutableInteractionSource() }
-    Box(modifier, contentAlignment = Alignment.Center) {
-        AnimatedContent(
-            targetState = ui.gaugeStyle,
-            transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.92f)) togetherWith fadeOut() },
-            label = "gauge",
-            modifier = Modifier.fillMaxSize().combinedClickable(
-                interactionSource = source,
-                indication = null,
-                onClick = { vm.setGaugeStyle(GaugeStyle.entries[(ui.gaugeStyle.ordinal + 1) % GaugeStyle.entries.size]) },
-                onLongClick = {
-                    val next = CockpitLayout.entries[(ui.cockpitLayout.ordinal + 1) % CockpitLayout.entries.size]
-                    vm.setCockpitLayout(next)
-                    vm.toast("계기판 배치 ${next.letter} · ${next.title}")
-                },
-            ),
-            contentAlignment = Alignment.Center,
-        ) { style -> Speedometer(style, c, Modifier.fillMaxSize()) }
-        SideSignal(c.turnLeft, c.blindLeft, left = true, Modifier.align(Alignment.TopStart))
-        SideSignal(c.turnRight, c.blindRight, left = false, Modifier.align(Alignment.TopEnd))
+    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
+        val base = LocalDensity.current
+        val scale = (min(maxWidth, maxHeight) / 320.dp).coerceIn(0.75f, 2f)
+        CompositionLocalProvider(LocalDensity provides Density(base.density * scale, base.fontScale)) {
+            AnimatedContent(
+                targetState = ui.gaugeStyle,
+                transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.92f)) togetherWith fadeOut() },
+                label = "gauge",
+                modifier = Modifier.fillMaxSize().combinedClickable(
+                    interactionSource = source,
+                    indication = null,
+                    onClick = { vm.setGaugeStyle(GaugeStyle.entries[(ui.gaugeStyle.ordinal + 1) % GaugeStyle.entries.size]) },
+                    onLongClick = {
+                        val next = CockpitLayout.entries[(ui.cockpitLayout.ordinal + 1) % CockpitLayout.entries.size]
+                        vm.setCockpitLayout(next)
+                        vm.toast("계기판 배치 ${next.letter} · ${next.title}")
+                    },
+                ),
+                contentAlignment = Alignment.Center,
+            ) { style -> Speedometer(style, c, Modifier.fillMaxSize()) }
+            SideSignal(c.turnLeft, c.blindLeft, left = true, Modifier.align(Alignment.TopStart))
+            SideSignal(c.turnRight, c.blindRight, left = false, Modifier.align(Alignment.TopEnd))
+        }
     }
 }
 
@@ -279,12 +296,13 @@ private fun SideSignal(turn: Boolean, blind: Boolean, left: Boolean, modifier: M
 
 /**
  * The next turn while guiding. Otherwise a way in: search for a destination,
- * or start the route being previewed.
+ * or start the route being previewed. [banner] puts it all on one line for a
+ * long, low slot.
  */
 @Composable
-fun GuideCard(navi: NaviUi, modifier: Modifier, overlay: Boolean = false) {
+fun GuideCard(navi: NaviUi, modifier: Modifier, overlay: Boolean = false, banner: Boolean = false) {
     if (navi.guiding) {
-        TurnCard(navi, modifier, compact = overlay)
+        if (banner) TurnBanner(navi, modifier) else TurnCard(navi, modifier, compact = overlay)
         return
     }
     var searching by remember { mutableStateOf(false) }
@@ -294,10 +312,17 @@ fun GuideCard(navi: NaviUi, modifier: Modifier, overlay: Boolean = false) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Icon(Icons.Filled.Search, null, Modifier.size(30.dp), Neon.lime)
-        Column {
-            val preview = navi.phase == NaviPhase.PREVIEW
-            Text(if (preview) navi.route?.goal?.name ?: "경로 미리보기" else "목적지 검색", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(if (preview) "탭해서 안내 시작" else "주소나 장소를 넣으면 바로 안내", fontSize = 12.sp, color = Neon.muted)
+        val preview = navi.phase == NaviPhase.PREVIEW
+        val title = if (preview) navi.route?.goal?.name ?: "경로 미리보기" else "목적지 검색"
+        val hint = if (preview) "탭해서 안내 시작" else "주소·장소로 바로 안내"
+        if (banner) {
+            Text(title, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(hint, fontSize = 13.sp, color = Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        } else {
+            Column {
+                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(hint, fontSize = 12.sp, color = Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
         }
     }
     if (searching) DestinationDialog { searching = false }

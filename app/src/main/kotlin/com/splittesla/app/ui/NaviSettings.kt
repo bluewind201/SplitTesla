@@ -63,8 +63,8 @@ fun NaviSettingsCard() {
         Text("NAVER Cloud Platform · Maps", color = Neon.cyan, fontSize = 13.sp)
         Field(ncpId, { ncpId = it.trim() }, "Client ID (x-ncp-apigw-api-key-id)")
         Field(ncpKey, { ncpKey = it.trim() }, "Client Secret (x-ncp-apigw-api-key)", secret = true)
-        Text("NAVER Developers · 검색(지역)", color = Neon.cyan, fontSize = 13.sp)
-        Field(searchId, { searchId = it.trim() }, "Client ID (X-Naver-Client-Id) · 선택")
+        Text("NAVER API HUB · 지역 검색 (상호명)", color = Neon.cyan, fontSize = 13.sp)
+        Field(searchId, { searchId = it.trim() }, "Client ID · 선택")
         Field(searchSecret, { searchSecret = it.trim() }, "Client Secret · 선택", secret = true)
         Text("공공데이터포털 · 전기자동차 충전소 정보", color = Neon.cyan, fontSize = 13.sp)
         Field(evKey, { evKey = it.trim() }, "일반 인증키 · 비우면 과속카메라 키 사용", secret = true)
@@ -99,9 +99,11 @@ fun NaviSettingsCard() {
             GlowButton("+5", { prefs.reserveSoc = reserve + 5; reserve = prefs.reserveSoc })
         }
         Hint(
-            "① NAVER Cloud Platform 콘솔 > Maps > Application 등록에서 Directions 5 · Geocoding · Reverse Geocoding을 체크하고 " +
-                "인증 정보의 Client ID / Client Secret을 넣으세요(경로·주소 검색·충전소 지역 코드). " +
-                "② 상호명 검색(예: '강남역 스타벅스')은 NAVER Developers에서 '검색' API 애플리케이션을 만들어 넣으면 됩니다. 없으면 주소로만 찾습니다. " +
+            "① NAVER Cloud Platform 콘솔 > Maps > Application 등록에서 Directions 5 · Geocoding · Reverse Geocoding · Dynamic Map을 체크하고 " +
+                "Android 패키지 com.splittesla.app을 등록한 뒤 인증 정보의 Client ID / Client Secret을 넣으세요(경로·주소 검색·지도). " +
+                "② 상호명 검색(예: 이마트)은 같은 NCP 콘솔 > Services > NAVER API HUB에서 이용 신청 후 Application을 등록하고 " +
+                "그 Client ID / Client Secret을 넣으면 됩니다(하루 25,000회). 예전 NAVER Developers 검색 키도 그대로 씁니다. " +
+                "없으면 주소와 휴대폰 검색으로만 찾습니다. " +
                 "③ 공공 급속충전기는 공공데이터포털 '한국환경공단_전기자동차 충전소 정보' 활용신청 키(과속카메라와 같은 계정이면 비워 둠). " +
                 "슈퍼차저는 차량 BLE로 받아 키 없이 제안합니다.",
         )

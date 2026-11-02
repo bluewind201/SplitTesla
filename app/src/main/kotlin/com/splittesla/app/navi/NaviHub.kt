@@ -2,6 +2,7 @@ package com.splittesla.app.navi
 
 import android.Manifest
 import android.content.Context
+import android.location.Geocoder
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -143,14 +144,58 @@ object NaviHub {
         scope.launch {
             _state.update { it.copy(busy = "'$query' 찾는 중", message = null) }
             try {
-                val hits = api.findPlaces(query.trim(), bestPosition())
-                _state.update { it.copy(results = hits, message = if (hits.isEmpty()) "'$query' 검색 결과가 없습니다" else null) }
+                val q = query.trim()
+                val near = bestPosition()
+                val found = api.searchPlaces(q, near, near?.let { districtNear(it) })
+                // Without NAVER's name search, or when it finds little, the phone's own geocoder knows many places by name.
+                val phone = if (found.places.size < 3) phonePlaces(q, near) else emptyList()
+                val hits = (found.places + phone)
+                    .distinctBy { "%.4f,%.4f".format(it.point.lat, it.point.lon) }
+                    .let { list -> near?.let { n -> list.sortedBy { RouteGeometry.metres(n, it.point) } } ?: list }
+                val message = when {
+                    hits.isNotEmpty() -> found.problem?.takeIf { it != NaverApi.NO_SEARCH_KEY }
+                    found.problem == NaverApi.NO_SEARCH_KEY ->
+                        "'$q'을(를) 찾지 못했습니다. 이마트처럼 이름으로 찾으려면 설정 > 길안내 API에 NAVER API HUB 지역 검색 키를 넣어 주세요"
+                    else -> found.problem ?: "'$q' 검색 결과가 없습니다"
+                }
+                _state.update { it.copy(results = hits, message = message) }
             } catch (e: Exception) {
                 fail("검색", e)
             } finally {
                 _state.update { it.copy(busy = null) }
             }
         }
+    }
+
+    private var district: Pair<LatLon, String>? = null
+
+    /** The district around [p] ("분당구"), looked up again only after moving 2 km. */
+    private suspend fun districtNear(p: LatLon): String? {
+        district?.let { (at, name) -> if (RouteGeometry.metres(at, p) < 2000) return name }
+        if (!prefs.hasMaps) return null
+        val name = runCatching { api.areaName(p) }.getOrNull()?.substringBefore(' ')?.takeIf { it.isNotBlank() } ?: return null
+        district = p to name
+        return name
+    }
+
+    /** Places by name from the phone's geocoder (Google on most phones), within about 30 km of [near]. */
+    @Suppress("DEPRECATION")
+    private suspend fun phonePlaces(query: String, near: LatLon?): List<NaviPlace> = withContext(Dispatchers.IO) {
+        if (!Geocoder.isPresent()) return@withContext emptyList()
+        runCatching {
+            val geocoder = Geocoder(app, Locale.KOREA)
+            val found = if (near != null) {
+                geocoder.getFromLocationName(query, 10, near.lat - 0.3, near.lon - 0.35, near.lat + 0.3, near.lon + 0.35)
+            } else {
+                geocoder.getFromLocationName(query, 10)
+            }
+            found.orEmpty().map { a ->
+                val line = a.getAddressLine(0).orEmpty().removePrefix("대한민국 ")
+                // featureName is often just the house number already in the address; then the query names it better.
+                val name = a.featureName?.takeIf { it.isNotBlank() && !it.all(Char::isDigit) && !line.contains(it) } ?: query
+                NaviPlace(name, LatLon(a.latitude, a.longitude), line, "휴대폰 검색")
+            }
+        }.getOrDefault(emptyList())
     }
 
     /** Routes to [place] for the default option and two alternatives, ready to start. */
@@ -246,8 +291,8 @@ object NaviHub {
             } else {
                 out += "❌ NAVER Cloud Maps 키가 없습니다"
             }
-            if (prefs.hasSearch) check("장소 검색(검색 API 지역)") { "'스타벅스' ${api.localSearch("스타벅스", here).size}건" }
-            else out += "⚪ 장소 검색 키 없음 (주소로만 검색)"
+            if (prefs.hasSearch) check("장소 검색(API HUB 지역)") { "'스타벅스' ${api.localSearch("스타벅스", here).size}건" }
+            else out += "⚪ 장소 검색 키 없음 (주소와 휴대폰 검색으로 찾음)"
             val ev = prefs.evKey.ifBlank { CameraRepository(app).apiKey }
             if (ev.isNotBlank()) check("충전소(환경부)") { "종로구 급속 ${EvChargerApi.stations(ev, "11110").size}곳" }
             else out += "⚪ 충전소 키 없음 (테슬라 슈퍼차저만 제안)"

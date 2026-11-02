@@ -1,6 +1,13 @@
 package com.splittesla.app.ui
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +19,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,16 +42,16 @@ import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.NaverMapOptions
 import com.naver.maps.map.NaverMapSdk
+import com.naver.maps.map.overlay.LocationOverlay
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.PathOverlay
-import com.splittesla.app.camera.CameraState
 import com.splittesla.app.navi.NaviHub
 import com.splittesla.app.navi.NaviUi
 import com.splittesla.app.ui.theme.Glass
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.glass
 import com.splittesla.core.assistant.LatLon
-import kotlinx.coroutines.delay
+import com.splittesla.core.navi.RouteGeometry
 
 /**
  * The dashboard's portrait map: NAVER's night navigation map turned so the
@@ -91,21 +97,17 @@ fun NaviMap(navi: NaviUi, modifier: Modifier = Modifier) {
                 isTiltGesturesEnabled = false
             }
             m.locationOverlay.isVisible = true
+            // The plain dot shows no direction; the arrow turns with the car.
+            m.locationOverlay.subIcon = LocationOverlay.DEFAULT_SUB_ICON_ARROW
             map = m
         }
     }
 
-    // Without guidance there are no snapped fixes; follow whatever position the app knows.
-    val idle by produceState<Pair<LatLon, Float?>?>(null, navi.guiding) {
-        while (!navi.guiding) {
-            value = NaviHub.bestPosition()?.let { p ->
-                p to CameraState.fix?.takeIf { it.hasBearing() && it.speed > 3f }?.bearing
-            }
-            delay(1000)
-        }
-    }
-    val here = if (navi.guiding) navi.position else idle?.first ?: navi.position
-    val heading = if (navi.guiding) navi.bearing else idle?.second ?: navi.bearing
+    // Without guidance nothing else is listening to the GPS (the camera alerts may be off),
+    // so the map follows the phone's own fixes and turns with the way the car is moving.
+    val own = rememberOwnCourse(enabled = !navi.guiding)
+    val here = if (navi.guiding) navi.position else own.position ?: NaviHub.bestPosition() ?: navi.position
+    val heading = if (navi.guiding) navi.bearing else own.heading
 
     val path = remember { PathOverlay() }
     val goal = remember { Marker() }
@@ -175,6 +177,55 @@ fun NaviMap(navi: NaviUi, modifier: Modifier = Modifier) {
     Box(modifier.clip(shape).background(Glass.backdropBottom, shape).glass(20.dp)) {
         AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
     }
+}
+
+/** Where the phone is and which way it is moving; the heading holds still while the car stands. */
+private class OwnCourse {
+    var position by mutableStateOf<LatLon?>(null)
+    var heading by mutableStateOf<Float?>(null)
+    var from: LatLon? = null
+}
+
+/**
+ * Phone GPS fixes once a second while [enabled]. The heading is the GPS
+ * course when moving faster than walking pace, otherwise the direction of
+ * travel since the last spot at least 8 m away; standing still keeps the
+ * last one so the map does not spin at a red light.
+ */
+@Composable
+private fun rememberOwnCourse(enabled: Boolean): OwnCourse {
+    val context = LocalContext.current
+    val course = remember { OwnCourse() }
+    DisposableEffect(enabled) {
+        val granted = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val manager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val listener = LocationListener { fix ->
+            val at = LatLon(fix.latitude, fix.longitude)
+            course.position = at
+            val moved = course.from?.let { RouteGeometry.metres(it, at) } ?: Double.MAX_VALUE
+            when {
+                fix.hasBearing() && fix.hasSpeed() && fix.speed > 2f -> course.heading = fix.bearing
+                moved >= 8.0 && moved != Double.MAX_VALUE -> course.heading = bearingBetween(course.from!!, at)
+            }
+            if (moved >= 8.0) course.from = at
+        }
+        if (enabled && granted) {
+            try {
+                manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, listener, Looper.getMainLooper())
+            } catch (_: SecurityException) {
+            } catch (_: IllegalArgumentException) {
+                // No GPS provider on this device.
+            }
+        }
+        onDispose { manager.removeUpdates(listener) }
+    }
+    return course
+}
+
+private fun bearingBetween(a: LatLon, b: LatLon): Float {
+    val dx = (b.lon - a.lon) * kotlin.math.cos(Math.toRadians(a.lat))
+    val dy = b.lat - a.lat
+    return ((Math.toDegrees(kotlin.math.atan2(dx, dy)) + 360) % 360).toFloat()
 }
 
 /**

@@ -310,6 +310,14 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     private var navPolling = false
     private var lastBriefing = 0L
 
+    // The car's route drops out for a moment on a link hiccup; it is forgotten only after a while,
+    // and a route announced lately is not announced again when it comes back.
+    private var routeLostAt = 0L
+    private val announcedRoutes = HashMap<String, Long>()
+
+    /** When each kind of announcement was last spoken, so none is repeated within its gap. */
+    private val lastAnnounced = HashMap<String, Long>()
+
     private fun watchDrive() {
         if (driveJob?.isActive == true) return
         driveJob = scope.launch {
@@ -346,36 +354,50 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
 
         val nav = ui.nav?.takeIf { it.hasRoute }
         _state.update { it.copy(watching = watchingText(ui, nav != null)) }
+        val now = System.currentTimeMillis()
         if (nav == null) {
             // No route from the car (no destination, or the car link is down):
             // look ahead along the way the phone is moving instead.
-            if (lastRouteKey != null) announcedEvents.clear()
-            lastRouteKey = null
+            if (lastRouteKey != null && routeLostAt == 0L) routeLostAt = now
+            if (lastRouteKey != null && now - routeLostAt > FORGET_ROUTE_MS) {
+                announcedEvents.clear()
+                lastRouteKey = null
+                routeLostAt = 0L
+            }
             checkAhead(ui)
             checkRain(ui)
             return
         }
-        val routeKey = "${nav.destination}|${nav.destinationLat}|${nav.destinationLon}"
+        routeLostAt = 0L
+        // About 100 m of rounding: the car reports the same destination with jittering decimals.
+        val routeKey = listOf(nav.destination, nav.destinationLat?.let { "%.3f".format(it) }, nav.destinationLon?.let { "%.3f".format(it) })
+            .joinToString("|")
+        // In-app guidance speaks its own start and arrival; saying them again here doubled them.
+        val guidedHere = NaviHub.state.value.guiding
 
         // New route.
         if (routeKey != lastRouteKey) {
             lastRouteKey = routeKey
             arrivedKey = null
             lastDelay = nav.trafficDelayMinutes ?: 0.0
-            lastBriefing = System.currentTimeMillis()
+            lastBriefing = now
             announcedEvents.clear()
             val destWeather = destination(nav)?.let { fetchWeather(it) }
             _state.update { it.copy(destinationWeather = destWeather, events = emptyList()) }
             val events = checkEvents(ui, force = true)
-            announce(
-                "경로 시작",
-                "새 경로가 설정됐습니다. 목적지, 도착 예정, 정체, 도착지 날씨, 경로상 사고나 공사를 한두 문장으로 요약하세요.",
-            ) { routeStartText(nav, destWeather, events) }
+            val announcedLately = announcedRoutes[routeKey]?.let { now - it < REPEAT_ROUTE_MS } == true
+            announcedRoutes[routeKey] = now
+            if (!guidedHere && !announcedLately) {
+                announce(
+                    "경로 시작",
+                    "새 경로가 설정됐습니다. 도착 예정과 정체, 경로상 사고나 공사 중 운전에 필요한 것만 한 문장으로 말하세요.",
+                ) { routeStartText(nav, destWeather, events) }
+            }
             return
         }
         // Arrival.
         val minutes = nav.minutesToArrival
-        if (minutes != null && minutes <= 1.5 && arrivedKey != routeKey) {
+        if (minutes != null && minutes <= 1.5 && arrivedKey != routeKey && !guidedHere) {
             arrivedKey = routeKey
             val w = _state.value.destinationWeather
             announce("도착", "곧 목적지에 도착합니다. 도착 안내와 함께 도착지 날씨에 맞는 짧은 한마디를 하세요.") {
@@ -403,13 +425,13 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         val fresh = checkEvents(ui, force = false).filter { announcedEvents.add(it.id) }
         if (fresh.isNotEmpty()) {
             val e = fresh.sortedBy { from?.let { f -> Geo.distanceKm(f, it.position) } ?: 0.0 }.first()
-            announce("돌발 상황", "경로 앞쪽에 새 돌발 상황이 있습니다. 거리, 위치(도로명)와 종류, 차로 통제를 짧게 알리고 주의를 당부하세요.") {
+            announce("돌발 상황", "경로 앞쪽에 새 돌발 상황이 있습니다. 거리, 위치(도로명)와 종류, 차로 통제를 한 문장으로 알리세요.", gapMs = 60_000L) {
                 eventText(e, from, "경로 앞쪽")
             }
         } else if (System.currentTimeMillis() - lastBriefing > BRIEFING_MS && (nav.minutesToArrival ?: 0.0) > 10) {
             // A short update every 15 minutes on longer drives.
             lastBriefing = System.currentTimeMillis()
-            announce("경로 브리핑", "주행 중 정기 안내입니다. 남은 시간과 거리, 정체, 경로상 사고·공사 수를 한두 문장으로 알리세요.") {
+            announce("경로 브리핑", "주행 중 정기 안내입니다. 남은 시간과 정체 중 바뀐 것만 한 문장으로 알리세요.") {
                 routeStatusText(nav) +
                     (nav.trafficDelayMinutes?.takeIf { it >= 3 }?.let { " 정체로 ${it.roundToInt()}분 늦어지고 있어요." } ?: " 길은 대체로 원활해요.") +
                     (_state.value.events.size.takeIf { it > 0 }?.let { " 경로에 사고·공사가 ${it}건 있어요." } ?: "")
@@ -442,7 +464,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         _state.update { it.copy(events = list) }
         val fresh = list.filter { announcedEvents.add(it.id) }.sortedBy { Geo.distanceKm(from, it.position) }
         if (fresh.isEmpty()) return
-        announce("전방 돌발 상황", "진행 방향 앞쪽에 돌발 상황이 있습니다. 거리, 도로명, 종류, 차로 통제를 짧게 알리고 주의를 당부하세요.") {
+        announce("전방 돌발 상황", "진행 방향 앞쪽에 돌발 상황이 있습니다. 거리, 도로명, 종류, 차로 통제를 한 문장으로 알리세요.", gapMs = 60_000L) {
             eventText(fresh.first(), from, "전방") + if (fresh.size > 1) " 그 밖에도 ${fresh.size - 1}건이 더 있어요." else ""
         }
     }
@@ -521,9 +543,19 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         }
     }
 
-    /** Speaks [fallback], or the AI model's wording of the same moment when a key is saved. */
-    private suspend fun announce(event: String, instruction: String, fallback: () -> String) {
+    /**
+     * Speaks [fallback], or the AI model's wording of the same moment when a key
+     * is saved. Each [event] kind is spoken at most once per [gapMs], so a link
+     * hiccup or a recheck cannot make it say the same thing twice.
+     */
+    private suspend fun announce(event: String, instruction: String, gapMs: Long = REPEAT_EVENT_MS, fallback: () -> String) {
         if (!prefs.announcements) return
+        val now = System.currentTimeMillis()
+        if (lastAnnounced[event]?.let { now - it < gapMs } == true) {
+            vm.log("AI 안내($event) 생략: ${gapMs / 60_000}분 안에 이미 말함")
+            return
+        }
+        lastAnnounced[event] = now
         val llm = client()
         val text = if (llm == null) {
             fallback()
@@ -531,7 +563,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             _state.update { it.copy(thinking = true) }
             try {
                 llmMutex.withLock {
-                    llm.complete(ANNOUNCE_SYSTEM, "${facts()}\n\n상황: $event\n지시: $instruction", maxTokens = 200)
+                    llm.complete(ANNOUNCE_SYSTEM, "${facts()}\n\n상황: $event\n지시: $instruction", maxTokens = 120)
                 }.ifBlank { fallback() }
             } catch (e: CancellationException) {
                 throw e
@@ -554,7 +586,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     }
 
     private suspend fun greetNow() {
-        announce("탑승", "운전자가 방금 차에 탔습니다. 짧게 환영 인사를 하고, 배터리와 날씨 중 운전에 도움 되는 것만 덧붙이세요.") {
+        announce("탑승", "운전자가 방금 차에 탔습니다. 배터리와 날씨 중 운전에 도움 되는 것만 한 문장으로 말하세요.", gapMs = 0L) {
             greetingText(vm.ui.value)
         }
     }
@@ -562,7 +594,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     /** Test button: sum up the current drive now. */
     fun testBriefing() {
         scope.launch {
-            announce("현재 상황 요약", "지금 주행 상황을 두세 문장으로 요약하세요. 경로가 없으면 배터리와 날씨만 말하세요.") {
+            announce("현재 상황 요약", "지금 주행 상황을 한두 문장으로 요약하세요. 경로가 없으면 배터리와 날씨만 말하세요.", gapMs = 0L) {
                 val ui = vm.ui.value
                 if (ui.nav?.hasRoute == true) routeStatusText(ui.nav) + " " + weatherText(ui) else greetingText(ui)
             }
@@ -702,8 +734,18 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         const val AHEAD_KM = 8.0
         const val BRIEFING_MS = 15 * 60_000L
 
+        /** The car's route has been gone this long before it counts as ended. */
+        const val FORGET_ROUTE_MS = 10 * 60_000L
+
+        /** The same destination is not announced again within this. */
+        const val REPEAT_ROUTE_MS = 30 * 60_000L
+
+        /** Default gap between two announcements of the same kind. */
+        const val REPEAT_EVENT_MS = 5 * 60_000L
+
         const val ANNOUNCE_SYSTEM =
             "당신은 테슬라 차량용 한국어 음성 비서입니다. 주어진 차량 상황과 지시에 맞춰 운전자에게 소리 내어 읽어줄 안내 멘트만 출력하세요. " +
-                "한두 문장, 60자 안팎, 존댓말, 친근하고 차분하게. 이모지·마크다운·따옴표 금지. 주어진 값만 쓰고 모르는 것은 말하지 마세요."
+                "한 문장, 40자 안쪽, 존댓말, 차분하게. 운전에 필요한 정보(거리, 시간, 위험)만 말하고 인사말·감탄사·당부의 반복은 넣지 마세요. " +
+                "같은 내용을 두 번 말하지 마세요. 이모지·마크다운·따옴표 금지. 주어진 값만 쓰고 모르는 것은 말하지 마세요."
     }
 }

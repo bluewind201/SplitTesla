@@ -3,6 +3,7 @@ package com.splittesla.core.camera
 import java.nio.charset.Charset
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -197,9 +198,22 @@ class CameraTest {
             7,구월중학교직전(구간단속 시점),37.45,126.70,1,60,3,,
             8,석천초등학교(구간단속 종점),37.46,126.70,1,60,3,,
             9,이동식 단속지점,37.47,126.70,1,60,3,,
+            10,중앙사거리 신호·과속 겸용,37.48,126.70,01+02,50,3,,
+            11,시청앞 사거리,37.49,126.70,1+2,60,3,,
+            12,기타 단속,37.50,126.70,99,50,3,,
+            13,상행 전용,37.51,126.70,1,60,1,,
             """.trimIndent(),
         )
-        assertEquals(listOf("1", "3", "4", "7", "8"), cams.map { it.id })
+        // Speed-and-signal cameras ("1+2") are real fixed cameras; 99 (other) and mobile entries are not.
+        assertEquals(listOf("1", "3", "4", "7", "8", "10", "11", "13"), cams.map { it.id })
+        assertTrue(cams.first { it.id == "10" }.signal)
+        // 3 is 양방향; a single direction (1 or 2) is not, unless both directions share the spot.
+        assertTrue(cams.first { it.id == "3" }.bothWays)
+        assertFalse(cams.first { it.id == "13" }.bothWays)
+        val pair = mergeSameSpot(
+            listOf(SpeedCamera("u", 37.4, 127.0, 60, "상행"), SpeedCamera("d", 37.4, 127.0, 60, "하행")),
+        )
+        assertTrue(pair.single().bothWays)
         assertTrue(cams[0].signal)
         assertEquals("노인보호구역", cams[1].zone)
         assertEquals("어린이보호구역", cams[2].zone)
