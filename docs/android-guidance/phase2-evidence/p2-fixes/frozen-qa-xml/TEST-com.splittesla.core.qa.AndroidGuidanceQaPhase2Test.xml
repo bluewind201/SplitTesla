@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:50:14.333Z" hostname="44803f7d0664" time="0.567">
+  <properties/>
+  <testcase name="togglingAfterAWarningAddsNothingAndKeepsFinal()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.058"/>
+  <testcase name="expiryBoundaryAndBlankAreDropped()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.033"/>
+  <testcase name="fullQueueNeverLosesEssentialToConversation()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002"/>
+  <testcase name="skippingBothWindowsGivesOneCurrentWarningAndOneFinal()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.008"/>
+  <testcase name="positionStateTruthTable()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.003"/>
+  <testcase name="ownerCancelWithoutActiveIsSafeAndClearEmpties()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.011"/>
+  <testcase name="noVehicleSpeedMeansHeldNeverEstimating()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002"/>
+  <testcase name="statesFollowRealTrackerProgressThroughATunnel()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.003"/>
+  <testcase name="firstDetectionInsideOneHundredMetresIsFinalOnly()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.013"/>
+  <testcase name="lowRateFixesStillGiveEachCrossedStageOnce()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002"/>
+  <testcase name="finalOutranksTurnOutranksApproachOutranksRerouteOutranksAssistant()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.024"/>
+  <testcase name="limitPresetDistanceWordsFollowTheRealDistance()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.051"/>
+  <testcase name="emptyRouteFilterSilencesLimitPresetToo()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.01"/>
+  <testcase name="togglingBeforeAnyWarningAppliesFromTheNextFix()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.022"/>
+  <testcase name="preemptionFollowsPolicyV2()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.005"/>
+  <testcase name="laterStageReplacesOnlySameOwnerAndCameraGroup()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.006"/>
+  <testcase name="defaultStaysSpeedBasedAndUnchanged()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.06"/>
+  <testcase name="limitTiersGiveTheirStagesThenOneFinal()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.059"/>
+  <testcase name="duplicateIsBlockedWhilePlayingAndForEightSecondsAfterStart()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002"/>
+  <testcase name="togglingRepeatedlyNeverRepeatsAStage()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.017"/>
+  <testcase name="f1_identicalConsecutiveTurnsAreBothSpoken()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.049"/>
+  <testcase name="missingSpeedStillWarnsOnLimitWithoutClaimingSpeeding()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.014"/>
+  <system-out><![CDATA[F1 created=[200미터 앞, 우회전., 90미터 앞, 우회전., 우회전. 이어서 우회전., 60미터 앞, 우회전., 우회전. 이어서 우회전., 60미터 앞, 우회전., 우회전.] heard=[200미터 앞, 우회전., 90미터 앞, 우회전., 우회전. 이어서 우회전., 60미터 앞, 우회전., 우회전. 이어서 우회전., 60미터 앞, 우회전., 우회전.]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

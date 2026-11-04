@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" tests="22" skipped="22" failures="0" errors="0" timestamp="2026-11-03T22:09:55.772Z" hostname="44803f7d0664" time="0.15">
+  <properties/>
+  <testcase name="togglingAfterAWarningAddsNothingAndKeepsFinal()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="expiryBoundaryAndBlankAreDropped()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.006">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="fullQueueNeverLosesEssentialToConversation()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.003">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="skippingBothWindowsGivesOneCurrentWarningAndOneFinal()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.004">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="positionStateTruthTable()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.008">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="ownerCancelWithoutActiveIsSafeAndClearEmpties()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.001">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="noVehicleSpeedMeansHeldNeverEstimating()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="statesFollowRealTrackerProgressThroughATunnel()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="firstDetectionInsideOneHundredMetresIsFinalOnly()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="lowRateFixesStillGiveEachCrossedStageOnce()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.018">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="finalOutranksTurnOutranksApproachOutranksRerouteOutranksAssistant()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.003">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="limitPresetDistanceWordsFollowTheRealDistance()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.007">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="emptyRouteFilterSilencesLimitPresetToo()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="togglingBeforeAnyWarningAppliesFromTheNextFix()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.004">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="preemptionFollowsPolicyV2()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.007">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="laterStageReplacesOnlySameOwnerAndCameraGroup()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.001">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="defaultStaysSpeedBasedAndUnchanged()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.005">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="limitTiersGiveTheirStagesThenOneFinal()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="duplicateIsBlockedWhilePlayingAndForEightSecondsAfterStart()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.001">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="togglingRepeatedlyNeverRepeatsAStage()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.005">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="f1_identicalConsecutiveTurnsAreBothSpoken()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.004">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="missingSpeedStillWarnsOnLimitWithoutClaimingSpeeding()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2Test" time="0.003">
+    <skipped message="Assumption failed: QA_REPRO=1 to run phase-2 QA" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run phase-2 QA
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaPhase2Test.gate(AndroidGuidanceQaPhase2Test.kt:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

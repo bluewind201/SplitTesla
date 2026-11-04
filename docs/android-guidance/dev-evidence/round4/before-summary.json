@@ -1,0 +1,12 @@
+[
+  {
+    "name": "r4control_turnNoticeSpokenWhileDeadReckoningWithoutVagueFix()",
+    "failures": []
+  },
+  {
+    "name": "r4_turnNoticeStillSpokenWhileDeadReckoningAfterAVagueTunnelMouthFix()",
+    "failures": [
+      "org.opentest4j.AssertionFailedError: no turn notice during 40 s of dead reckoning through the turn at 1000 m; spoken=[], last=RouteProgress(alongM=850.0000000000863, remainingM=1150.062511999778, remainingMs=310801, lateralM=0.0, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=150.0312560002386, sectionIndex=null, arrived=false, estimated=true, positionUncertain=true) ==> expected: not <null>"
+    ]
+  }
+]

@@ -1,0 +1,362 @@
+[
+  {
+    "source": "core/src/main/proto/car_server.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/car_server.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/proto/common.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/common.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/proto/errors.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/errors.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/proto/keys.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/keys.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/proto/managed_charging.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/managed_charging.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/proto/signatures.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/signatures.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/proto/universal_message.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/universal_message.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/proto/vcsec.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/vcsec.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/proto/vehicle.proto",
+    "copy": ".tools/p2fix-harness/core/src/main/proto/vehicle.proto",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/assistant/Geo.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/assistant/Geo.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/assistant/RouteShare.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/assistant/RouteShare.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/assistant/VoiceAction.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/assistant/VoiceAction.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/camera/CameraAlerter.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/camera/CameraAlerter.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/camera/CameraData.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/camera/CameraData.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/camera/SpeedCamera.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/camera/SpeedCamera.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/camera/CameraAnnouncement.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/camera/CameraAnnouncement.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/camera/CameraWarningPreset.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/camera/CameraWarningPreset.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/logbook/Logbook.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/logbook/Logbook.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/ChargePlanner.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/ChargePlanner.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/EnergyModel.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/EnergyModel.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/GuidanceAnnouncer.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/GuidanceAnnouncer.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/NaviRoute.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/NaviRoute.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/RouteCameras.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/RouteCameras.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/RouteTracker.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/RouteTracker.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/FixGate.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/FixGate.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/GuidancePositionState.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/GuidancePositionState.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/TurnSpeechContext.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/TurnSpeechContext.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/navi/GuidanceDisplayPolicy.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/navi/GuidanceDisplayPolicy.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/s3xy/VehicleSignal.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/s3xy/VehicleSignal.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/s3xy/Actions.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/s3xy/Actions.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/s3xy/AesCtr.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/s3xy/AesCtr.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/s3xy/CommanderSession.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/s3xy/CommanderSession.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/s3xy/Messages.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/s3xy/Messages.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/s3xy/Proto.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/s3xy/Proto.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/s3xy/Security1.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/s3xy/Security1.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/s3xy/VehicleData.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/s3xy/VehicleData.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/tesla/BleFraming.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/tesla/BleFraming.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/tesla/Metadata.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/tesla/Metadata.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/tesla/Navigation.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/tesla/Navigation.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/tesla/TeslaClient.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/tesla/TeslaClient.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/tesla/TeslaCrypto.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/tesla/TeslaCrypto.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/tesla/TeslaSession.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/tesla/TeslaSession.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/main/kotlin/com/splittesla/core/voice/SpeechQueue.kt",
+    "copy": ".tools/p2fix-harness/core/src/main/kotlin/com/splittesla/core/voice/SpeechQueue.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/assistant/AssistantTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/assistant/AssistantTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/camera/CameraTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/camera/CameraTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/camera/CameraPresetTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/camera/CameraPresetTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/logbook/LogbookTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/logbook/LogbookTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/NaviTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/NaviTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/FixGateTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/FixGateTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/GuidanceRecoveryTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/GuidanceRecoveryTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/RouteReacquisitionTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/RouteReacquisitionTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/EstimatedGuidanceContractTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/EstimatedGuidanceContractTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/WeakFixAnchorPolicyTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/WeakFixAnchorPolicyTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/GuidancePositionStateTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/GuidancePositionStateTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/Phase2SpeechContextTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/Phase2SpeechContextTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/navi/TurnPlaybackTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/navi/TurnPlaybackTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/s3xy/CommanderTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/s3xy/CommanderTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/tesla/TeslaClientTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/tesla/TeslaClientTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/tesla/TeslaSessionTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/tesla/TeslaSessionTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/tesla/TestVectors.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/tesla/TestVectors.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaDefectsTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaDefectsTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaFinalProbeTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaFinalProbeTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound3ProbeTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound3ProbeTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound4ProbeTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound4ProbeTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaR4PolicyProbeTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaR4PolicyProbeTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound5ProbeTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound5ProbeTest.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaPhase2Test.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaPhase2Test.kt",
+    "match": true
+  },
+  {
+    "source": "core/src/test/kotlin/com/splittesla/core/voice/SpeechQueueTest.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/com/splittesla/core/voice/SpeechQueueTest.kt",
+    "match": true
+  },
+  {
+    "source": "app/src/main/kotlin/com/splittesla/app/assistant/Speaker.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/p2harness/Speaker.kt",
+    "match": true
+  },
+  {
+    "source": "app/src/main/kotlin/com/splittesla/app/assistant/VoiceChoice.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/p2harness/VoiceChoice.kt",
+    "match": true
+  },
+  {
+    "source": "app/src/main/kotlin/com/splittesla/app/navi/NavigationSpeech.kt",
+    "copy": ".tools/p2fix-harness/core/src/test/kotlin/p2harness/NavigationSpeech.kt",
+    "match": true
+  }
+]

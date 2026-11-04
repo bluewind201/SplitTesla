@@ -1,0 +1,22 @@
+# 1차 QA 결과 (2026-11-04, 개발 1차 구현 소스 / 공유 core/build)
+# 주의: 1차 실행 시점의 소스 해시는 기록하지 못했다. 이후 개발자가 수정을 시작해 1차 소스는 재현 불가.
+# 아래는 실행 당시 test-results XML에서 집계한 출력 원문이다.
+
+[A] 기존 테스트 재현: ./gradlew -p core clean test --no-daemon  (JAVA_HOME=/home/orca/project_folder/SplitTesla/tools/jdk-21)
+    BUILD SUCCESSFUL in 2m 43s, exit=0, total=87 pass=87 skipped=0 failed=0   (round1-core-clean-test-existing87.log)
+
+[B] QA 파일 추가 후 clean test (QA_REPRO 미설정)
+    BUILD SUCCESSFUL in 3m 38s, exit=0, total=116 pass=107 skipped=9 failed=0
+    (skipped 9 = 결함 재현 테스트; 정상 통과에 포함하지 않음. 이 시점 D6 포함, d2b는 통과 파일로 이동 전/후 동일 결과)
+
+[C] QA_REPRO=1 ./gradlew -p core test --tests 'com.splittesla.core.qa.*'   exit=1 (기대된 실패)
+FAIL d4_tunnelExitDoesNotSnapToAParallelReturnLeg  progress jumped to the return leg: along=3010.12 (real ≈ 1083.33)
+FAIL d8_badFirstFixDoesNotBlackOutTheNextTenSeconds  first real fix accepted after 10 s
+FAIL d3_passingTheEndCameraClearsUnverifiedSectionState  status still says section limit 100 (expected null)
+FAIL d5_rejectedProjectionDoesNotRelabelDeadReckoningAsReal  along stayed at DR estimate 583.33 but estimated=false at fixes [5..9]
+FAIL d2_sectionStartIsAnnouncedWithTwoSecondFixes  SectionStart missed in 1 of 6 phase offsets
+FAIL d1_fixesSixSecondsApartAreNotLockedOutForever  accepted only 1 of 31 fixes over 3 minutes
+FAIL d7_passThroughDoesNotSpeakEndOfGuidanceThatIsLaterRevoked  said [목적지 목적지 부근에 도착했습니다. 안내를 마칩니다.] but arrived=false after driving on
+FAIL d9_spikeThenShortDropoutRecoversQuickly  real track accepted only at t=15 s (last good fix t=5)
+FAIL d6_parkedBesideTheDestinationEventuallyArrives  never arrived  → PM 결정(msg_acd8ed3444da)으로 정책 한계 L1로 재분류, 현재는 통과 파일의 policyLimit… 테스트
+(QA 정상 테스트 20개(당시)는 같은 실행에서 모두 PASS. 이 결과는 두 번의 독립 실행에서 동일하게 재현됨.)

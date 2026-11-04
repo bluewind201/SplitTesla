@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.navi.StablePlaybackPhaseTest" tests="5" skipped="0" failures="5" errors="0" timestamp="2026-11-03T22:05:04.305Z" hostname="44803f7d0664" time="0.318">
+  <properties/>
+  <testcase name="aCompletedAdvanceDistanceIsNotAnotherStageAfterChangingTier()" classname="com.splittesla.core.navi.StablePlaybackPhaseTest" time="0.278">
+    <failure message="org.opentest4j.AssertionFailedError: actual value is not null ==&gt; expected: &lt;null&gt; but was: &lt;PlaybackNotice(text=300미터 앞, 우회전., guide=0, stage=1, attempt=2)&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: actual value is not null ==&gt; expected: &lt;null&gt; but was: &lt;PlaybackNotice(text=300미터 앞, 우회전., guide=0, stage=1, attempt=2)&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertNull.failNotNull(AssertNull.java:50)
+	at app//org.junit.jupiter.api.AssertNull.assertNull(AssertNull.java:35)
+	at app//org.junit.jupiter.api.Assertions.assertNull(Assertions.java:287)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertNull(JUnitSupport.kt:52)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertNull(Assertions.kt:159)
+	at app//kotlin.test.AssertionsKt.assertNull(Unknown Source)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertNull$default(Assertions.kt:158)
+	at app//kotlin.test.AssertionsKt.assertNull$default(Unknown Source)
+	at app//com.splittesla.core.navi.StablePlaybackPhaseTest.aCompletedAdvanceDistanceIsNotAnotherStageAfterChangingTier(StablePlaybackPhaseTest.kt:54)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="nearFirstHighTierThenSlowingHasOneImmediateNotice()" classname="com.splittesla.core.navi.StablePlaybackPhaseTest" time="0.008">
+    <failure message="org.opentest4j.AssertionFailedError: [우회전., 우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: [우회전., 우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertEquals(JUnitSupport.kt:32)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals(Assertions.kt:63)
+	at app//kotlin.test.AssertionsKt.assertEquals(Unknown Source)
+	at app//com.splittesla.core.navi.StablePlaybackPhaseTest.nearFirstHighTierThenSlowingHasOneImmediateNotice(StablePlaybackPhaseTest.kt:24)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="tierJitterAndSpeedingUpAfterImmediateGuidanceNeverRepeatIt()" classname="com.splittesla.core.navi.StablePlaybackPhaseTest" time="0.008">
+    <failure message="org.opentest4j.AssertionFailedError: [700미터 앞, 우회전., 300미터 앞, 우회전., 우회전., 우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: [700미터 앞, 우회전., 300미터 앞, 우회전., 우회전., 우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertEquals(JUnitSupport.kt:32)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals(Assertions.kt:63)
+	at app//kotlin.test.AssertionsKt.assertEquals(Unknown Source)
+	at app//com.splittesla.core.navi.StablePlaybackPhaseTest.tierJitterAndSpeedingUpAfterImmediateGuidanceNeverRepeatIt(StablePlaybackPhaseTest.kt:35)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="interruptedImmediateStageSurvivesTierChangeAndCompletesOnlyOnce()" classname="com.splittesla.core.navi.StablePlaybackPhaseTest" time="0.009">
+    <failure message="org.opentest4j.AssertionFailedError: actual value is null ==&gt; expected: not &lt;null&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: actual value is null ==&gt; expected: not &lt;null&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertNotNull.failNull(AssertNotNull.java:49)
+	at app//org.junit.jupiter.api.AssertNotNull.assertNotNull(AssertNotNull.java:35)
+	at app//org.junit.jupiter.api.Assertions.assertNotNull(Assertions.java:312)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertNotNull(JUnitSupport.kt:48)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertNotNull(Assertions.kt:145)
+	at app//kotlin.test.AssertionsKt.assertNotNull(Unknown Source)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertNotNull$default(Assertions.kt:143)
+	at app//kotlin.test.AssertionsKt.assertNotNull$default(Unknown Source)
+	at app//com.splittesla.core.navi.StablePlaybackPhaseTest.interruptedImmediateStageSurvivesTierChangeAndCompletesOnlyOnce(StablePlaybackPhaseTest.kt:42)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="ordinarySeventyEightEightyTwoSeventyEightApproachHasOneImmediateNotice()" classname="com.splittesla.core.navi.StablePlaybackPhaseTest" time="0.006">
+    <failure message="org.opentest4j.AssertionFailedError: [700미터 앞, 우회전., 300미터 앞, 우회전., 우회전., 우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: [700미터 앞, 우회전., 300미터 앞, 우회전., 우회전., 우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertEquals(JUnitSupport.kt:32)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals(Assertions.kt:63)
+	at app//kotlin.test.AssertionsKt.assertEquals(Unknown Source)
+	at app//com.splittesla.core.navi.StablePlaybackPhaseTest.ordinarySeventyEightEightyTwoSeventyEightApproachHasOneImmediateNotice(StablePlaybackPhaseTest.kt:28)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

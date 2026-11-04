@@ -1,0 +1,11 @@
+{
+  "changed": [
+    "app/src/main/kotlin/com/splittesla/app/navi/NaviHub.kt",
+    "core/src/main/kotlin/com/splittesla/core/navi/GuidanceAnnouncer.kt",
+    "core/src/main/kotlin/com/splittesla/core/navi/TurnSpeechContext.kt"
+  ],
+  "added": [
+    "core/src/test/kotlin/com/splittesla/core/navi/StablePlaybackPhaseTest.kt"
+  ],
+  "removed": []
+}

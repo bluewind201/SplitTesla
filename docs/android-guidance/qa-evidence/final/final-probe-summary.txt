@@ -1,0 +1,4 @@
+total=3 pass=0 skipped=0 failed=3
+FAIL AndroidGuidanceQaFinalProbeTest.r1_fixesTenSecondsApartAreNotLockedOutForever() org.opentest4j.AssertionFailedError: accepted only 1 of 19 fixes over 3 minutes
+FAIL AndroidGuidanceQaFinalProbeTest.r3_hairpinAfterGapWithoutDeadReckoningRecoversQuickly() org.opentest4j.AssertionFailedError: never caught up in 31 fixes (firstOk=null); along fell to 483.3333333327763 while real went 1130 → 1547
+FAIL AndroidGuidanceQaFinalProbeTest.r2_badFirstFixWithGoodClaimedAccuracyRecoversWithinThreeSeconds() org.opentest4j.AssertionFailedError: first real fix accepted after 10 s

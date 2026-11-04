@@ -1,0 +1,39 @@
+{
+  "snapshot": "/tmp/splittesla-r4-final-hv09h_ts",
+  "frozenAtUtc": "2026-11-03T20:21:53.632246+00:00",
+  "manifestSha256": "53a0193a73f68811a344ac89cd29d269d1c300060d760653f88baa45499993fb",
+  "sourceFiles": 60,
+  "sourceChangesAfterTests": {
+    "workspace": [],
+    "snapshot": []
+  },
+  "normal": {
+    "tests": 146,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 13,
+    "passed": 133
+  },
+  "normalBuildExit": 0,
+  "qaRepro": {
+    "tests": 34,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 33
+  },
+  "qaReproBuildExit": 1,
+  "allQaPassed": false,
+  "existingQa29Passed": 29,
+  "r1r3Passed": 2,
+  "r4AndControlPassed": 2,
+  "r2ActualFailure": {
+    "class": "com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest",
+    "name": "r2_badFirstFixWithGoodClaimedAccuracyRecoversWithinThreeSeconds()",
+    "failures": [
+      "org.opentest4j.AssertionFailedError: first real fix accepted after 10 s"
+    ],
+    "skipped": false
+  },
+  "androidBuild": "FAILED: SDK location not found; app Kotlin/APK/device unverified"
+}

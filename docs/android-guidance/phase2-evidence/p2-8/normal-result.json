@@ -1,0 +1,218 @@
+{
+  "tests": 226,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 50,
+  "passed": 176,
+  "suites": [
+    {
+      "name": "com.splittesla.core.assistant.AssistantTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.192"
+    },
+    {
+      "name": "com.splittesla.core.camera.CameraPresetTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.132"
+    },
+    {
+      "name": "com.splittesla.core.camera.CameraTest",
+      "tests": "25",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.523"
+    },
+    {
+      "name": "com.splittesla.core.logbook.LogbookTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.072"
+    },
+    {
+      "name": "com.splittesla.core.navi.EstimatedGuidanceContractTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.04"
+    },
+    {
+      "name": "com.splittesla.core.navi.FixGateTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.034"
+    },
+    {
+      "name": "com.splittesla.core.navi.GuidancePositionStateTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.015"
+    },
+    {
+      "name": "com.splittesla.core.navi.GuidanceRecoveryTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.076"
+    },
+    {
+      "name": "com.splittesla.core.navi.NaviTest",
+      "tests": "26",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.111"
+    },
+    {
+      "name": "com.splittesla.core.navi.Phase2SpeechContextTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.03"
+    },
+    {
+      "name": "com.splittesla.core.navi.RouteReacquisitionTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.044"
+    },
+    {
+      "name": "com.splittesla.core.navi.StablePlaybackPhaseTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.026"
+    },
+    {
+      "name": "com.splittesla.core.navi.TurnPlaybackTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.03"
+    },
+    {
+      "name": "com.splittesla.core.navi.WeakFixAnchorPolicyTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.022"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "8",
+      "time": "0.044"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "3",
+      "time": "0.025"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaPhase2Test",
+      "tests": "22",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "22",
+      "time": "0.15"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "2",
+      "time": "0.006"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "2",
+      "time": "0.009"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaRound4ProbeTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "2",
+      "time": "0.01"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest",
+      "tests": "11",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "11",
+      "time": "0.035"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "tests": "21",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.177"
+    },
+    {
+      "name": "com.splittesla.core.s3xy.CommanderTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.548"
+    },
+    {
+      "name": "com.splittesla.core.tesla.TeslaClientTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.457"
+    },
+    {
+      "name": "com.splittesla.core.tesla.TeslaSessionTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.165"
+    },
+    {
+      "name": "com.splittesla.core.voice.SpeechQueueTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.017"
+    }
+  ],
+  "log": "frozen-core-normal.log"
+}

@@ -16,6 +16,7 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -30,10 +31,14 @@ import com.splittesla.core.camera.CameraAlert
 import com.splittesla.core.camera.CameraAlerter
 import com.splittesla.core.camera.CameraIndex
 import com.splittesla.core.navi.RouteCamera
+import com.splittesla.core.navi.SpeedEvidence
+import com.splittesla.core.camera.spokenText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -46,6 +51,7 @@ class SpeedCameraService : Service(), LocationListener {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var alerter: CameraAlerter? = null
     private var repo: CameraRepository? = null
+    private var lastAcceptedFixMs = 0L
 
     // The guided route's cameras, as ids, rebuilt when NaviHub loads a new list.
     private var routeCameras: List<RouteCamera>? = null
@@ -63,7 +69,7 @@ class SpeedCameraService : Service(), LocationListener {
         createChannel()
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
         ServiceCompat.startForeground(this, NOTIFICATION_ID, notification("카메라 데이터를 불러오는 중"), type)
-        if (alerter == null) start()
+        if (speaker == null) start()
         // Not sticky: once the app is closed the system must not bring the camera watch back by itself.
         return START_NOT_STICKY
     }
@@ -71,7 +77,7 @@ class SpeedCameraService : Service(), LocationListener {
     private fun start() {
         CameraState.running.value = true
         // The shared speaker: the voice picked in Settings, and music ducked while it talks.
-        speaker = Speaker(this)
+        speaker = Speaker(this, priority = 60)
         scope.launch {
             val repo = CameraRepository(this@SpeedCameraService).also { this@SpeedCameraService.repo = it }
             val cameras = repo.load()
@@ -99,29 +105,55 @@ class SpeedCameraService : Service(), LocationListener {
             }
             locations.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, this@SpeedCameraService, Looper.getMainLooper())
             updateNotification("카메라 ${cameras.size}개 감시 중")
+            while (isActive) {
+                delay(1000)
+                if (SystemClock.elapsedRealtime() - lastAcceptedFixMs > 3000) {
+                    CameraState.gpsOk.value = false
+                    CameraState.gpsSpeedKmh.value = null
+                    alerter?.invalidateMeasurement()
+                    alerter?.let { CameraState.status.value = it.status }
+                }
+            }
         }
     }
 
     override fun onLocationChanged(location: Location) {
         val alerter = alerter ?: return
-        CameraState.gpsOk.value = true
-        CameraState.fix = location
-        CameraState.gpsSpeedKmh.value = if (location.hasSpeed()) location.speed * 3.6f else null
+        val age = SystemClock.elapsedRealtimeNanos() - location.elapsedRealtimeNanos
+        val valid = age in 0..3_000_000_000L && location.latitude.isFinite() && location.longitude.isFinite() &&
+            (!location.hasAccuracy() || (location.accuracy.isFinite() && location.accuracy in 0f..60f))
+        CameraState.gpsOk.value = valid
+        if (!valid) {
+            alerter.invalidateMeasurement()
+            CameraState.gpsSpeedKmh.value = null
+            CameraState.status.value = alerter.status
+            return
+        }
+        val gpsSpeed = SpeedEvidence.measured(location.takeIf { it.hasSpeed() }?.speed?.times(3.6))
         val now = System.currentTimeMillis()
-        val canSpeed = CameraState.commanderSpeedKmh?.takeIf { now - CameraState.commanderSpeedAt < 3000 }
-        val speed = canSpeed?.toDouble() ?: (location.speed * 3.6)
-        val heading = if (location.hasBearing()) location.bearing.toDouble() else null
+        val canSpeed = SpeedEvidence.fresh(CameraState.commanderSpeedKmh?.toDouble(), CameraState.commanderSpeedAt, now)
+        val speed = canSpeed ?: gpsSpeed
+        val heading = location.takeIf { it.hasBearing() && it.bearing.isFinite() }?.bearing?.toDouble()
         // Guiding: only the cameras on the route, unless we have left it.
         val navi = NaviHub.state.value
         if (navi.cameras !== routeCameras) {
             routeCameras = navi.cameras
             routeCameraIds = navi.cameras.map { it.camera.id }.toSet()
         }
-        alerter.routeCameraIds = routeCameraIds.takeIf { navi.guiding && navi.progress?.offRoute != true && it.isNotEmpty() }
+        alerter.routeCameraIds = routeCameraIds.takeIf { navi.guiding && navi.progress?.offRoute != true }
         val roadLimit = CameraState.commanderLimitKmh
             ?.takeIf { canSpeed != null && repo?.roadLimitCheck == true }
             ?.toInt()?.takeIf { it in 20..130 }
-        val alerts = alerter.update(location.latitude, location.longitude, heading, speed, now, roadLimit)
+        alerter.warningPreset = repo?.warningPreset ?: com.splittesla.core.camera.CameraWarningPreset.SPEED
+        val alerts = alerter.update(location.latitude, location.longitude, heading, speed ?: Double.NaN,
+            location.elapsedRealtimeNanos / 1_000_000, roadLimit, measuredSpeedKmh = speed,
+            accuracyM = location.takeIf { it.hasAccuracy() }?.accuracy?.toDouble())
+        CameraState.gpsOk.value = alerter.lastFixAccepted
+        if (alerter.lastFixAccepted) {
+            lastAcceptedFixMs = location.elapsedRealtimeNanos / 1_000_000
+            CameraState.fix = location
+            CameraState.gpsSpeedKmh.value = gpsSpeed?.toFloat()
+        } else CameraState.gpsSpeedKmh.value = null
         CameraState.status.value = alerter.status
         alerts.forEach(::announce)
         val s = alerter.status
@@ -136,12 +168,11 @@ class SpeedCameraService : Service(), LocationListener {
     }
 
     // Pre-Android 11 framework interfaces have no default bodies for these.
-    override fun onProviderEnabled(provider: String) {
-        CameraState.gpsOk.value = true
-    }
+    override fun onProviderEnabled(provider: String) = Unit
 
     override fun onProviderDisabled(provider: String) {
         CameraState.gpsOk.value = false
+        alerter?.invalidateMeasurement()
         CameraState.lastAlert.value = "GPS가 꺼져 있습니다"
     }
 
@@ -149,18 +180,11 @@ class SpeedCameraService : Service(), LocationListener {
     override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) = Unit
 
     private fun announce(alert: CameraAlert) {
-        val limit = alert.camera.limitKmh
-        val zone = alert.camera.zone?.let { "$it " }.orEmpty()
-        val kind = if (alert.camera.signal) "신호 과속" else "과속"
-        val text = when (alert) {
-            is CameraAlert.Approaching ->
-                "${(alert.distanceM / 50).roundToInt() * 50}미터 앞 ${zone}$kind 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
-            is CameraAlert.Final -> "100미터 앞 ${zone}단속 카메라, 제한속도 $limit" + if (alert.overLimit) ". 속도를 줄이세요" else ""
-            is CameraAlert.SectionStart -> "구간단속 시작, 제한속도 $limit"
-            is CameraAlert.SectionEnd -> "구간단속 종료, 평균 속도 ${alert.averageKmh.roundToInt()}킬로미터"
-        }
+        val text = alert.spokenText()
         CameraState.lastAlert.value = text
-        speaker?.speak(text, interrupt = true)
+        speaker?.speak(text, key = "camera:${alert.camera.id}:${alert::class.simpleName}:${if (alert is CameraAlert.Approaching) (alert.distanceM / 100).toInt() else 0}",
+            priority = if (alert is CameraAlert.Final) 100 else 60,
+            ttlMs = if (alert is CameraAlert.Final) 3000 else 6000, group = "camera:${alert.camera.id}")
         val strong = alert is CameraAlert.Final || (alert is CameraAlert.Approaching && alert.overLimit)
         vibrate(if (strong) longArrayOf(0, 300, 150, 300, 150, 300) else longArrayOf(0, 250))
     }

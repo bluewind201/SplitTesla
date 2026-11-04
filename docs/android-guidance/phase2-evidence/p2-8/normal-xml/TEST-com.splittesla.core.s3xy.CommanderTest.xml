@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.s3xy.CommanderTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-03T22:09:56.195Z" hostname="44803f7d0664" time="0.548">
+  <properties/>
+  <testcase name="handshakeRegistrationAndActions()" classname="com.splittesla.core.s3xy.CommanderTest" time="0.516"/>
+  <testcase name="unknownPhoneIsRejectedUntilAuthorized()" classname="com.splittesla.core.s3xy.CommanderTest" time="0.008"/>
+  <testcase name="aesCtrMatchesJdkAcrossCalls()" classname="com.splittesla.core.s3xy.CommanderTest" time="0.002"/>
+  <testcase name="wrongPopFailsVerification()" classname="com.splittesla.core.s3xy.CommanderTest" time="0.009"/>
+  <testcase name="decodesVehicleDataPush()" classname="com.splittesla.core.s3xy.CommanderTest" time="0.009"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

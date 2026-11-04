@@ -1,0 +1,15 @@
+total=11 pass=11 skipped=0 failed=0
+PASS AndroidGuidanceQaRound5ProbeTest.weakFixesFarAheadMoveNothingAndDoNotPoisonTheMotionGate() 
+PASS AndroidGuidanceQaRound5ProbeTest.repeatedGoodOffRouteStillReachesOffRoute() 
+PASS AndroidGuidanceQaRound5ProbeTest.l2_sustainedWeakGpsWithVehicleSpeedGoesSilentAfterThirtySeconds() 
+PASS AndroidGuidanceQaRound5ProbeTest.repeatedWeakOffRouteNeverCountsAsLeavingTheRoute() 
+PASS AndroidGuidanceQaRound5ProbeTest.weakFixesAtTheDestinationNeverConfirmArrival() 
+PASS AndroidGuidanceQaRound5ProbeTest.trustBoundaryIsThirtyMetresInclusive() 
+PASS AndroidGuidanceQaRound5ProbeTest.l2_sustainedWeakGpsWithoutVehicleSpeedFreezesGuidance() 
+PASS AndroidGuidanceQaRound5ProbeTest.estimatedWindowEndsThirtySecondsAfterTheLastGoodFixWhateverWeakFixesSay() 
+PASS AndroidGuidanceQaRound5ProbeTest.oneGoodFixAfterExpiryIsNeededBeforeEstimatesMayBeSpokenAgain() 
+PASS AndroidGuidanceQaRound5ProbeTest.goodAccuracyContradictionStillCancelsTheAnchor() 
+PASS AndroidGuidanceQaRound5ProbeTest.sampleTimeUsesAgeAndRejectsOutOfRangeSamples() 
+  <system-out><![CDATA[L2 last estimated-turn second=28
+ARRIVAL good fixes after weak stretch=8
+L2 recovery fixes=5

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest" tests="2" skipped="2" failures="0" errors="0" timestamp="2026-11-03T20:19:15.617Z" hostname="44803f7d0664" time="0.008">
+  <properties/>
+  <testcase name="r4control_turnNoticeSpokenWhileDeadReckoningWithoutVagueFix()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-3 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-3 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest.gate(AndroidGuidanceQaRound3ProbeTest.kt:20)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="r4_turnNoticeStillSpokenWhileDeadReckoningAfterAVagueTunnelMouthFix()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest" time="0.004">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-3 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-3 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest.gate(AndroidGuidanceQaRound3ProbeTest.kt:20)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" tests="2" skipped="0" failures="2" errors="0" timestamp="2026-11-03T20:35:50.537Z" hostname="44803f7d0664" time="0.165">
+  <properties/>
+  <testcase name="r4d_vagueOnRouteFixDoesNotBecomeACertainPosition()" classname="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" time="0.147">
+    <failure message="org.opentest4j.AssertionFailedError: a 50 m fix re-certified the position: RouteProgress(alongM=216.6666666667693, remainingM=3783.4583573329573, remainingMs=245556, lateralM=0.0, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=2783.427101333419, sectionIndex=null, arrived=false, estimated=false, positionUncertain=false, estimatedTurnAllowed=false)" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: a 50 m fix re-certified the position: RouteProgress(alongM=216.6666666667693, remainingM=3783.4583573329573, remainingMs=245556, lateralM=0.0, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=2783.427101333419, sectionIndex=null, arrived=false, estimated=false, positionUncertain=false, estimatedTurnAllowed=false)
+	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:38)
+	at app//org.junit.jupiter.api.Assertions.fail(Assertions.java:138)
+	at app//kotlin.test.junit5.JUnit5Asserter.fail(JUnitSupport.kt:56)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:694)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:704)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertFalse(Assertions.kt:58)
+	at app//kotlin.test.AssertionsKt.assertFalse(Unknown Source)
+	at app//com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest.r4d_vagueOnRouteFixDoesNotBecomeACertainPosition(AndroidGuidanceQaR4PolicyProbeTest.kt:55)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="r4c_vagueFixesDoNotExtendTheEstimatedTurnWindow()" classname="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" time="0.014">
+    <failure message="org.opentest4j.AssertionFailedError: 35 s after the last good fix (t=11s) DR may still announce; vague fixes left positionUncertain=false" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: 35 s after the last good fix (t=11s) DR may still announce; vague fixes left positionUncertain=false
+	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:38)
+	at app//org.junit.jupiter.api.Assertions.fail(Assertions.java:138)
+	at app//kotlin.test.junit5.JUnit5Asserter.fail(JUnitSupport.kt:56)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:694)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:704)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertFalse(Assertions.kt:58)
+	at app//kotlin.test.AssertionsKt.assertFalse(Unknown Source)
+	at app//com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest.r4c_vagueFixesDoNotExtendTheEstimatedTurnWindow(AndroidGuidanceQaR4PolicyProbeTest.kt:43)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.assistant.AssistantTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-03T20:19:14.696Z" hostname="44803f7d0664" time="0.185">
+  <properties/>
+  <testcase name="keepsOnlyPointsAheadOnTheRoute()" classname="com.splittesla.core.assistant.AssistantTest" time="0.092"/>
+  <testcase name="projectsAPointAheadAlongTheHeading()" classname="com.splittesla.core.assistant.AssistantTest" time="0.003"/>
+  <testcase name="mapsModelActionNames()" classname="com.splittesla.core.assistant.AssistantTest" time="0.038"/>
+  <testcase name="sendsTheRouteAgainOnlyForAnotherPlace()" classname="com.splittesla.core.assistant.AssistantTest" time="0.004"/>
+  <testcase name="understandsCommonPhrasingsWithoutAModel()" classname="com.splittesla.core.assistant.AssistantTest" time="0.035"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

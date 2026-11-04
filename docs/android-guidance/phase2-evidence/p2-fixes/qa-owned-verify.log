@@ -1,0 +1,14 @@
+core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaDefectsTest.kt: OK
+core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaFinalProbeTest.kt: OK
+core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaPhase2Test.kt: OK
+core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaR4PolicyProbeTest.kt: OK
+core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound3ProbeTest.kt: OK
+core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound4ProbeTest.kt: OK
+core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaRound5ProbeTest.kt: OK
+core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaTest.kt: OK
+docs/android-guidance/phase2-qa.md: FAILED
+docs/android-guidance/phase2-qa-evidence/speaker-harness/stubs/AndroidStubs.kt: OK
+docs/android-guidance/phase2-qa-evidence/speaker-harness/stubs/AndroidStubs2.kt: OK
+docs/android-guidance/phase2-qa-evidence/speaker-harness/stubs/AndroidStubs3.kt: OK
+docs/android-guidance/phase2-qa-evidence/speaker-harness/stubs/AndroidStubs4.kt: OK
+docs/android-guidance/phase2-qa-evidence/speaker-harness/test/SpeakerHarnessTest.kt: OK

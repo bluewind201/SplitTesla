@@ -1,0 +1,11 @@
+597ad5c86d5b423c47cff6ac4db78a0afb87becdd09974e73b2f698a02a52135  docs/android-guidance/phase2-qa-evidence/policy-v2/q1/Q1Scenarios.kt
+a286be12c9aa7a9b7412824bad38e330664b087190bbb36bbe4045a952f642b9  docs/android-guidance/phase2-qa-evidence/policy-v2/q1/FrozenApiQ1Test.kt
+8c7ed8c8745f1befe21a15ae4b10e77881327a06938a7d19d7d40dc567cca8a3  docs/android-guidance/phase2-qa-evidence/policy-v2/q1/PlaybackContractTest.kt
+c1a838b81c38a0f7121b5d8a4ae080d1f28b36af47f98a63f201803dae7b8796  docs/android-guidance/phase2-qa-evidence/speaker-harness/test/SpeakerHarnessTest.kt
+340db715dc343b0fc4f65c39539b3656dac80f3fcc871e6494ccaf5369ac2262  docs/android-guidance/phase2-qa-evidence/speaker-harness/test/SpeakerOutcomeWiringTest.kt
+7e40be11982268293ab13577a26046f2d725524809198895c3b17081b540e871  docs/android-guidance/phase2-qa-evidence/speaker-harness/stubs/AndroidStubs.kt
+57d870f344222b93fee4b1c006d8b5545211a521bd6c292f8457bb1888bc5f55  docs/android-guidance/phase2-qa-evidence/speaker-harness/stubs/AndroidStubs2.kt
+a7858a2cd6fc13214f818602d1d3013ace4600b0bb76cef6322695d57578d6fb  docs/android-guidance/phase2-qa-evidence/speaker-harness/stubs/AndroidStubs3.kt
+46dc354f98b3d90797b5f14ad6844466400e80f8b4327b2f8ab1a18e904953f6  docs/android-guidance/phase2-qa-evidence/speaker-harness/stubs/AndroidStubs4.kt
+cd87e620029c22567feddbc8077ff24402a75d54a200ae13f585ce2f2a9f3fb0  docs/android-guidance/phase2-qa-evidence/policy-v2/AndroidGuidanceQaPhase2PolicyTest.kt
+2026-11-04T06:47:20+09:00

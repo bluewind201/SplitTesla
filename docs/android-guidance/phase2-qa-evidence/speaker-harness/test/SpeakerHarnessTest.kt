@@ -1,0 +1,262 @@
+package com.splittesla.app.assistant
+
+import android.content.Context
+import android.media.AudioManager
+import android.os.FakeMain
+import android.os.SystemClock
+import android.speech.tts.TextToSpeech
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+/** Drives the verbatim app Speaker.kt/VoiceChoice.kt on fake Android. Not a device test. */
+@OptIn(ExperimentalCoroutinesApi::class)
+class SpeakerHarnessTest {
+    private val ctx = Context()
+    private val open = mutableListOf<Speaker>()
+    private fun lease(priority: Int = 10, enabled: () -> Boolean = { true }) =
+        Speaker(ctx, priority = priority, enabled = enabled).also { open += it; FakeMain.drain() }
+    private val tts get() = TextToSpeech.engines.last()
+    private fun ready(status: Int = 0) { FakeMain.drain(); tts.init.onInit(status); FakeMain.drain() }
+    private fun said() = tts.spoken.map { it.first }
+    private fun done() { tts.listener!!.onDone(tts.spoken.last().second); FakeMain.drain() }
+
+    @BeforeEach fun setUp() {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+        FakeMain.reset(); TextToSpeech.engines.clear()
+        Context.audio = AudioManager(); Context.prefs = android.content.SharedPreferences()
+        VoiceChoice.set(ctx, VoiceChoice.Setting())
+    }
+    @AfterEach fun tearDown() {
+        open.forEach { it.shutdown() }; open.clear(); FakeMain.drain()
+        Dispatchers.resetMain()
+    }
+
+    @Test fun requestsBeforeReadyAreKeptByPriorityAndExpiredOnesDropped() {
+        val a = lease(10); val c = lease(60)
+        a.speak("비서", ttlMs = 8000); c.speak("카메라", priority = 100, ttlMs = 3000); c.speak("오래된", priority = 60, ttlMs = 500)
+        FakeMain.drain(); SystemClock.now += 1000
+        ready()
+        assertEquals(listOf("카메라"), said()); done()
+        assertEquals(listOf("카메라", "비서"), said())
+    }
+
+    @Test fun essentialPreemptsAssistantWithoutReplay() {
+        val a = lease(10); val n = lease(70); ready()
+        a.speak("긴 비서 답변"); FakeMain.drain()
+        n.speak("우회전", priority = 70, ttlMs = 5000); FakeMain.drain()
+        assertEquals(1, tts.stops)
+        assertEquals(listOf("긴 비서 답변", "우회전"), said())
+        val stale = tts.spoken[0].second
+        tts.listener!!.onStop(stale, true); FakeMain.drain()
+        assertEquals(2, said().size, "late stop must not finish the turn")
+        done(); FakeMain.advance(1000)
+        assertEquals(2, said().size, "assistant is not replayed")
+    }
+
+    /** Policy v2 replaces v1 essentialNeverCutsEssential; the v1 file is kept in policy-v1/. */
+    @Test fun finalCutsATurnOnceAndTheTurnIsNotReplayed() {
+        val n = lease(70); val c = lease(60); ready()
+        n.speak("우회전", key = "turn:1", priority = 70, ttlMs = 1500); FakeMain.drain()
+        val cut = tts.spoken[0].second
+        c.speak("최종", key = "f", priority = 100, ttlMs = 3000); FakeMain.drain()
+        assertEquals(1, tts.stops); assertEquals(listOf("우회전", "최종"), said())
+        tts.listener!!.onStop(cut, true); FakeMain.drain()
+        assertEquals(2, said().size, "late stop of the cut turn must not end the final warning")
+        assertEquals(1, Context.audio.held)
+        done(); FakeMain.advance(2000)
+        assertEquals(listOf("우회전", "최종"), said(), "no automatic requeue")
+    }
+
+    @Test fun turnAndApproachNeverCutEachOtherAndFinalNeverCutsFinal() {
+        val n = lease(70); val c = lease(60); ready()
+        c.speak("예고", key = "a", priority = 60, ttlMs = 6000); FakeMain.drain()
+        n.speak("턴", key = "t", priority = 70, ttlMs = 1500); FakeMain.drain()
+        assertEquals(0, tts.stops); assertEquals(listOf("예고"), said())
+        done(); assertEquals(listOf("예고", "턴"), said())
+        done()
+        c.speak("최종1", key = "f1", priority = 100, ttlMs = 3000); FakeMain.drain()
+        c.speak("최종2", key = "f2", priority = 100, ttlMs = 3000); FakeMain.drain()
+        assertEquals(0, tts.stops); assertEquals(listOf("예고", "턴", "최종1"), said())
+    }
+
+    @Test fun lateCallbacksOfEveryKindCannotFinishTheNextSentence() {
+        val n = lease(70); ready()
+        n.speak("하나", key = "1", priority = 70, ttlMs = 5000); n.speak("둘", key = "2", priority = 70, ttlMs = 5000); n.speak("셋", key = "3", priority = 70, ttlMs = 5000)
+        FakeMain.drain(); val first = tts.spoken[0].second
+        done(); assertEquals(listOf("하나", "둘"), said())
+        tts.listener!!.onDone(first); tts.listener!!.onError(first, -1); tts.listener!!.onStop(first, false); tts.listener!!.onDone(null); FakeMain.drain()
+        assertEquals(listOf("하나", "둘"), said())
+        assertEquals(1, Context.audio.held, "focus stays held for the running sentence")
+        done(); done()
+        assertEquals(0, Context.audio.held, "focus returned when idle")
+    }
+
+    @Test fun ownerCancelTouchesOnlyThatOwner() {
+        val a = lease(70); val b = lease(60); ready()
+        a.speak("에이", key = "a1", priority = 70, ttlMs = 5000); b.speak("비대기", key = "b1", priority = 60, ttlMs = 5000); FakeMain.drain()
+        b.stop(); FakeMain.drain()
+        assertEquals(0, tts.stops, "other owner's sentence keeps playing")
+        done(); FakeMain.advance(100)
+        assertEquals(listOf("에이"), said(), "cancelled waiting sentence is gone")
+        b.speak("비", key = "b2", priority = 60, ttlMs = 5000); a.speak("에이2", key = "a2", priority = 70, ttlMs = 5000); FakeMain.drain()
+        b.stop(); FakeMain.drain()
+        assertEquals(1, tts.stops, "own playing sentence stops")
+        assertEquals(listOf("에이", "비", "에이2"), said())
+    }
+
+    @Test fun nonLastShutdownKeepsTheEngineAndLastShutdownClosesIt() {
+        val a = lease(70); val b = lease(60); ready()
+        val first = tts
+        a.speak("에이", priority = 70, ttlMs = 5000); FakeMain.drain()
+        b.shutdown(); FakeMain.drain()
+        assertFalse(first.isShutdown); assertEquals(0, first.stops)
+        a.shutdown(); FakeMain.drain()
+        assertTrue(first.isShutdown); assertEquals(0, Context.audio.held)
+        val again = lease(70); ready()
+        assertTrue(tts !== first)
+        again.speak("재시작", priority = 70, ttlMs = 5000); FakeMain.drain()
+        assertEquals(listOf("재시작"), said())
+    }
+
+    @Test fun shutdownBeforeReadyLeavesNoLateEngineWork() {
+        val a = lease(70); FakeMain.drain()
+        a.speak("대기", priority = 70, ttlMs = 5000); FakeMain.drain()
+        val first = tts
+        a.shutdown(); FakeMain.drain()
+        first.init.onInit(0); FakeMain.drain()
+        assertTrue(first.spoken.isEmpty()); assertTrue(first.isShutdown)
+    }
+
+    @Test fun muteStopsClearsBlocksAndSurvivesRestart() {
+        val n = lease(70); ready()
+        n.speak("하나", key = "1", priority = 70, ttlMs = 5000); n.speak("둘", key = "2", priority = 70, ttlMs = 5000); FakeMain.drain()
+        VoiceChoice.set(ctx, VoiceChoice.setting.value.copy(muted = true)); FakeMain.drain()
+        assertEquals(1, tts.stops); assertEquals(0, Context.audio.held)
+        n.speak("셋", key = "3", priority = 70, ttlMs = 5000); FakeMain.advance(1000)
+        assertEquals(listOf("하나"), said())
+        n.shutdown(); FakeMain.drain()
+        assertEquals(true, Context.prefs.getBoolean("muted", false))
+        val n2 = lease(70); ready()
+        n2.speak("재시작 뒤", priority = 70, ttlMs = 5000); FakeMain.advance(1000)
+        assertTrue(said().isEmpty())
+        VoiceChoice.set(ctx, VoiceChoice.setting.value.copy(muted = false)); FakeMain.advance(1000)
+        assertTrue(said().isEmpty(), "nothing queued during mute is replayed")
+        n2.speak("해제 뒤", priority = 70, ttlMs = 5000); FakeMain.drain()
+        assertEquals(listOf("해제 뒤"), said())
+    }
+
+    @Test fun previewOverrideIsNotSavedAndNextSpeechUsesTheSavedVoice() {
+        VoiceChoice.set(ctx, VoiceChoice.Setting("a", 1.2f))
+        val s = lease(10); ready()
+        s.speak("샘플", key = "p", ttlMs = 3000, preview = VoiceChoice.Setting("b", 0.8f)); FakeMain.drain()
+        assertEquals(0.8f, tts.rate); assertEquals("b", tts.voice?.name)
+        assertEquals(VoiceChoice.Setting("a", 1.2f), VoiceChoice.setting.value)
+        done()
+        s.speak("일반", key = "n", ttlMs = 3000); FakeMain.drain()
+        assertEquals(1.2f, tts.rate); assertEquals("a", tts.voice?.name)
+    }
+
+    @Test fun focusDeniedSkipsAndFocusLossCancelsWithoutReplay() {
+        val n = lease(70); ready()
+        Context.audio.grant = false
+        n.speak("거절", key = "1", priority = 70, ttlMs = 5000); FakeMain.advance(300)
+        assertTrue(said().isEmpty())
+        Context.audio.grant = true
+        n.speak("상실", key = "2", priority = 70, ttlMs = 5000); FakeMain.drain()
+        Context.audio.last!!.listener!!.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS_TRANSIENT); FakeMain.advance(1000)
+        assertEquals(1, tts.stops); assertEquals(listOf("상실"), said())
+        n.speak("다음", key = "3", priority = 70, ttlMs = 5000); FakeMain.drain()
+        assertEquals(listOf("상실", "다음"), said())
+    }
+
+    @Test fun watchdogReleasesAMissingCallbackAndSpeakErrorMovesOn() {
+        val n = lease(70); ready()
+        n.speak("콜백 없음", key = "1", priority = 70, ttlMs = 5000); FakeMain.drain()
+        FakeMain.advance(30_000)
+        assertEquals(1, tts.stops); assertEquals(0, Context.audio.held)
+        tts.speakResult = TextToSpeech.ERROR
+        n.speak("오류", key = "2", priority = 70, ttlMs = 5000); FakeMain.drain()
+        tts.speakResult = 0
+        n.speak("다음", key = "3", priority = 70, ttlMs = 5000); FakeMain.drain()
+        assertEquals(listOf("콜백 없음", "다음"), said())
+    }
+
+    @Test fun engineFailureAndMissingKoreanStaySilent() {
+        val logs = mutableListOf<String>()
+        val n = Speaker(ctx, logs::add, 70).also { open += it }; FakeMain.drain()
+        n.speak("실패", priority = 70, ttlMs = 5000); FakeMain.drain()
+        tts.init.onInit(TextToSpeech.ERROR); FakeMain.advance(100)
+        assertTrue(said().isEmpty()); assertEquals(1, logs.size)
+        n.shutdown(); FakeMain.drain()
+        val m = Speaker(ctx, logs::add, 70).also { open += it }; FakeMain.drain()
+        tts.language = TextToSpeech.LANG_MISSING_DATA
+        m.speak("데이터 없음", priority = 70, ttlMs = 5000); FakeMain.drain()
+        tts.init.onInit(TextToSpeech.SUCCESS); FakeMain.advance(100)
+        assertTrue(said().isEmpty()); assertEquals(2, logs.size)
+    }
+
+    @Test fun disabledOwnerIsSkippedAtPlayTime() {
+        var on = true
+        val n = lease(70) { on }; val c = lease(60); ready()
+        c.speak("먼저", key = "c", priority = 100, ttlMs = 3000); n.speak("내비", key = "n", priority = 70, ttlMs = 5000); c.speak("뒤", key = "d", priority = 60, ttlMs = 5000); FakeMain.drain()
+        on = false; done(); FakeMain.drain()
+        assertEquals(listOf("먼저", "뒤"), said())
+    }
+
+    // ── Findings: expected behaviour, may fail ──
+
+    /** Two different guides with the same wording: NaviService passes key = text. */
+    @Test fun f1_sameWordingForTheNextTurnIsStillSpoken() {
+        val n = lease(70); ready()
+        n.speak("우회전.", priority = 70, ttlMs = 5000); FakeMain.drain()
+        SystemClock.now += 2000; done()
+        SystemClock.now += 5000 // 7 s after the first sentence started
+        n.speak("우회전.", priority = 70, ttlMs = 5000); FakeMain.drain()
+        assertEquals(2, said().size, "second turn dropped: ${said()}")
+    }
+
+    /** A turn sentence that outlasts the 3 s Final budget silently loses the highest-priority warning. */
+    @Test fun f2_finalCameraWarningSurvivesAFourSecondTurnSentence() {
+        val n = lease(70); val c = lease(60); ready()
+        n.speak("500미터 앞, 서울역 방면으로 우회전.", priority = 70, ttlMs = 5000); FakeMain.drain()
+        c.speak("100미터 앞 단속 카메라", key = "f", priority = 100, ttlMs = 3000, group = "cam"); FakeMain.drain()
+        SystemClock.now += 4000; done()
+        assertTrue(said().any { it.contains("카메라") }, "final warning lost: ${said()}")
+    }
+
+    /** "우회전." created 4.9 s ago is read after a camera sentence, with no position recheck. */
+    @Test fun f3_turnSentenceIsNotReadLongAfterItWasCreated() {
+        val c = lease(60); val n = lease(70); ready()
+        c.speak("100미터 앞 단속 카메라", key = "f", priority = 100, ttlMs = 3000); FakeMain.drain()
+        n.speak("우회전.", priority = 70, ttlMs = 5000); FakeMain.drain()
+        SystemClock.now += 4900; done()
+        assertFalse(said().contains("우회전."), "read 4.9 s late (82 m at 60 km/h)")
+    }
+
+    /** The settings sample cannot be heard twice within 8 s. */
+    @Test fun f4_repeatingAVoiceSampleIsHeard() {
+        val s = lease(10); ready()
+        val p = VoiceChoice.Setting("a", 1f)
+        s.speak("샘플", key = "preview:a:1.0", ttlMs = 3000, preview = p); FakeMain.drain()
+        SystemClock.now += 3000; done()
+        s.speak("샘플", key = "preview:a:1.0", ttlMs = 3000, preview = p); FakeMain.drain()
+        assertEquals(2, said().size)
+    }
+
+    /** Muted: pressing sample gives no sound and no signal. Pins the silent result. */
+    @Test fun f5_previewWhileMutedIsSilent() {
+        val s = lease(10); ready()
+        VoiceChoice.set(ctx, VoiceChoice.Setting(muted = true))
+        s.speak("샘플", key = "p", ttlMs = 3000, preview = VoiceChoice.Setting("a", 1f, true)); FakeMain.advance(500)
+        assertTrue(said().isEmpty())
+    }
+}

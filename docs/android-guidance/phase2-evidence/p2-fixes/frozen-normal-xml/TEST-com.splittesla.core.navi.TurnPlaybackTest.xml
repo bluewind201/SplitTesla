@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.navi.TurnPlaybackTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:48:26.419Z" hostname="44803f7d0664" time="0.017">
+  <properties/>
+  <testcase name="interruptedFinalTurnRegainsOpportunityUsingCurrentProgress()" classname="com.splittesla.core.navi.TurnPlaybackTest" time="0.004"/>
+  <testcase name="pendingDoesNotRepeatOnEverySubsecondFixAndOldFeedbackCannotAffectNewRoute()" classname="com.splittesla.core.navi.TurnPlaybackTest" time="0.001"/>
+  <testcase name="droppedFinalTurnCanRegenerateButNeverAfterPassingOrLosingConfidence()" classname="com.splittesla.core.navi.TurnPlaybackTest" time="0.001"/>
+  <testcase name="droppedEarlyStageRegeneratesCurrentDistanceInsteadOfWaitingUntilNextStage()" classname="com.splittesla.core.navi.TurnPlaybackTest" time="0.002"/>
+  <testcase name="highSpeedWaitingTurnRefreshesWithoutDuplicatingAnAcceptedSentence()" classname="com.splittesla.core.navi.TurnPlaybackTest" time="0.001"/>
+  <testcase name="startReservationPreventsConcurrentFixFromReplacingAcceptedWork()" classname="com.splittesla.core.navi.TurnPlaybackTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

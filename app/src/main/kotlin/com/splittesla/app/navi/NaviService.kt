@@ -65,8 +65,10 @@ class NaviService : Service(), LocationListener {
     }
 
     private fun start() {
-        speaker = Speaker(this)
-        scope.launch { NaviHub.speech.collect { speaker?.speak(it) } }
+        speaker = Speaker(this, priority = 70, enabled = { NaviHub.settings.voice })
+        scope.launch { NaviHub.speech.collect {
+            speaker?.deliverNavigation(it, NaviHub.settings.voice, NaviHub::speechStillValid)
+        } }
         scope.launch {
             NaviHub.state.map { it.guiding to banner(it) }.distinctUntilChanged().collect { (guiding, text) ->
                 if (!guiding) stopSelf() else updateNotification(text)
@@ -88,6 +90,7 @@ class NaviService : Service(), LocationListener {
     override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) = Unit
 
     private fun banner(s: NaviUi): String {
+        if (!s.gpsOk) return "길안내: ${s.positionState.label}"
         val p = s.progress ?: return s.route?.goal?.name?.let { "$it 안내 중" } ?: "길안내 중"
         val guide = s.route?.guides?.getOrNull(p.nextGuideIndex ?: -1)
         val next = guide?.let { g ->

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.q1.PlaybackContractTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-03T22:09:30.793Z" hostname="44803f7d0664" time="0.082">
+  <properties/>
+  <testcase name="lateCallbackOfAnOldAttemptChangesNothing()" classname="com.splittesla.core.qa.q1.PlaybackContractTest" time="0.042"/>
+  <testcase name="interruptedAndDroppedGetOneNewAttemptWhileAhead()" classname="com.splittesla.core.qa.q1.PlaybackContractTest" time="0.003"/>
+  <testcase name="completedIsNeverRepeated()" classname="com.splittesla.core.qa.q1.PlaybackContractTest" time="0.002"/>
+  <testcase name="acceptedOrPlayingIsNeverDuplicated()" classname="com.splittesla.core.qa.q1.PlaybackContractTest" time="0.012"/>
+  <testcase name="nothingOnceTheTurnIsPassedOrPositionIsUncertain()" classname="com.splittesla.core.qa.q1.PlaybackContractTest" time="0.002"/>
+  <testcase name="lateCallbackFromAnOldSessionCannotOweTheNewRoute()" classname="com.splittesla.core.qa.q1.PlaybackContractTest" time="0.002"/>
+  <testcase name="waitingWorkIsRefreshedNotDuplicated()" classname="com.splittesla.core.qa.q1.PlaybackContractTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

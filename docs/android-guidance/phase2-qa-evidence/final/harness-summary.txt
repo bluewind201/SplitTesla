@@ -1,0 +1,13 @@
+SpeakerHarnessTest {'PASS': 19}
+SpeakerOutcomeWiringTest {'PASS': 8, 'FAIL': 1}
+  FAIL obs_expiryIsReportedWithoutWaitingForTheNextQueueActivity() org.opentest4j.AssertionFailedError: no pump happened while the engine kept talking: [] ==> expected: <[DROPPED]> but was: <[]>
+NavigationDeliveryHarnessTest {'PASS': 7}
+AndroidGuidanceQaPhase2PolicyTest {'PASS': 8}
+CurrentBehaviourQ1Test {'PASS': 6, 'FAIL': 4}
+  FAIL s2_repeatedDiscardAtThirtySixKmhAndAboveStillGivesOneCurrentNotice() org.opentest4j.AssertionFailedError: 36.0 km/h [] ==> expected: <1> but was: <0>
+  FAIL s6_noticeReturnsWhenPositionRecoversAndTheTurnIsStillAhead() org.opentest4j.AssertionFailedError: [Heard(atMs=13000, text=700미터 앞, 우회전., distanceM=683.3333333336566, guide=0), Heard(atMs=37000, text=300미터 앞, 우회전., distanceM=283.3333333334674, guide=0), Heard(atMs=50000, text=우회전.,
+  FAIL s9_estimatedNoticeReturnsLabelledInsideTheWindow() org.opentest4j.AssertionFailedError: [Heard(atMs=13000, text=700미터 앞, 우회전., distanceM=683.3333333336566, guide=0), Heard(atMs=37000, text=300미터 앞, 우회전., distanceM=283.3333333334674, guide=0), Heard(atMs=50000, text=추정 위치
+  FAIL s1_cutLastStageTurnIsAnnouncedAgainWhileAheadAndOnlyOnce() org.opentest4j.AssertionFailedError: [Heard(atMs=13000, text=700미터 앞, 우회전., distanceM=683.3333333336566, guide=0), Heard(atMs=37000, text=300미터 앞, 우회전., distanceM=283.3333333334674, guide=0), Heard(atMs=50000, text=우회전.,
+FrozenApiQ1Test {'PASS': 10}
+PlaybackContractTest {'PASS': 7}
+ReferencePolicyQ1Test {'PASS': 10}

@@ -1,0 +1,27 @@
+비판정 건식 실행: 동결 전 작업 트리 사본에서 초안 컴파일과 기대값만 확인. 판정 근거로 쓰지 않는다.
+2026-11-04T06:33:15+09:00
+> Task :jar
+> Task :compileTestKotlin
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses UP-TO-DATE
+
+> Task :test
+
+AndroidGuidanceQaPhase2PolicyTest > f6_aCutLastStageTurnIsAnnouncedAgainWhileTheTurnIsStillAhead() FAILED
+    org.opentest4j.AssertionFailedError at AndroidGuidanceQaPhase2PolicyTest.kt:118
+
+50 tests completed, 1 failed
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///tmp/claude-1026/-home-orca-orca-workspaces-SplitTesla-android-guidance/3f44de16-869e-4ef4-aa92-bb6f9f117716/scratchpad/snap-dryrun/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 5m 13s
+11 actionable tasks: 11 executed

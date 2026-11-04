@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.navi.GuidanceRecoveryTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-03T20:19:15.331Z" hostname="44803f7d0664" time="0.063">
+  <properties/>
+  <testcase name="extrapolationNeverRelaxesThePhysicalReachBound()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.002"/>
+  <testcase name="tunnelRecoveryFollowsTheNearbyOutboundLegAcrossSamplingBiases()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.01"/>
+  <testcase name="trajectoryEvidenceRecoversAfterOneSpikeAndMissingSamples()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.003"/>
+  <testcase name="transientArrivalDoesNotPromiseThatGuidanceHasEnded()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.003"/>
+  <testcase name="plausibleSparseProgressIsNotClampedToTheLocalWindow()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.003"/>
+  <testcase name="regularSparseFixesAndSparseRecoveryBothRemainUsable()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.017"/>
+  <testcase name="parkingFortyFiveMetresBesideTheEndDoesNotExpandAutomaticArrival()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.005"/>
+  <testcase name="anUnusableRealFixKeepsTheLastPositionEstimated()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.002"/>
+  <testcase name="anIsolatedWeakFirstAnchorCanBeReplacedByBetterTimedEvidence()" classname="com.splittesla.core.navi.GuidanceRecoveryTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

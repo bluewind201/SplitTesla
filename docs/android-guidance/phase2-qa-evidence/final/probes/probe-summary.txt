@@ -1,0 +1,16 @@
+PASS weakFixDoesNotFlickerALiveEstimateButEveryLimitEndsIt() 
+PASS obs_interruptedArrivalSentence() 
+PASS f7b_sameWhenTheFiveHundredMetreNoticeWasDropped() 
+PASS control_legacyOnF7Inputs() 
+FAIL f7e_speedingUpAfterTheLastNoticeDoesNotRepeatIt() org.opentest4j.AssertionFailedError: [694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 78m:우회전., 56m:우회전.] ==> expected: <1> but was: <2>
+PASS firstConfirmationAndHeldLabels() 
+FAIL f7d_ordinaryApproachCrossingEightyTwiceHearsTheLastNoticeOnce() org.opentest4j.AssertionFailedError: [694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 144m:우회전., 78m:우회전.] ==> expected: <1> but was: <2>
+PASS constantSpeedsAreUntouched() 
+FAIL f7_heardLastNoticeIsNotRepeatedAfterSlowingBelowEightyKmh() org.opentest4j.AssertionFailedError: [148m:우회전., 60m:우회전.] ==> expected: <1> but was: <2>
+PASS f7c_speedJitterAroundEightyKmhDoesNotRepeatTheLastNotice() 
+{'PASS': 7, 'FAIL': 3}
+ARRIVAL reissue=null
+LEGACY f7=[148m:우회전.]
+LEGACY f7c=[738m:700미터 앞, 우회전., 474m:500미터 앞, 우회전., 122m:우회전.]
+F7E new=[694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 78m:우회전., 56m:우회전.] legacy=[694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 78m:우회전., 56m:우회전.]
+F7D new=[694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 144m:우회전., 78m:우회전.] legacy=[694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 144m:우회전.]

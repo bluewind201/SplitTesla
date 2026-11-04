@@ -1,0 +1,3 @@
+total=2 pass=0 skipped=0 failed=2
+FAIL AndroidGuidanceQaR4PolicyProbeTest.r4d_vagueOnRouteFixDoesNotBecomeACertainPosition() org.opentest4j.AssertionFailedError: a 50 m fix re-certified the position: RouteProgress(alongM=216.6666666667693, remainingM=3783.4583573329573, remainingMs=245556, lateralM=0.0, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=2783.427101333419, sectionIndex=null, arrived=false, estimated=fals
+FAIL AndroidGuidanceQaR4PolicyProbeTest.r4c_vagueFixesDoNotExtendTheEstimatedTurnWindow() org.opentest4j.AssertionFailedError: 35 s after the last good fix (t=11s) DR may still announce; vague fixes left positionUncertain=false

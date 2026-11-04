@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.navi.GuidancePositionStateTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:32:40.080Z" hostname="44803f7d0664" time="0.009">
+  <properties/>
+  <testcase name="weakFixWithoutSpeedAndExpiredEstimationAreHeld()" classname="com.splittesla.core.navi.GuidancePositionStateTest" time="0.003"/>
+  <testcase name="noFixAndNoProgressMeansChecking()" classname="com.splittesla.core.navi.GuidancePositionStateTest" time="0.002"/>
+  <testcase name="onlyActiveAuthorizedIntegrationMayClaimEstimation()" classname="com.splittesla.core.navi.GuidancePositionStateTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

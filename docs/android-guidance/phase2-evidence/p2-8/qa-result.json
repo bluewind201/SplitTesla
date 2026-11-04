@@ -1,0 +1,74 @@
+{
+  "tests": 71,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 70,
+  "suites": [
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.26"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest",
+      "tests": "3",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.038"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaPhase2Test",
+      "tests": "22",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.277"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.03"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.015"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaRound4ProbeTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.015"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest",
+      "tests": "11",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.061"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "tests": "21",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.133"
+    }
+  ],
+  "log": "core-qa.log"
+}

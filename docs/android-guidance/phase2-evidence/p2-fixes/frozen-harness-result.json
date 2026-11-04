@@ -1,0 +1,48 @@
+{
+  "tests": 60,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 59,
+  "failed_cases": [
+    "com.splittesla.app.assistant.SpeakerOutcomeWiringTest.obs_expiryIsReportedWithoutWaitingForTheNextQueueActivity()"
+  ],
+  "classes": {
+    "com.splittesla.app.assistant.SpeakerHarnessTest": {
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.splittesla.core.qa.q1.PlaybackContractTest": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest": {
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.splittesla.core.qa.q1.FrozenApiQ1Test": {
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.splittesla.app.assistant.SpeakerOutcomeWiringTest": {
+      "tests": 9,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.splittesla.app.navi.NavigationDeliveryHarnessTest": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  }
+}

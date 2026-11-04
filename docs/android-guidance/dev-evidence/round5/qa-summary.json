@@ -1,0 +1,241 @@
+{
+  "counts": {
+    "tests": 38,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 37
+  },
+  "cases": [
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "eachCameraIsAnnouncedAtMostOncePerStageEvenWithASpikeInBetween()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "deadReckoningIgnoresNanAndInfiniteDistancesAndNeverArrives()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "deadReckoningWindowIsBoundedOnBothSides()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "speedEvidenceRejectsNanInfiniteNegativeOverRangeFutureZeroAndStale()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "emptyRouteFilterSilencesAndNullFilterWarns()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "crossingLaterLegDoesNotPullProgressForward()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "tunnelExitReacquiresWithinAboutSixSecondsAt1Hz()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "stationaryJitterIsAcceptedWithoutBecomingAReacquire()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "sectionStartIsAnnouncedAt1HzOnAHighwayAtEveryPhase()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "lowRateFixesUpToFiveSecondsApartAreAccepted()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "unverifiedSectionAt1HzSaysStartAndUnverifiedEndWithoutNumbers()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "missingSpeedAndMissingBearingStillWarnFromPositions()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "arrivalAnnouncementIsSpokenOnce()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "spokenDistancesFollowTheRealDistance()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "duplicateAndBackwardsTimestampsAreRejected()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "normalDriveProgressesAndArrivesOnlyAfterRealStops()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "highSpeedAt1HzIsNeverRejected()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "verifiedPairMeasuresOnlyWhileEvidenceIsContinuous()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "stationaryNearACameraWithoutSpeedDoesNotWarn()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "policyLimitParkedFortyFiveMetresBesideTheEndIsNotAutoArrival()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaTest",
+      "name": "alternatingTrueAndJumpedFixesNeverAcceptTheJump()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaRound4ProbeTest",
+      "name": "r4contract_expiredOrCoarseDeadReckoningIsSilentAndNeverArrives()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaRound4ProbeTest",
+      "name": "r4b_vagueWanderingTunnelMouthFixStillAllowsDeadReckoningTurnNotice()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "name": "d4_tunnelExitDoesNotSnapToAParallelReturnLeg()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "name": "d8_badFirstFixDoesNotBlackOutTheNextTenSeconds()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "name": "d3_passingTheEndCameraClearsUnverifiedSectionState()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "name": "d5_rejectedProjectionDoesNotRelabelDeadReckoningAsReal()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "name": "d2_sectionStartIsAnnouncedWithTwoSecondFixes()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "name": "d1_fixesSixSecondsApartAreNotLockedOutForever()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "name": "d7_passThroughDoesNotSpeakEndOfGuidanceThatIsLaterRevoked()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaDefectsTest",
+      "name": "d9_spikeThenShortDropoutRecoversQuickly()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest",
+      "name": "r4control_turnNoticeSpokenWhileDeadReckoningWithoutVagueFix()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaRound3ProbeTest",
+      "name": "r4_turnNoticeStillSpokenWhileDeadReckoningAfterAVagueTunnelMouthFix()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest",
+      "name": "r1_fixesTenSecondsApartAreNotLockedOutForever()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest",
+      "name": "r3_hairpinAfterGapWithoutDeadReckoningRecoversQuickly()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest",
+      "name": "r2_badFirstFixWithGoodClaimedAccuracyRecoversWithinThreeSeconds()",
+      "failures": [
+        "org.opentest4j.AssertionFailedError: first real fix accepted after 10 s"
+      ],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest",
+      "name": "r4d_vagueOnRouteFixDoesNotBecomeACertainPosition()",
+      "failures": [],
+      "skipped": false
+    },
+    {
+      "class": "com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest",
+      "name": "r4c_vagueFixesDoNotExtendTheEstimatedTurnWindow()",
+      "failures": [],
+      "skipped": false
+    }
+  ]
+}

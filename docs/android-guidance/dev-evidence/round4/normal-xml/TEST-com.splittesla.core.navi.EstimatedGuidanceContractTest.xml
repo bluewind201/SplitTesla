@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.navi.EstimatedGuidanceContractTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-03T20:19:15.261Z" hostname="44803f7d0664" time="0.03">
+  <properties/>
+  <testcase name="contraryRealRouteEvidenceCannotBeBypassedByStartingDeadReckoning()" classname="com.splittesla.core.navi.EstimatedGuidanceContractTest" time="0.004"/>
+  <testcase name="anEstimatedArrivalFlagCannotBeUsedAsAnActualArrivalAnnouncement()" classname="com.splittesla.core.navi.EstimatedGuidanceContractTest" time="0.001"/>
+  <testcase name="malformedOrUnauthorizedStepsNeverGrantEstimatedTurnPermission()" classname="com.splittesla.core.navi.EstimatedGuidanceContractTest" time="0.005"/>
+  <testcase name="aRejectedGpsFixAllowsOnlyExplicitEstimatedNoticesFromTheLastRouteAnchor()" classname="com.splittesla.core.navi.EstimatedGuidanceContractTest" time="0.006"/>
+  <testcase name="actualFixRecoveryRestoresActualConfidenceAndUnprefixedGuidance()" classname="com.splittesla.core.navi.EstimatedGuidanceContractTest" time="0.002"/>
+  <testcase name="vehicleSpeedExpiryWithdrawsTurnPermissionWithoutMakingGpsCertain()" classname="com.splittesla.core.navi.EstimatedGuidanceContractTest" time="0.002"/>
+  <testcase name="predictionPermissionExpiresAndOnlyAnAcceptedRealFixResetsItsBudget()" classname="com.splittesla.core.navi.EstimatedGuidanceContractTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

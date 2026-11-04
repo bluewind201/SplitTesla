@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.app.navi.NavigationDeliveryHarnessTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-03T22:09:30.169Z" hostname="44803f7d0664" time="0.142">
+  <properties/>
+  <testcase name="playbackFeedbackRegeneratesACutFinalTurnOnceWithCurrentInformation()" classname="com.splittesla.app.navi.NavigationDeliveryHarnessTest" time="0.026"/>
+  <testcase name="latestGuideEventReplacesWaitingOldStage()" classname="com.splittesla.app.navi.NavigationDeliveryHarnessTest" time="0.018"/>
+  <testcase name="explicitPreviewCanRepeatAndServiceMuteStillBlocks()" classname="com.splittesla.app.navi.NavigationDeliveryHarnessTest" time="0.014"/>
+  <testcase name="serviceAdapterKeepsIdenticalWordingForDifferentGuides()" classname="com.splittesla.app.navi.NavigationDeliveryHarnessTest" time="0.023"/>
+  <testcase name="waitingTurnIsRejectedByLiveProgressEvenWithinAgeBudget()" classname="com.splittesla.app.navi.NavigationDeliveryHarnessTest" time="0.01"/>
+  <testcase name="finalImmediatelyCutsTurnAndLateCallbackDoesNotReplayIt()" classname="com.splittesla.app.navi.NavigationDeliveryHarnessTest" time="0.011"/>
+  <testcase name="routeReplacementInvalidatesQueuedSpeechAtEngineStart()" classname="com.splittesla.app.navi.NavigationDeliveryHarnessTest" time="0.013"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,24 @@
+[
+  {
+    "name": "r4contract_expiredOrCoarseDeadReckoningIsSilentAndNeverArrives()",
+    "failures": []
+  },
+  {
+    "name": "r4b_vagueWanderingTunnelMouthFixStillAllowsDeadReckoningTurnNotice()",
+    "failures": [
+      "org.opentest4j.AssertionFailedError: spoken=[] last=RouteProgress(alongM=683.33333333342, remainingM=1316.729178666444, remainingMs=322801, lateralM=89.99781477147918, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=316.6979226669049, sectionIndex=null, arrived=false, estimated=true, positionUncertain=true, estimatedTurnAllowed=false) ==> expected: not <null>"
+    ]
+  },
+  {
+    "name": "r4d_vagueOnRouteFixDoesNotBecomeACertainPosition()",
+    "failures": [
+      "org.opentest4j.AssertionFailedError: a 50 m fix re-certified the position: RouteProgress(alongM=216.6666666667693, remainingM=3783.4583573329573, remainingMs=245556, lateralM=0.0, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=2783.427101333419, sectionIndex=null, arrived=false, estimated=false, positionUncertain=false, estimatedTurnAllowed=false)"
+    ]
+  },
+  {
+    "name": "r4c_vagueFixesDoNotExtendTheEstimatedTurnWindow()",
+    "failures": [
+      "org.opentest4j.AssertionFailedError: 35 s after the last good fix (t=11s) DR may still announce; vague fixes left positionUncertain=false"
+    ]
+  }
+]

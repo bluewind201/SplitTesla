@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.app.assistant.SpeakerHarnessTest" tests="19" skipped="0" failures="0" errors="0" timestamp="2026-11-03T22:09:29.222Z" hostname="44803f7d0664" time="0.688">
+  <properties/>
+  <testcase name="nonLastShutdownKeepsTheEngineAndLastShutdownClosesIt()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.312"/>
+  <testcase name="f2_finalCameraWarningSurvivesAFourSecondTurnSentence()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.009"/>
+  <testcase name="f3_turnSentenceIsNotReadLongAfterItWasCreated()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.005"/>
+  <testcase name="essentialPreemptsAssistantWithoutReplay()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.011"/>
+  <testcase name="finalCutsATurnOnceAndTheTurnIsNotReplayed()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.005"/>
+  <testcase name="engineFailureAndMissingKoreanStaySilent()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.047"/>
+  <testcase name="lateCallbacksOfEveryKindCannotFinishTheNextSentence()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.007"/>
+  <testcase name="turnAndApproachNeverCutEachOtherAndFinalNeverCutsFinal()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.03"/>
+  <testcase name="muteStopsClearsBlocksAndSurvivesRestart()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.017"/>
+  <testcase name="disabledOwnerIsSkippedAtPlayTime()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.017"/>
+  <testcase name="previewOverrideIsNotSavedAndNextSpeechUsesTheSavedVoice()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.024"/>
+  <testcase name="shutdownBeforeReadyLeavesNoLateEngineWork()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.018"/>
+  <testcase name="f4_repeatingAVoiceSampleIsHeard()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.005"/>
+  <testcase name="watchdogReleasesAMissingCallbackAndSpeakErrorMovesOn()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.005"/>
+  <testcase name="f5_previewWhileMutedIsSilent()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.018"/>
+  <testcase name="requestsBeforeReadyAreKeptByPriorityAndExpiredOnesDropped()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.014"/>
+  <testcase name="f1_sameWordingForTheNextTurnIsStillSpoken()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.012"/>
+  <testcase name="ownerCancelTouchesOnlyThatOwner()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.008"/>
+  <testcase name="focusDeniedSkipsAndFocusLossCancelsWithoutReplay()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.024"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

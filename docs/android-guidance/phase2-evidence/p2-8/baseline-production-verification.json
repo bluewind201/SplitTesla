@@ -1,0 +1,217 @@
+[
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/assistant/Geo.kt",
+    "expected": "13934056b011b2c83f85bb5f4d45283d3a5e5e2d7e5e5cbf0018b5c1a946d9ae",
+    "actual": "13934056b011b2c83f85bb5f4d45283d3a5e5e2d7e5e5cbf0018b5c1a946d9ae"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/assistant/RouteShare.kt",
+    "expected": "7695cc5c5f44fd3cca5cd15fe2d98ae5425850bc32847b177d3b84746e797f01",
+    "actual": "7695cc5c5f44fd3cca5cd15fe2d98ae5425850bc32847b177d3b84746e797f01"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/assistant/VoiceAction.kt",
+    "expected": "01d6811585f6cf17ef3960648c2239264995d7b6f08f5876bf9ecaa34d510733",
+    "actual": "01d6811585f6cf17ef3960648c2239264995d7b6f08f5876bf9ecaa34d510733"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/camera/CameraAlerter.kt",
+    "expected": "64dc43e883525d7b2e65d94915dbdc3d1ea65415cd4370ba238bac2870f42b51",
+    "actual": "64dc43e883525d7b2e65d94915dbdc3d1ea65415cd4370ba238bac2870f42b51"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/camera/CameraAnnouncement.kt",
+    "expected": "81a164a1d4325d903f93deab09d3dcb05132da3540cff74247dbb11c7ef578ef",
+    "actual": "81a164a1d4325d903f93deab09d3dcb05132da3540cff74247dbb11c7ef578ef"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/camera/CameraData.kt",
+    "expected": "e7c95c76bb80ff2260fa6a08d7f0eedf85fdb2d8505c49549eaee73d058d4c23",
+    "actual": "e7c95c76bb80ff2260fa6a08d7f0eedf85fdb2d8505c49549eaee73d058d4c23"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/camera/CameraWarningPreset.kt",
+    "expected": "5ac200b071531dfc6fb3f8e649abbde574d1100c7eb9f23a0d9c340aae9192c9",
+    "actual": "5ac200b071531dfc6fb3f8e649abbde574d1100c7eb9f23a0d9c340aae9192c9"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/camera/SpeedCamera.kt",
+    "expected": "120a155a5f26cbe65bf1d2a0b7131ddb7bd110e10a17590649db9ddaf456e6cb",
+    "actual": "120a155a5f26cbe65bf1d2a0b7131ddb7bd110e10a17590649db9ddaf456e6cb"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/logbook/Logbook.kt",
+    "expected": "7c7f0e7fb834647d43536c2a092e18c02efdc4e729b7f23919d541510dac313b",
+    "actual": "7c7f0e7fb834647d43536c2a092e18c02efdc4e729b7f23919d541510dac313b"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/ChargePlanner.kt",
+    "expected": "3cf43036efaec1ad256a59e1cb4373a046d887ae47fbd37bd9ff3eba2a38ea1f",
+    "actual": "3cf43036efaec1ad256a59e1cb4373a046d887ae47fbd37bd9ff3eba2a38ea1f"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/EnergyModel.kt",
+    "expected": "2e95deaa232059e5c28ad9b32b4e710166902ccb0fe31eec6cd541f937c17a3b",
+    "actual": "2e95deaa232059e5c28ad9b32b4e710166902ccb0fe31eec6cd541f937c17a3b"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/FixGate.kt",
+    "expected": "35968495dc0df829bc6033b97a49cf8aa56a84306767e00ed30a90bde346b09f",
+    "actual": "35968495dc0df829bc6033b97a49cf8aa56a84306767e00ed30a90bde346b09f"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/GuidanceAnnouncer.kt",
+    "expected": "efcf8b5e3284d80831ff70acc4aa76480a5bceb622a6677f8e141e1dba06d1b3",
+    "actual": "efcf8b5e3284d80831ff70acc4aa76480a5bceb622a6677f8e141e1dba06d1b3"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/GuidanceDisplayPolicy.kt",
+    "expected": "c54469fd10856df823f6b2c6f0bb396a4078cdeef62c7e1182a4895bbc38451e",
+    "actual": "c54469fd10856df823f6b2c6f0bb396a4078cdeef62c7e1182a4895bbc38451e"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/GuidancePositionState.kt",
+    "expected": "6224f529218b5391e5d3c2da7cc21717dc9441d64e8ad79802ca317d3dab93f3",
+    "actual": "6224f529218b5391e5d3c2da7cc21717dc9441d64e8ad79802ca317d3dab93f3"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/NaviRoute.kt",
+    "expected": "5824d3626bc20115571348f292f42421e58a9550450d3040612e57aae27f0290",
+    "actual": "5824d3626bc20115571348f292f42421e58a9550450d3040612e57aae27f0290"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/RouteCameras.kt",
+    "expected": "0d4f1d9a3655d2fc76843ff54cec0f3e23506188c26276131ea28ca29034ce72",
+    "actual": "0d4f1d9a3655d2fc76843ff54cec0f3e23506188c26276131ea28ca29034ce72"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/RouteTracker.kt",
+    "expected": "9b3b3c5209e7169a993c34d62e919b07ed95c2826dd216ce1b46f03edf8d2a55",
+    "actual": "9b3b3c5209e7169a993c34d62e919b07ed95c2826dd216ce1b46f03edf8d2a55"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/navi/TurnSpeechContext.kt",
+    "expected": "81f5efac1da5ac4b57b4c917a69522838bc1a7643e01604462d8c742463ab715",
+    "actual": "81f5efac1da5ac4b57b4c917a69522838bc1a7643e01604462d8c742463ab715"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/s3xy/Actions.kt",
+    "expected": "133ce50cc344e85794b153ed24712df820fe5f330005da8be48e2ef7d91e2d5f",
+    "actual": "133ce50cc344e85794b153ed24712df820fe5f330005da8be48e2ef7d91e2d5f"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/s3xy/AesCtr.kt",
+    "expected": "8f092473c983c145230cb863b64e345086352f7c5e3f4f63c215f21ffd263567",
+    "actual": "8f092473c983c145230cb863b64e345086352f7c5e3f4f63c215f21ffd263567"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/s3xy/CommanderSession.kt",
+    "expected": "32fed4815dd9140bf6c52102472bf906b4f4b6a10a091cf2d19d4be06968d79c",
+    "actual": "32fed4815dd9140bf6c52102472bf906b4f4b6a10a091cf2d19d4be06968d79c"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/s3xy/Messages.kt",
+    "expected": "67c888c3635dca35b48cce654a3f1856cf45ed3bd944e7004dc5c5a65f47f0c6",
+    "actual": "67c888c3635dca35b48cce654a3f1856cf45ed3bd944e7004dc5c5a65f47f0c6"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/s3xy/Proto.kt",
+    "expected": "f4c1de9a273658ecd7fadad40da5bb492b5dbf36b9b1f25fe55393cd6eaffa5a",
+    "actual": "f4c1de9a273658ecd7fadad40da5bb492b5dbf36b9b1f25fe55393cd6eaffa5a"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/s3xy/Security1.kt",
+    "expected": "20b0101225c52852aaf731c49f32b74b2aba59ad4d692716aed7cd121f1e4a27",
+    "actual": "20b0101225c52852aaf731c49f32b74b2aba59ad4d692716aed7cd121f1e4a27"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/s3xy/VehicleData.kt",
+    "expected": "24b8b87a948154ed53d7510b0afbd5e720dd53c737ad4501173bac162b9a2aab",
+    "actual": "24b8b87a948154ed53d7510b0afbd5e720dd53c737ad4501173bac162b9a2aab"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/s3xy/VehicleSignal.kt",
+    "expected": "9b55e9c725b6f7a7d96eed329db943294c07b1dea06d87d731e3b12efc7af76c",
+    "actual": "9b55e9c725b6f7a7d96eed329db943294c07b1dea06d87d731e3b12efc7af76c"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/tesla/BleFraming.kt",
+    "expected": "d9407c3eed5d3811ca00a3c63c7e410f7bbb3184fdeae8df052fa96223ac069e",
+    "actual": "d9407c3eed5d3811ca00a3c63c7e410f7bbb3184fdeae8df052fa96223ac069e"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/tesla/Metadata.kt",
+    "expected": "a1903d6a55dd270480b827ee8864836acf54d803f1580ec9713e9ca20b230302",
+    "actual": "a1903d6a55dd270480b827ee8864836acf54d803f1580ec9713e9ca20b230302"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/tesla/Navigation.kt",
+    "expected": "679fdd298c0736202cedfff552e2ae70e533f9cd7fcafc8cfdede5e9344632e8",
+    "actual": "679fdd298c0736202cedfff552e2ae70e533f9cd7fcafc8cfdede5e9344632e8"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/tesla/TeslaClient.kt",
+    "expected": "61eb1fd223751a83610939b018d53f7c19965ff45c3f859923fac5575bb17948",
+    "actual": "61eb1fd223751a83610939b018d53f7c19965ff45c3f859923fac5575bb17948"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/tesla/TeslaCrypto.kt",
+    "expected": "3b52e2e07ecf7720d19c0e4650f12482337bfa0b8c5b798f5011f28384135fb4",
+    "actual": "3b52e2e07ecf7720d19c0e4650f12482337bfa0b8c5b798f5011f28384135fb4"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/tesla/TeslaSession.kt",
+    "expected": "805b412c3e34df318cf40bbb056a2a82ca94275e8375bb4998609fa14078da28",
+    "actual": "805b412c3e34df318cf40bbb056a2a82ca94275e8375bb4998609fa14078da28"
+  },
+  {
+    "path": "core/src/main/kotlin/com/splittesla/core/voice/SpeechQueue.kt",
+    "expected": "d294ef136f261b5ef61559f4a2589d303685e74d4fbc03f4fc942d36999fd9e6",
+    "actual": "d294ef136f261b5ef61559f4a2589d303685e74d4fbc03f4fc942d36999fd9e6"
+  },
+  {
+    "path": "core/src/main/proto/car_server.proto",
+    "expected": "c4c7815da826bb7b6139b5bc19ebecf927e216b44ed3cdee1e2a5b9923ca2dcb",
+    "actual": "c4c7815da826bb7b6139b5bc19ebecf927e216b44ed3cdee1e2a5b9923ca2dcb"
+  },
+  {
+    "path": "core/src/main/proto/common.proto",
+    "expected": "b4f2c4eef5344bd620e2e6185e71ca8dff2eba195fda97f5eda0b263029c23ca",
+    "actual": "b4f2c4eef5344bd620e2e6185e71ca8dff2eba195fda97f5eda0b263029c23ca"
+  },
+  {
+    "path": "core/src/main/proto/errors.proto",
+    "expected": "2fb79b0867c9e3b33b55879478741561ddc9de030c68bdb075206f2ee443d932",
+    "actual": "2fb79b0867c9e3b33b55879478741561ddc9de030c68bdb075206f2ee443d932"
+  },
+  {
+    "path": "core/src/main/proto/keys.proto",
+    "expected": "1628c14e1779cd6cf6a87dcceb79f4f7152ec5067d402fbc4990c45b78241b80",
+    "actual": "1628c14e1779cd6cf6a87dcceb79f4f7152ec5067d402fbc4990c45b78241b80"
+  },
+  {
+    "path": "core/src/main/proto/managed_charging.proto",
+    "expected": "87c96a0dbff365e516a00c03f2f523c03e69bec5e15d6d62add350d590e1fa05",
+    "actual": "87c96a0dbff365e516a00c03f2f523c03e69bec5e15d6d62add350d590e1fa05"
+  },
+  {
+    "path": "core/src/main/proto/signatures.proto",
+    "expected": "84b16dc0ea5e4334ae4387e6aaadf443dc39005ec702a920976e2e95a914dcab",
+    "actual": "84b16dc0ea5e4334ae4387e6aaadf443dc39005ec702a920976e2e95a914dcab"
+  },
+  {
+    "path": "core/src/main/proto/universal_message.proto",
+    "expected": "110ac4372e3ebdfe94191de857832302d75717fc105820b9f391dbc68e31979f",
+    "actual": "110ac4372e3ebdfe94191de857832302d75717fc105820b9f391dbc68e31979f"
+  },
+  {
+    "path": "core/src/main/proto/vcsec.proto",
+    "expected": "3825cd6a149880ef3d833e928c5efced93e62a98a788773cfc5a51bb7feaf323",
+    "actual": "3825cd6a149880ef3d833e928c5efced93e62a98a788773cfc5a51bb7feaf323"
+  },
+  {
+    "path": "core/src/main/proto/vehicle.proto",
+    "expected": "dd9d05478495af3fa4810e57c80c4236dbe8e45ba3e051d8716f1a3fd3fad9a8",
+    "actual": "dd9d05478495af3fa4810e57c80c4236dbe8e45ba3e051d8716f1a3fd3fad9a8"
+  }
+]

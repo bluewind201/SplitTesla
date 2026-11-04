@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:50:15.101Z" hostname="44803f7d0664" time="0.141">
+  <properties/>
+  <testcase name="weakFixesFarAheadMoveNothingAndDoNotPoisonTheMotionGate()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.016"/>
+  <testcase name="repeatedGoodOffRouteStillReachesOffRoute()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.011"/>
+  <testcase name="l2_sustainedWeakGpsWithVehicleSpeedGoesSilentAfterThirtySeconds()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.013"/>
+  <testcase name="repeatedWeakOffRouteNeverCountsAsLeavingTheRoute()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.007"/>
+  <testcase name="weakFixesAtTheDestinationNeverConfirmArrival()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.015"/>
+  <testcase name="trustBoundaryIsThirtyMetresInclusive()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.007"/>
+  <testcase name="l2_sustainedWeakGpsWithoutVehicleSpeedFreezesGuidance()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.004"/>
+  <testcase name="estimatedWindowEndsThirtySecondsAfterTheLastGoodFixWhateverWeakFixesSay()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.004"/>
+  <testcase name="oneGoodFixAfterExpiryIsNeededBeforeEstimatesMayBeSpokenAgain()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.012"/>
+  <testcase name="goodAccuracyContradictionStillCancelsTheAnchor()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.003"/>
+  <testcase name="sampleTimeUsesAgeAndRejectsOutOfRangeSamples()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.002"/>
+  <system-out><![CDATA[L2 last estimated-turn second=28
+ARRIVAL good fixes after weak stretch=8
+L2 recovery fixes=5
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

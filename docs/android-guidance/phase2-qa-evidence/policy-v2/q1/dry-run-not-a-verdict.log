@@ -1,0 +1,5 @@
+비판정 건식 실행: 개발 중 작업 트리 사본. 시나리오·기대값 검증과 컴파일 확인용이며 판정 근거가 아니다.
+2026-11-04T06:47:20+09:00
+total=95 pass=90 skipped=0 failed=5
+95 tests completed, 5 failed
+BUILD FAILED in 5m 21s

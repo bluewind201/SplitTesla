@@ -1,5 +1,8 @@
 package com.splittesla.core.camera
 
+import com.splittesla.core.assistant.LatLon
+import com.splittesla.core.navi.FixGate
+import com.splittesla.core.navi.SpeedEvidence
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -18,8 +21,8 @@ sealed class CameraAlert {
     /** Entered a section (average speed) enforcement zone. */
     data class SectionStart(override val camera: SpeedCamera, override val distanceM: Double) : CameraAlert()
 
-    /** Left the section; [averageKmh] is what the cameras will have measured. */
-    data class SectionEnd(override val camera: SpeedCamera, override val distanceM: Double, val averageKmh: Double) : CameraAlert()
+    /** Real END point passed. [averageKmh] is usable only when [averageVerified] is true. */
+    data class SectionEnd(override val camera: SpeedCamera, override val distanceM: Double, val averageKmh: Double, val averageVerified: Boolean = true) : CameraAlert()
 }
 
 /** Live view for the screen. */
@@ -68,6 +71,16 @@ class CameraAlerter(
     private val onMiss: (camera: SpeedCamera, headingDeg: Double) -> Unit = { _, _ -> },
     private val onDrivenPast: (camera: SpeedCamera, headingDeg: Double) -> Unit = { _, _ -> },
 ) {
+    var warningPreset: CameraWarningPreset = CameraWarningPreset.SPEED
+        set(value) {
+            if (field != value) {
+                // Changing settings never replays approach prompts for an already announced encounter.
+                warnedEarly.forEach { warningStages.consume(it, listOf(1000.0, 600.0, 500.0, 300.0)) }
+                field = value
+            }
+        }
+    private val warningStages = CameraWarningStages()
+
     /** While guiding: the cameras on the route. Null warns for any camera on the road ahead. */
     var routeCameraIds: Set<String>? = null
 
@@ -82,15 +95,29 @@ class CameraAlerter(
     private var lastAhead: SpeedCamera? = null
     private var lastDistance = Double.MAX_VALUE
 
+    /** Only independently verified directional endpoint IDs may be supplied. Route order is insufficient. */
+    var verifiedSectionEnds: Map<String, String> = emptyMap()
+    private val fixGate = FixGate()
+    private var averageValid = false
     private var section: SpeedCamera? = null
     private var sectionStartMs = 0L
     private var sectionMeters = 0.0
     private var lastFix: Pair<Double, Double>? = null
+    private val passedCameras = HashSet<String>()
     private val track = ArrayDeque<Fix>()
     private val recentDistance = HashMap<String, ArrayDeque<Double>>()
 
     var status = CameraStatus()
         private set
+
+    var lastFixAccepted: Boolean = false
+        private set
+
+    fun invalidateMeasurement() {
+        lastFixAccepted = false
+        averageValid = false
+        status = status.copy(sectionAverageKmh = null, sectionSafeKmh = null, sectionRemainingM = null)
+    }
 
     /** Early warning distance: about 12 s of travel, 200–600 m. */
     fun earlyDistanceM(speedKmh: Double): Double = (speedKmh / 3.6 * 12).coerceIn(200.0, 600.0)
@@ -100,19 +127,39 @@ class CameraAlerter(
      * moving faster than walking pace. [roadLimitKmh] is the limit the car's
      * own map gives for the road being driven, when the Commander reports it.
      */
-    fun update(lat: Double, lon: Double, headingDeg: Double?, speedKmh: Double, timeMs: Long, roadLimitKmh: Int? = null): List<CameraAlert> {
+    fun update(lat: Double, lon: Double, headingDeg: Double?, speedKmh: Double, timeMs: Long, roadLimitKmh: Int? = null, measuredSpeedKmh: Double? = speedKmh, accuracyM: Double? = null): List<CameraAlert> {
         val alerts = ArrayList<CameraAlert>()
-        lastFix?.let { (pLat, pLon) -> if (section != null) sectionMeters += Geo.distanceM(pLat, pLon, lat, lon) }
+        lastFixAccepted = false
+        val evidence = fixGate.accept(LatLon(lat, lon), timeMs, accuracyM)
+        if (evidence == null) {
+            invalidateMeasurement()
+            return emptyList()
+        }
+        lastFixAccepted = true
+        if (!evidence.continuous) {
+            averageValid = false
+            lastAhead = null
+            lastDistance = Double.MAX_VALUE
+            track.clear()
+            recentDistance.clear()
+            announcedHeading.clear()
+            closestM.clear()
+        }
+        val previousFix = lastFix
+        lastFix?.let { (pLat, pLon) ->
+            if (section != null && evidence.continuous) sectionMeters += Geo.distanceM(pLat, pLon, lat, lon)
+        }
         lastFix = lat to lon
-
-        val early = earlyDistanceM(speedKmh)
+        val movementSpeed = SpeedEvidence.measured(speedKmh) ?: evidence.derivedKmh ?: 0.0
+        val early = if (warningPreset == CameraWarningPreset.LIMIT) 1000.0 else earlyDistanceM(movementSpeed)
         // Doppler course from the GPS chip is good once moving; at low speed our own track is steadier.
-        val heading = (if (speedKmh >= 20) headingDeg else null) ?: trackHeading(lat, lon) ?: headingDeg
+        val course = headingDeg?.takeIf { it.isFinite() }
+        val heading = (if (movementSpeed >= 20) course else null) ?: trackHeading(lat, lon) ?: course
         val curvature = heading?.let { curvature(lat, lon, it) } ?: 0.0
         track.addLast(Fix(lat, lon, heading))
         while (track.size > TRACK_FIXES) track.removeFirst()
 
-        val moving = heading != null && speedKmh >= 10
+        val moving = heading != null && heading.isFinite() && movementSpeed >= 10
         val candidates = if (!moving) emptyList() else index.near(lat, lon, early + 50)
             .map { it to Geo.distanceM(lat, lon, it.latitude, it.longitude) }
             .filter { (c, d) -> onPath(lat, lon, heading!!, curvature, c, d) || (d < 30 && c.id == lastAhead?.id) }
@@ -123,20 +170,38 @@ class CameraAlerter(
         // Once it is beside us the distance stops shrinking; keep it so passing is noticed.
         val ahead = candidates.filter { (c, d) -> closing(c.id) || (d < 30 && c.id == lastAhead?.id) }.minByOrNull { it.second }
 
-        // The camera we were closing in on is now behind us: it was passed.
-        val passed = lastAhead?.takeIf { prev -> ahead?.first?.id != prev.id && lastDistance < 80 }
-        if (passed != null) onPassed(passed, timeMs, alerts)
+        // Use the actual accepted GPS segment, not the last sample's distance threshold.
+        // A 2 s interval can straddle a camera without either endpoint falling within 40 m.
+        val passed = lastAhead?.takeIf { cam ->
+            evidence.continuous && moving && cam.id !in passedCameras && previousFix?.let { (pLat, pLon) ->
+                val segment = com.splittesla.core.navi.RouteGeometry(listOf(LatLon(pLat, pLon), LatLon(lat, lon)))
+                val hit = segment.project(LatLon(cam.latitude, cam.longitude))
+                val course = Geo.bearing(pLat, pLon, lat, lon)
+                segment.lengthM >= 1 && hit != null && hit.lateralM <= sideM &&
+                    hit.alongM in 0.0..segment.lengthM &&
+                    (Geo.distanceM(pLat, pLon, cam.latitude, cam.longitude) <= 1 ||
+                        Geo.angleDiff(course, Geo.bearing(pLat, pLon, cam.latitude, cam.longitude)) <= 90) &&
+                    (Geo.distanceM(lat, lon, cam.latitude, cam.longitude) <= 1 ||
+                        Geo.angleDiff(course, Geo.bearing(lat, lon, cam.latitude, cam.longitude)) >= 90)
+            } == true
+        }
+        if (passed != null && passedCameras.add(passed.id)) onPassed(passed, timeMs, alerts)
         lastAhead?.takeIf { prev -> ahead?.first?.id != prev.id }?.let { prev ->
             learn(prev, lat, lon, heading.takeIf { moving }, curvature)
         }
 
         if (ahead != null) {
             val (cam, d) = ahead
-            val over = speedKmh > cam.limitKmh
+            val over = SpeedEvidence.measured(measuredSpeedKmh)?.let { it > cam.limitKmh } == true
             if (d <= finalM && warnedFinal.add(cam.id)) {
                 warnedEarly.add(cam.id)
+                warningStages.consume(cam.id, warningPreset.stages(cam.limitKmh, movementSpeed))
                 alerts += CameraAlert.Final(cam, d, over)
-            } else if (d <= early && d > finalM && warnedEarly.add(cam.id)) {
+            } else if (d > finalM && cam.id !in warnedFinal &&
+                (if (warningPreset == CameraWarningPreset.SPEED) d <= early && warnedEarly.add(cam.id)
+                 else warningStages.due(cam.id, warningPreset.stages(cam.limitKmh, movementSpeed), d))) {
+                warnedEarly.add(cam.id)
+                warningStages.due(cam.id, CameraWarningPreset.LIMIT.stages(cam.limitKmh, movementSpeed), d)
                 alerts += CameraAlert.Approaching(cam, d, over)
             }
             if (cam.id in warnedEarly) {
@@ -155,15 +220,17 @@ class CameraAlerter(
             val nearby = index.near(lat, lon, 1500.0).map { it.id }.toSet()
             warnedEarly.retainAll(nearby)
             warnedFinal.retainAll(nearby)
+            warningStages.retain(nearby)
+            passedCameras.retainAll(nearby)
             announcedHeading.keys.retainAll(nearby)
             closestM.keys.retainAll(nearby)
         }
 
         val s = section
-        val avg = if (s != null && timeMs > sectionStartMs) sectionMeters / ((timeMs - sectionStartMs) / 1000.0) * 3.6 else null
-        if (s != null && sectionMeters > (s.sectionLengthM ?: 20_000) + 2_000) section = null // missed the end camera
+        val avg = if (s != null && averageValid && timeMs > sectionStartMs) sectionMeters / ((timeMs - sectionStartMs) / 1000.0) * 3.6 else null
+        if (s != null && (sectionMeters > (s.sectionLengthM ?: 20_000) + 2_000 || timeMs - sectionStartMs > 1_200_000)) section = null // missed the end camera
         val inSection = section
-        val remaining = inSection?.sectionLengthM?.let { (it - sectionMeters).coerceAtLeast(0.0) }
+        val remaining = inSection?.takeIf { averageValid }?.sectionLengthM?.let { (it - sectionMeters).coerceAtLeast(0.0) }
         val safe = if (inSection != null && remaining != null) {
             sectionSafeKmh(inSection.sectionLengthM!!.toDouble(), inSection.limitKmh, remaining, (timeMs - sectionStartMs) / 1000.0)
         } else null
@@ -180,7 +247,8 @@ class CameraAlerter(
     private fun learn(cam: SpeedCamera, lat: Double, lon: Double, heading: Double?, curvature: Double) {
         val announcedAt = announcedHeading[cam.id] ?: return
         val closest = closestM[cam.id] ?: return
-        if (closest <= PASSED_NEAR_M) {
+        if (closest <= PASSED_NEAR_M && heading != null &&
+            Geo.angleDiff(heading, Geo.bearing(lat, lon, cam.latitude, cam.longitude)) >= 90) {
             forget(cam.id)
             onDrivenPast(cam, announcedAt)
             return
@@ -295,18 +363,24 @@ class CameraAlerter(
     private fun onPassed(cam: SpeedCamera, timeMs: Long, alerts: MutableList<CameraAlert>) {
         when (cam.section) {
             SectionRole.START -> {
-                section = cam
+                // Without independent pair metadata there is no active measured section to track.
+                section = cam.takeIf { verifiedSectionEnds.containsKey(it.id) }
                 sectionStartMs = timeMs
                 sectionMeters = 0.0
+                averageValid = verifiedSectionEnds.containsKey(cam.id)
                 alerts += CameraAlert.SectionStart(cam, 0.0)
             }
             SectionRole.END -> {
-                if (section != null) {
+                val active = section
+                val expected = active?.let { verifiedSectionEnds[it.id] }
+                if (expected == null || expected == cam.id) {
                     val seconds = (timeMs - sectionStartMs) / 1000.0
-                    val avg = if (seconds > 0) sectionMeters / seconds * 3.6 else 0.0
-                    alerts += CameraAlert.SectionEnd(cam, 0.0, avg)
+                    val verified = active != null && expected == cam.id && averageValid && seconds > 0
+                    val avg = if (verified) sectionMeters / seconds * 3.6 else 0.0
+                    alerts += CameraAlert.SectionEnd(cam, 0.0, avg, averageVerified = verified)
+                    // Clear a matching measured section, never infer a pair from this END.
+                    section = null
                 }
-                section = null
             }
             null -> Unit
         }

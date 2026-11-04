@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest" tests="3" skipped="0" failures="1" errors="0" timestamp="2026-11-03T20:20:25.126Z" hostname="44803f7d0664" time="0.033">
+  <properties/>
+  <testcase name="r1_fixesTenSecondsApartAreNotLockedOutForever()" classname="com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest" time="0.002"/>
+  <testcase name="r3_hairpinAfterGapWithoutDeadReckoningRecoversQuickly()" classname="com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest" time="0.009"/>
+  <testcase name="r2_badFirstFixWithGoodClaimedAccuracyRecoversWithinThreeSeconds()" classname="com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest" time="0.019">
+    <failure message="org.opentest4j.AssertionFailedError: first real fix accepted after 10 s" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: first real fix accepted after 10 s
+	at app//org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:38)
+	at app//org.junit.jupiter.api.Assertions.fail(Assertions.java:138)
+	at app//kotlin.test.junit5.JUnit5Asserter.fail(JUnitSupport.kt:56)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:694)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.Asserter$DefaultImpls.assertTrue(Assertions.kt:704)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertTrue(JUnitSupport.kt:30)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertTrue(Assertions.kt:44)
+	at app//kotlin.test.AssertionsKt.assertTrue(Unknown Source)
+	at app//com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest.r2_badFirstFixWithGoodClaimedAccuracyRecoversWithinThreeSeconds(AndroidGuidanceQaFinalProbeTest.kt:40)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

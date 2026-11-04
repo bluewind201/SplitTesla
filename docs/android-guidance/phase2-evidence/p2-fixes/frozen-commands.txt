@@ -1,0 +1,23 @@
+JAVA_HOME=/home/orca/project_folder/SplitTesla/tools/jdk-21
+Project versions/configurations were not changed.
+
+Final core (frozen-core-normal.log):
+./gradlew -p core test --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+Exit 0, 220 total / 170 passed / 50 conditional skipped / 0 failures, 1m43s.
+An earlier full clean build is preserved in final-core-normal.log; source evolved during it,
+so it is supplementary evidence, not the final frozen test verdict.
+
+Final core QA (frozen-core-qa.log):
+QA_REPRO=1 ./gradlew -p core test --tests 'com.splittesla.core.qa.*' --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+Exit 1, 71 total / 70 passed / R2 1 failure / 0 skipped, 38s.
+
+Final fake-Android/acceptance harness (frozen-harness.log):
+QA_REPRO=1 ./gradlew -p .tools/p2fix-harness/core test --tests 'com.splittesla.app.assistant.SpeakerHarnessTest' --tests 'com.splittesla.app.assistant.SpeakerOutcomeWiringTest' --tests 'com.splittesla.app.navi.NavigationDeliveryHarnessTest' --tests 'com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest' --tests 'com.splittesla.core.qa.q1.FrozenApiQ1Test' --tests 'com.splittesla.core.qa.q1.PlaybackContractTest' --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+Exit 1, 60 total / 59 passed / O1 1 observation failure / 0 skipped, 2m1s.
+Original production files and original QA stubs/tests were copied verbatim; developer delivery
+harness is stored alongside this evidence. This is not Android SDK or device verification.
+
+Final Android attempt (frozen-android-build.log):
+ANDROID_HOME=$PWD/.tools/android-sdk ./gradlew :app:assembleDebug --offline --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+Exit 1, 24s: Failed to find target with hash string android-35.
+SDK license acceptance remains unauthorized; no platform/build-tools/licenses installed.

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.navi.RouteReacquisitionTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-03T22:09:55.542Z" hostname="44803f7d0664" time="0.044">
+  <properties/>
+  <testcase name="smallReverseStepsCannotAccumulateIntoAnUnboundedRetreat()" classname="com.splittesla.core.navi.RouteReacquisitionTest" time="0.005"/>
+  <testcase name="equalClaimedStartupAccuracyDoesNotChooseTheTrueClusterByThreeRejections()" classname="com.splittesla.core.navi.RouteReacquisitionTest" time="0.004"/>
+  <testcase name="oppositeRealCourseWithoutAMatchingLegHoldsProgressAndExposesOffRoute()" classname="com.splittesla.core.navi.RouteReacquisitionTest" time="0.004"/>
+  <testcase name="aSuddenLongGapIsNotTreatedAsAnEstablishedSparseCadence()" classname="com.splittesla.core.navi.RouteReacquisitionTest" time="0.001"/>
+  <testcase name="reacquiredCourseComesFromTheNewCandidateTrackNotTheOldNetDisplacement()" classname="com.splittesla.core.navi.RouteReacquisitionTest" time="0.002"/>
+  <testcase name="aCourseNeedsEnoughActualMovementForItsAccuracy()" classname="com.splittesla.core.navi.RouteReacquisitionTest" time="0.002"/>
+  <testcase name="regularSparseCadenceRecoversAndThenKeepsAcceptingRealSamples()" classname="com.splittesla.core.navi.RouteReacquisitionTest" time="0.007"/>
+  <testcase name="hairpinRecoveryUsesTheNewRealCourseWithoutSlidingBackwards()" classname="com.splittesla.core.navi.RouteReacquisitionTest" time="0.006"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

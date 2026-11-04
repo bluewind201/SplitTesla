@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" tests="2" skipped="2" failures="0" errors="0" timestamp="2026-11-03T21:32:40.537Z" hostname="44803f7d0664" time="0.004">
+  <properties/>
+  <testcase name="r4d_vagueOnRouteFixDoesNotBecomeACertainPosition()" classname="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run R4 policy probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run R4 policy probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest.gate(AndroidGuidanceQaR4PolicyProbeTest.kt:20)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="r4c_vagueFixesDoNotExtendTheEstimatedTurnWindow()" classname="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" time="0.001">
+    <skipped message="Assumption failed: QA_REPRO=1 to run R4 policy probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run R4 policy probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest.gate(AndroidGuidanceQaR4PolicyProbeTest.kt:20)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

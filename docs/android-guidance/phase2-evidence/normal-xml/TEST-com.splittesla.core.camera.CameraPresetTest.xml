@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.camera.CameraPresetTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:10:51.557Z" hostname="44803f7d0664" time="0.186">
+  <properties/>
+  <testcase name="actualFixesProduceTwoLimitStagesThenActualFinalAndNoDuplicates()" classname="com.splittesla.core.camera.CameraPresetTest" time="0.16"/>
+  <testcase name="nearFirstDetectionSkipsOldStagesAndKeepsFinal()" classname="com.splittesla.core.camera.CameraPresetTest" time="0.002"/>
+  <testcase name="changingPresetDoesNotRepeatAlreadyConsumedStages()" classname="com.splittesla.core.camera.CameraPresetTest" time="0.008"/>
+  <testcase name="skippingWindowsEmitsOneCurrentWarningAndNeverReplaysOldStage()" classname="com.splittesla.core.camera.CameraPresetTest" time="0.001"/>
+  <testcase name="stagesEmitOnceAndFinalConsumesAll()" classname="com.splittesla.core.camera.CameraPresetTest" time="0.002"/>
+  <testcase name="observedLimitBoundariesAndLegacyDefaults()" classname="com.splittesla.core.camera.CameraPresetTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

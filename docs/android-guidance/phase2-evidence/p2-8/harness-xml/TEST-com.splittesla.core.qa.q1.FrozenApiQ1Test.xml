@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.q1.FrozenApiQ1Test" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-11-03T22:09:30.460Z" hostname="44803f7d0664" time="0.321">
+  <properties/>
+  <testcase name="s7_finalCameraIsNeverCutOrDelayedByTurnNotices()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.062"/>
+  <testcase name="s2_repeatedDiscardAtThirtySixKmhAndAboveStillGivesOneCurrentNotice()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.096"/>
+  <testcase name="s4_noOldNoticeAfterARouteChange()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.013"/>
+  <testcase name="s6_noticeReturnsWhenPositionRecoversAndTheTurnIsStillAhead()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.023"/>
+  <testcase name="s8_undisturbedDriveHasNoExtraNoticesEvenWithLongSentences()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.038"/>
+  <testcase name="s5_noNoticeWhilePositionIsUncertain()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.011"/>
+  <testcase name="s9_estimatedNoticeReturnsLabelledInsideTheWindow()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.011"/>
+  <testcase name="s10_noNoticeOnceTheEstimateHasExpired()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.006"/>
+  <testcase name="s3_noNoticeOnceTheTurnIsPassed()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.017"/>
+  <testcase name="s1_cutLastStageTurnIsAnnouncedAgainWhileAheadAndOnlyOnce()" classname="com.splittesla.core.qa.q1.FrozenApiQ1Test" time="0.014"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

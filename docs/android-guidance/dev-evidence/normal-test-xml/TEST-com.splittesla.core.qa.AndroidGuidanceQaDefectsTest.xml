@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" tests="8" skipped="8" failures="0" errors="0" timestamp="2026-11-03T19:30:20.860Z" hostname="44803f7d0664" time="0.088">
+  <properties/>
+  <testcase name="d4_tunnelExitDoesNotSnapToAParallelReturnLeg()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.032">
+    <skipped message="Assumption failed: QA_REPRO=1 to reproduce defects" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to reproduce defects
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaDefectsTest.gate(AndroidGuidanceQaDefectsTest.kt:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="d8_badFirstFixDoesNotBlackOutTheNextTenSeconds()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.003">
+    <skipped message="Assumption failed: QA_REPRO=1 to reproduce defects" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to reproduce defects
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaDefectsTest.gate(AndroidGuidanceQaDefectsTest.kt:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="d3_passingTheEndCameraClearsUnverifiedSectionState()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to reproduce defects" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to reproduce defects
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaDefectsTest.gate(AndroidGuidanceQaDefectsTest.kt:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="d5_rejectedProjectionDoesNotRelabelDeadReckoningAsReal()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.005">
+    <skipped message="Assumption failed: QA_REPRO=1 to reproduce defects" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to reproduce defects
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaDefectsTest.gate(AndroidGuidanceQaDefectsTest.kt:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="d2_sectionStartIsAnnouncedWithTwoSecondFixes()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.02">
+    <skipped message="Assumption failed: QA_REPRO=1 to reproduce defects" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to reproduce defects
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaDefectsTest.gate(AndroidGuidanceQaDefectsTest.kt:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="d1_fixesSixSecondsApartAreNotLockedOutForever()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.007">
+    <skipped message="Assumption failed: QA_REPRO=1 to reproduce defects" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to reproduce defects
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaDefectsTest.gate(AndroidGuidanceQaDefectsTest.kt:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="d7_passThroughDoesNotSpeakEndOfGuidanceThatIsLaterRevoked()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to reproduce defects" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to reproduce defects
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaDefectsTest.gate(AndroidGuidanceQaDefectsTest.kt:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="d9_spikeThenShortDropoutRecoversQuickly()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.006">
+    <skipped message="Assumption failed: QA_REPRO=1 to reproduce defects" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to reproduce defects
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaDefectsTest.gate(AndroidGuidanceQaDefectsTest.kt:28)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

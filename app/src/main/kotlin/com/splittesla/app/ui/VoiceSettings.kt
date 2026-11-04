@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.sp
 import com.splittesla.app.assistant.VoiceChoice
 import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Neon
-import java.util.Locale
 
 private const val SAMPLE = "300미터 앞에서 오른쪽 출구로 나가세요."
 
@@ -52,7 +51,8 @@ fun VoiceSettingsCard() {
     val setting by VoiceChoice.setting.collectAsState()
     var voices by remember { mutableStateOf<List<Voice>>(emptyList()) }
     var ready by remember { mutableStateOf<Boolean?>(null) }
-    // An engine just for the samples on this card.
+    // Discovery engine only; all audible previews use the shared speech lease.
+    val sampleSpeaker = remember { com.splittesla.app.assistant.Speaker(context) }
     val sampler = remember { arrayOfNulls<TextToSpeech>(1) }
     DisposableEffect(Unit) {
         lateinit var engine: TextToSpeech
@@ -66,17 +66,14 @@ fun VoiceSettingsCard() {
         }
         sampler[0] = engine
         onDispose {
+            sampleSpeaker.shutdown()
             engine.shutdown()
             sampler[0] = null
         }
     }
 
     fun hear(voiceName: String?, rate: Float) {
-        val e = sampler[0] ?: return
-        val voice = voiceName?.let { n -> voices.firstOrNull { it.name == n } }
-        if (voice != null) e.voice = voice else e.language = Locale.KOREAN
-        e.setSpeechRate(rate)
-        e.speak(SAMPLE, TextToSpeech.QUEUE_FLUSH, null, "sample")
+        sampleSpeaker.speak(SAMPLE, key = "preview:$voiceName:$rate", ttlMs = 3000, preview = setting.copy(voiceName = voiceName, rate = rate))
     }
 
     fun choose(voiceName: String?) {
@@ -87,6 +84,7 @@ fun VoiceSettingsCard() {
     val index = voices.indexOfFirst { it.name == setting.voiceName }
     val rateName = rates.minByOrNull { kotlin.math.abs(it.second - setting.rate) }?.first ?: "보통"
     FoldSection("음성", summary = (if (index >= 0) "음성 ${index + 1}" else "기본 음성") + " · $rateName") {
+        Toggle("전체 음성 끄기", setting.muted) { VoiceChoice.set(context, setting.copy(muted = it)) }
         Text("길안내 · 과속카메라 · AI 비서가 모두 이 음성으로 말합니다", fontSize = 12.sp, color = Neon.muted)
         VoiceRow("기본 음성", "휴대폰 음성 엔진의 기본 한국어", setting.voiceName == null, { choose(null) }) { hear(null, setting.rate) }
         voices.forEachIndexed { i, v ->

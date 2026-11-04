@@ -18,6 +18,27 @@ class CameraTest {
         C5,서울특별시,초등학교 앞,37.7000,127.0000,1,30,,,어린이보호구역
     """.trimIndent()
 
+    @Test fun actualCrossingSegmentsCatchSparseAndExactEndpointPasses() {
+        val start = SpeedCamera("start", 37.6, 127.0, 100, "시작 지점", section = SectionRole.START)
+        for (step in listOf(25.0, 50.0, 60.0, 150.0)) {
+            val a = CameraAlerter(CameraIndex(listOf(start)))
+            val alerts = ArrayList<CameraAlert>()
+            for (i in -6..3) {
+                alerts += a.update(start.latitude + i * step / 111195.0, 127.0, 0.0, 100.0, (i + 6) * 6000L)
+            }
+            assertEquals(1, alerts.count { it is CameraAlert.SectionStart }, "step=$step")
+            assertEquals(null, a.status.sectionLimitKmh, "unverified start has no active measured section")
+        }
+    }
+
+    @Test fun finalSpeechUsesActualDistanceAndUnknownAverageHasNoNumericClaim() {
+        val c = CameraCsv.parse(csv).first()
+        assertTrue(CameraAlert.Final(c, 42.0, false).spokenText().startsWith("40미터 앞"))
+        assertFalse(CameraAlert.Final(c, 42.0, false).spokenText().contains("속도를 줄이세요"))
+        assertTrue(CameraAlert.Final(c, 42.0, true).spokenText().contains("속도를 줄이세요"))
+        assertEquals("구간단속 종료 지점, 평균 속도 미확인", CameraAlert.SectionEnd(c, 0.0, 0.0, false).spokenText())
+    }
+
     @Test
     fun parsesCp949CsvAndSkipsCamerasWithoutLimit() {
         val cams = CameraCsv.parse(csv.toByteArray(Charset.forName("MS949")))
@@ -75,9 +96,63 @@ class CameraTest {
         assertTrue(alerter.update(37.4982, 127.0, 90.0, 60.0, 1000).isEmpty())
     }
 
+    @Test fun unverifiedSectionEndpointsNeverClaimAnAverage() {
+        val alerter = CameraAlerter(CameraIndex(CameraCsv.parse(csv)))
+        val alerts = drive(alerter, 37.595, 37.63, 108.0).map { it.second }
+        assertTrue(alerts.filterIsInstance<CameraAlert.SectionEnd>().isNotEmpty())
+        assertTrue(alerts.none { it is CameraAlert.SectionEnd && it.averageVerified })
+    }
+
+    @Test fun anEmptyRouteFilterDoesNotFallBackToEveryCamera() {
+        val alerter = CameraAlerter(CameraIndex(CameraCsv.parse(csv))).apply { routeCameraIds = emptySet() }
+        assertTrue(drive(alerter, 37.49, 37.505, 90.0).isEmpty())
+    }
+
+    @Test fun missingOrNanSpeedStillWarnsUsingPositionWithoutClaimingSpeeding() {
+        for (missing in listOf(Double.NaN, Double.POSITIVE_INFINITY)) {
+            val a = CameraAlerter(CameraIndex(CameraCsv.parse(csv)))
+            val alerts = ArrayList<CameraAlert>()
+            repeat(45) { i ->
+                alerts += a.update(37.49 + i * 30 / 111195.0, 127.0, 0.0, missing, i * 1000L, measuredSpeedKmh = null)
+            }
+            assertTrue(alerts.any { it is CameraAlert.Final })
+            assertTrue(alerts.filterIsInstance<CameraAlert.Final>().none { it.overLimit })
+            assertTrue(alerts.filterIsInstance<CameraAlert.Approaching>().none { it.overLimit })
+        }
+    }
+
+    @Test fun aJumpCannotPolluteSectionAverageOrBecomeACameraPass() {
+        val a = CameraAlerter(CameraIndex(CameraCsv.parse(csv))).apply { verifiedSectionEnds = mapOf("C3" to "C4") }
+        repeat(11) { i -> a.update(37.599 + i * 30 / 111195.0, 127.0, 0.0, 108.0, i * 1000L) }
+        assertNotNull(a.status.sectionAverageKmh)
+        assertTrue(a.update(37.6271, 127.0, 0.0, 108.0, 11_000).isEmpty())
+        assertFalse(a.lastFixAccepted)
+        assertEquals(null, a.status.sectionAverageKmh)
+        val alerts = drive(a, 37.602, 37.63, 108.0, startMs = 12_000).map { it.second }
+        assertTrue(alerts.filterIsInstance<CameraAlert.SectionEnd>().none { it.averageVerified })
+        assertEquals(null, a.status.sectionAverageKmh)
+    }
+
+    @Test fun passingAnUnrelatedEndDoesNotFinishTheVerifiedSection() {
+        val cams = CameraCsv.parse(csv) + SpeedCamera("wrong", 37.604, 127.0, 100, "다른 구간", section = SectionRole.END)
+        val a = CameraAlerter(CameraIndex(cams)).apply { verifiedSectionEnds = mapOf("C3" to "C4") }
+        val alerts = drive(a, 37.599, 37.605, 108.0).map { it.second }
+        assertTrue(alerts.none { it is CameraAlert.SectionEnd })
+        assertNotNull(a.status.sectionAverageKmh)
+        assertEquals(100, a.status.sectionLimitKmh)
+    }
+
+    @Test fun removingAFilterOrStoppingNearACameraIsNotAPass() {
+        val a = CameraAlerter(CameraIndex(CameraCsv.parse(csv)))
+        drive(a, 37.599, 37.5999, 36.0)
+        a.routeCameraIds = emptySet()
+        val alerts = a.update(37.5999, 127.0, 0.0, 0.0, 12_000)
+        assertTrue(alerts.none { it is CameraAlert.SectionStart })
+    }
+
     @Test
     fun measuresSectionAverageSpeed() {
-        val alerter = CameraAlerter(CameraIndex(CameraCsv.parse(csv)))
+        val alerter = CameraAlerter(CameraIndex(CameraCsv.parse(csv))).apply { verifiedSectionEnds = mapOf("C3" to "C4") }
         val alerts = drive(alerter, 37.595, 37.63, 108.0).map { it.second }
         assertNotNull(alerts.filterIsInstance<CameraAlert.SectionStart>().singleOrNull())
         val end = alerts.filterIsInstance<CameraAlert.SectionEnd>().single()
@@ -112,7 +187,7 @@ class CameraTest {
 
     @Test
     fun reportsSectionRemainingAndSafeSpeed() {
-        val alerter = CameraAlerter(CameraIndex(CameraCsv.parse(csv)))
+        val alerter = CameraAlerter(CameraIndex(CameraCsv.parse(csv))).apply { verifiedSectionEnds = mapOf("C3" to "C4") }
         drive(alerter, 37.595, 37.6135, 108.0)
         val s = alerter.status
         val remaining = assertNotNull(s.sectionRemainingM)

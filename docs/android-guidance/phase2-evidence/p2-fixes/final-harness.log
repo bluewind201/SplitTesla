@@ -1,0 +1,36 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :extractIncludeProto
+> Task :extractProto
+> Task :generateProto
+> Task :processResources
+> Task :extractIncludeTestProto
+> Task :extractTestProto
+> Task :generateTestProto NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :compileKotlin
+> Task :compileJava
+> Task :classes
+> Task :jar
+> Task :compileTestKotlin
+e: file:///home/orca/orca/workspaces/SplitTesla/android-guidance/.tools/p2fix-harness/core/src/test/kotlin/p2harness/DevelopmentPlaybackQ1Test.kt:10:30 Class '<anonymous>' is not abstract and does not implement abstract member 'discarded'.
+e: file:///home/orca/orca/workspaces/SplitTesla/android-guidance/.tools/p2fix-harness/core/src/test/kotlin/p2harness/DevelopmentPlaybackQ1Test.kt:21:9 'discarded' overrides nothing.
+
+> Task :compileTestKotlin FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileTestKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 4m 46s
+10 actionable tasks: 10 executed

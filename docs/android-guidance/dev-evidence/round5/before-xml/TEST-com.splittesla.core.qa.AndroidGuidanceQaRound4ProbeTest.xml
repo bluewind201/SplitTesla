@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaRound4ProbeTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2026-11-03T20:35:50.711Z" hostname="44803f7d0664" time="0.02">
+  <properties/>
+  <testcase name="r4contract_expiredOrCoarseDeadReckoningIsSilentAndNeverArrives()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound4ProbeTest" time="0.009"/>
+  <testcase name="r4b_vagueWanderingTunnelMouthFixStillAllowsDeadReckoningTurnNotice()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound4ProbeTest" time="0.009">
+    <failure message="org.opentest4j.AssertionFailedError: spoken=[] last=RouteProgress(alongM=683.33333333342, remainingM=1316.729178666444, remainingMs=322801, lateralM=89.99781477147918, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=316.6979226669049, sectionIndex=null, arrived=false, estimated=true, positionUncertain=true, estimatedTurnAllowed=false) ==&gt; expected: not &lt;null&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: spoken=[] last=RouteProgress(alongM=683.33333333342, remainingM=1316.729178666444, remainingMs=322801, lateralM=89.99781477147918, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=316.6979226669049, sectionIndex=null, arrived=false, estimated=true, positionUncertain=true, estimatedTurnAllowed=false) ==&gt; expected: not &lt;null&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertNotNull.failNull(AssertNotNull.java:49)
+	at app//org.junit.jupiter.api.AssertNotNull.assertNotNull(AssertNotNull.java:35)
+	at app//org.junit.jupiter.api.Assertions.assertNotNull(Assertions.java:312)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertNotNull(JUnitSupport.kt:48)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertNotNull(Assertions.kt:145)
+	at app//kotlin.test.AssertionsKt.assertNotNull(Unknown Source)
+	at app//com.splittesla.core.qa.AndroidGuidanceQaRound4ProbeTest.r4b_vagueWanderingTunnelMouthFixStillAllowsDeadReckoningTurnNotice(AndroidGuidanceQaRound4ProbeTest.kt:45)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

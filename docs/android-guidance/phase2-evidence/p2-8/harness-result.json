@@ -1,0 +1,66 @@
+{
+  "tests": 70,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 69,
+  "suites": [
+    {
+      "name": "com.splittesla.app.assistant.SpeakerHarnessTest",
+      "tests": "19",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.688"
+    },
+    {
+      "name": "com.splittesla.app.assistant.SpeakerOutcomeWiringTest",
+      "tests": "9",
+      "failures": "1",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.226"
+    },
+    {
+      "name": "com.splittesla.app.navi.NavigationDeliveryHarnessTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.142"
+    },
+    {
+      "name": "com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest",
+      "tests": "8",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.073"
+    },
+    {
+      "name": "com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.794"
+    },
+    {
+      "name": "com.splittesla.core.qa.q1.FrozenApiQ1Test",
+      "tests": "10",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.321"
+    },
+    {
+      "name": "com.splittesla.core.qa.q1.PlaybackContractTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.082"
+    }
+  ],
+  "log": "harness.log"
+}

@@ -1,0 +1,60 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :extractIncludeProto UP-TO-DATE
+> Task :extractProto UP-TO-DATE
+> Task :generateProto UP-TO-DATE
+> Task :compileKotlin UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar UP-TO-DATE
+> Task :extractIncludeTestProto UP-TO-DATE
+> Task :extractTestProto UP-TO-DATE
+> Task :generateTestProto NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :compileTestKotlin
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses UP-TO-DATE
+
+> Task :test
+
+StablePlaybackPhaseTest > aCompletedAdvanceDistanceIsNotAnotherStageAfterChangingTier() FAILED
+    org.opentest4j.AssertionFailedError at StablePlaybackPhaseTest.kt:54
+
+StablePlaybackPhaseTest > nearFirstHighTierThenSlowingHasOneImmediateNotice() FAILED
+    org.opentest4j.AssertionFailedError at StablePlaybackPhaseTest.kt:24
+
+StablePlaybackPhaseTest > tierJitterAndSpeedingUpAfterImmediateGuidanceNeverRepeatIt() FAILED
+    org.opentest4j.AssertionFailedError at StablePlaybackPhaseTest.kt:35
+
+StablePlaybackPhaseTest > interruptedImmediateStageSurvivesTierChangeAndCompletesOnlyOnce() FAILED
+    org.opentest4j.AssertionFailedError at StablePlaybackPhaseTest.kt:42
+
+StablePlaybackPhaseTest > ordinarySeventyEightEightyTwoSeventyEightApproachHasOneImmediateNotice() FAILED
+    org.opentest4j.AssertionFailedError at StablePlaybackPhaseTest.kt:28
+
+AndroidGuidanceQaFinalPlaybackProbeTest > f7e_speedingUpAfterTheLastNoticeDoesNotRepeatIt() FAILED
+    org.opentest4j.AssertionFailedError at AndroidGuidanceQaFinalPlaybackProbeTest.kt:73
+
+AndroidGuidanceQaFinalPlaybackProbeTest > f7d_ordinaryApproachCrossingEightyTwiceHearsTheLastNoticeOnce() FAILED
+    org.opentest4j.AssertionFailedError at AndroidGuidanceQaFinalPlaybackProbeTest.kt:65
+
+AndroidGuidanceQaFinalPlaybackProbeTest > f7_heardLastNoticeIsNotRepeatedAfterSlowingBelowEightyKmh() FAILED
+    org.opentest4j.AssertionFailedError at AndroidGuidanceQaFinalPlaybackProbeTest.kt:44
+
+15 tests completed, 8 failed
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///home/orca/orca/workspaces/SplitTesla/android-guidance/.tools/p2fix-harness/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 36s
+11 actionable tasks: 2 executed, 9 up-to-date

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" tests="10" skipped="0" failures="3" errors="0" timestamp="2026-11-03T22:05:04.632Z" hostname="44803f7d0664" time="0.403">
+  <properties/>
+  <testcase name="weakFixDoesNotFlickerALiveEstimateButEveryLimitEndsIt()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.008"/>
+  <testcase name="obs_interruptedArrivalSentence()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.048"/>
+  <testcase name="f7b_sameWhenTheFiveHundredMetreNoticeWasDropped()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.073"/>
+  <testcase name="control_legacyOnF7Inputs()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.027"/>
+  <testcase name="f7e_speedingUpAfterTheLastNoticeDoesNotRepeatIt()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.036">
+    <failure message="org.opentest4j.AssertionFailedError: [694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 78m:우회전., 56m:우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: [694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 78m:우회전., 56m:우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertEquals(JUnitSupport.kt:32)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals(Assertions.kt:63)
+	at app//kotlin.test.AssertionsKt.assertEquals(Unknown Source)
+	at app//com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest.f7e_speedingUpAfterTheLastNoticeDoesNotRepeatIt(AndroidGuidanceQaFinalPlaybackProbeTest.kt:73)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="firstConfirmationAndHeldLabels()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.014"/>
+  <testcase name="f7d_ordinaryApproachCrossingEightyTwiceHearsTheLastNoticeOnce()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.036">
+    <failure message="org.opentest4j.AssertionFailedError: [694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 144m:우회전., 78m:우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: [694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 144m:우회전., 78m:우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertEquals(JUnitSupport.kt:32)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals(Assertions.kt:63)
+	at app//kotlin.test.AssertionsKt.assertEquals(Unknown Source)
+	at app//com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest.f7d_ordinaryApproachCrossingEightyTwiceHearsTheLastNoticeOnce(AndroidGuidanceQaFinalPlaybackProbeTest.kt:65)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="constantSpeedsAreUntouched()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.07"/>
+  <testcase name="f7_heardLastNoticeIsNotRepeatedAfterSlowingBelowEightyKmh()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.043">
+    <failure message="org.opentest4j.AssertionFailedError: [148m:우회전., 60m:우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: [148m:우회전., 60m:우회전.] ==&gt; expected: &lt;1&gt; but was: &lt;2&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertEquals(JUnitSupport.kt:32)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals(Assertions.kt:63)
+	at app//kotlin.test.AssertionsKt.assertEquals(Unknown Source)
+	at app//com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest.f7_heardLastNoticeIsNotRepeatedAfterSlowingBelowEightyKmh(AndroidGuidanceQaFinalPlaybackProbeTest.kt:44)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="f7c_speedJitterAroundEightyKmhDoesNotRepeatTheLastNotice()" classname="com.splittesla.core.qa.q1.AndroidGuidanceQaFinalPlaybackProbeTest" time="0.006"/>
+  <system-out><![CDATA[ARRIVAL reissue=null
+LEGACY f7=[148m:우회전.]
+LEGACY f7c=[738m:700미터 앞, 우회전., 474m:500미터 앞, 우회전., 122m:우회전.]
+F7E new=[694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 78m:우회전., 56m:우회전.] legacy=[694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 78m:우회전., 56m:우회전.]
+F7D new=[694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 144m:우회전., 78m:우회전.] legacy=[694m:700미터 앞, 우회전., 298m:300미터 앞, 우회전., 144m:우회전.]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

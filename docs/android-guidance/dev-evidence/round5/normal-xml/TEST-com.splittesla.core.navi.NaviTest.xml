@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.navi.NaviTest" tests="26" skipped="0" failures="0" errors="0" timestamp="2026-11-03T20:44:21.592Z" hostname="44803f7d0664" time="0.119">
+  <properties/>
+  <testcase name="repeatedNearbyProjectionCannotBecomeALargeAdvanceJustByWaiting()" classname="com.splittesla.core.navi.NaviTest" time="0.007"/>
+  <testcase name="progressFollowsTheCarAndCountsDownToTheTurn()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="threeFixesFarFromTheLineMeanOffRoute()" classname="com.splittesla.core.navi.NaviTest" time="0.003"/>
+  <testcase name="maneuverFromCodeOrWording()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="deadReckoningMovesAlongTheLine()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="distanceWordsRoundSensibly()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="estimatedArrivalIsNeverConfirmed()" classname="com.splittesla.core.navi.NaviTest" time="0.004"/>
+  <testcase name="arrivalBatteryUsesSectionSpeeds()" classname="com.splittesla.core.navi.NaviTest" time="0.006"/>
+  <testcase name="sideOfTheRouteIsSignedRightPositive()" classname="com.splittesla.core.navi.NaviTest" time="0.001"/>
+  <testcase name="firstFixAfterATunnelPullsAnOvershootBack()" classname="com.splittesla.core.navi.NaviTest" time="0.001"/>
+  <testcase name="carIsDrawnOnTheLineFacingAlongTheRoad()" classname="com.splittesla.core.navi.NaviTest" time="0.001"/>
+  <testcase name="camerasWatchingTheOncomingLanesAreLeftOut()" classname="com.splittesla.core.navi.NaviTest" time="0.003"/>
+  <testcase name="destinationApproachAndTurnFollowUpDoNotRepeatArrivalWords()" classname="com.splittesla.core.navi.NaviTest" time="0.001"/>
+  <testcase name="fixesRightAfterATunnelCannotStartANewSearch()" classname="com.splittesla.core.navi.NaviTest" time="0.001"/>
+  <testcase name="duplicateOrRapidFixesDoNotCountAsArrivalConfirmation()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="oneEndpointSpikeDoesNotSkipTheRouteOrConfirmArrival()" classname="com.splittesla.core.navi.NaviTest" time="0.004"/>
+  <testcase name="arrivalRequiresTwoRealNearbyFixesAndCanBeRevoked()" classname="com.splittesla.core.navi.NaviTest" time="0.001"/>
+  <testcase name="learnerScalesTheCurveAfterTwoKilometres()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="energyCurveGrowsWithSpeedAndCold()" classname="com.splittesla.core.navi.NaviTest" time="0.001"/>
+  <testcase name="geometryProximityCannotJumpToAFarLaterLoopSegment()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="vagueFixesBesideTheRoadNeverMeanOffRoute()" classname="com.splittesla.core.navi.NaviTest" time="0.001"/>
+  <testcase name="announcerSpeaksEachStageOnceAndAnnouncesArrival()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="plannerPrefersSuperchargersNearTheLineThatCanBeReached()" classname="com.splittesla.core.navi.NaviTest" time="0.013"/>
+  <testcase name="geometryLengthIsTwoKilometres()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="camerasOnTheRouteOnlyAndInOrder()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <testcase name="jitterBehindDoesNotMoveProgressBackwards()" classname="com.splittesla.core.navi.NaviTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

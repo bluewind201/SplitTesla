@@ -1,0 +1,15 @@
+### 1.2 경고 거리 (제한속도 의존)
+
+| 파라미터 | 값 | 근거 | 신뢰도 |
+|---|---|---|---|
+| 제한속도 ≥ 80 km/h | 안내 지점 1000 m, 500 m (2회) | `NaviSpeedWarningSetting.<clinit>` E4, E5 | 높음 |
+| 50 ≤ 제한 < 80 km/h | 안내 지점 600 m, 300 m (2회) | E4 | 높음 |
+| 제한 < 50 km/h | 안내 지점 300 m (1회) | E4 | 높음 |
+| 안내 지점 허용 오차(threshold) | ±100 m / ±75 m / ±50 m (구간 순서대로) | E4, E6: 지점 d에 대해 `[max(d−thr,0), d+thr]` 안에 들어오면 발화 | 높음 |
+| 화면 표시 시작 거리 | 첫 지점 + threshold (1100 / 675 / 350 m) | `getDistance$core(true)` E7, `SpeedCameraGuidanceGenerator.e` E9 | 높음 |
+| 후면 카메라 통과 후 유지 거리(rear) | 150 / 125 / 100 m (구간 순서대로) | E4, E9: RearCamera일 때만 범위를 −rear까지 연장. 그 외 카메라는 0 m에서 종료 | 높음 |
+| 제한속도 결정 | 공휴일 여부를 반영한 제한속도. 없으면 링크 제한속도, 그것도 없으면 0 | `speedLimit(safety, holidayLoadable)` E9 | 중 |
+| 사용자 설정 | 위 3개 구간이 설정 화면 항목("50km/h 미만 / 50~80 / 80 이상 단속카메라")과 일치. 구간별 거리 변경 가능 | `SpeedCameraDistanceOption`, `NaviSettingSpeedCameraFragment`(E1), 문자열 E35 | 중 |
+| 반복 경고 | "고정 거리 지점 N회"(위 표) 방식이다. 현재 속도에 비례해 거리를 바꾸는 로직은 없다. 기준은 제한속도 구간 | E3, E4 | 높음 |
+
+연속 카메라: 다음 안전시설이 있으면 첫 문구 뒤에 연결 문구를 붙여 한 번에 말한다(`SpeedCameraAudioGuidanceGenerator.c`, E3). 결합 문구 템플릿은 **미확인**.

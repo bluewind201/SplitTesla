@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.camera.CameraTest" tests="25" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:10:51.852Z" hostname="44803f7d0664" time="0.282">
+  <properties/>
+  <testcase name="measuresSectionAverageSpeed()" classname="com.splittesla.core.camera.CameraTest" time="0.047"/>
+  <testcase name="cameraThatSlidesOffToTheSideIsReportedAsMissed()" classname="com.splittesla.core.camera.CameraTest" time="0.042"/>
+  <testcase name="removingAFilterOrStoppingNearACameraIsNotAPass()" classname="com.splittesla.core.camera.CameraTest" time="0.006"/>
+  <testcase name="ignoresCamerasBehindOrOffToTheSide()" classname="com.splittesla.core.camera.CameraTest" time="0.002"/>
+  <testcase name="reportsSectionRemainingAndSafeSpeed()" classname="com.splittesla.core.camera.CameraTest" time="0.012"/>
+  <testcase name="whileGuidingOnlyCamerasOnTheRouteAreAnnounced()" classname="com.splittesla.core.camera.CameraTest" time="0.01"/>
+  <testcase name="actualCrossingSegmentsCatchSparseAndExactEndpointPasses()" classname="com.splittesla.core.camera.CameraTest" time="0.006"/>
+  <testcase name="safeSpeedMath()" classname="com.splittesla.core.camera.CameraTest" time="0.002"/>
+  <testcase name="followsALongLeftBend()" classname="com.splittesla.core.camera.CameraTest" time="0.006"/>
+  <testcase name="parsesCp949CsvAndSkipsCamerasWithoutLimit()" classname="com.splittesla.core.camera.CameraTest" time="0.042"/>
+  <testcase name="cameraDrivenRightPastIsConfirmedNotMissed()" classname="com.splittesla.core.camera.CameraTest" time="0.007"/>
+  <testcase name="finalSpeechUsesActualDistanceAndUnknownAverageHasNoNumericClaim()" classname="com.splittesla.core.camera.CameraTest" time="0.003"/>
+  <testcase name="unverifiedSectionEndpointsNeverClaimAnAverage()" classname="com.splittesla.core.camera.CameraTest" time="0.006"/>
+  <testcase name="warnsEarlyByspeedThenAt100m()" classname="com.splittesla.core.camera.CameraTest" time="0.004"/>
+  <testcase name="carMapLimitFarFromTheCamerasMeansAnotherRoad()" classname="com.splittesla.core.camera.CameraTest" time="0.006"/>
+  <testcase name="readsTheRealDatasetCodes()" classname="com.splittesla.core.camera.CameraTest" time="0.005"/>
+  <testcase name="aJumpCannotPolluteSectionAverageOrBecomeACameraPass()" classname="com.splittesla.core.camera.CameraTest" time="0.004"/>
+  <testcase name="passingAnUnrelatedEndDoesNotFinishTheVerifiedSection()" classname="com.splittesla.core.camera.CameraTest" time="0.003"/>
+  <testcase name="turningOffBeforeTheCameraSaysNothingAboutIt()" classname="com.splittesla.core.camera.CameraTest" time="0.005"/>
+  <testcase name="ignoresCameraWeAreMovingAwayFrom()" classname="com.splittesla.core.camera.CameraTest" time="0.002"/>
+  <testcase name="missingOrNanSpeedStillWarnsUsingPositionWithoutClaimingSpeeding()" classname="com.splittesla.core.camera.CameraTest" time="0.004"/>
+  <testcase name="skipsCameraTheDriverMarkedForThisDirection()" classname="com.splittesla.core.camera.CameraTest" time="0.004"/>
+  <testcase name="warnsForJunctionPointsOnEitherSide()" classname="com.splittesla.core.camera.CameraTest" time="0.007"/>
+  <testcase name="anEmptyRouteFilterDoesNotFallBackToEveryCamera()" classname="com.splittesla.core.camera.CameraTest" time="0.002"/>
+  <testcase name="ignoresParallelStreetCameraThatAConeWouldCatch()" classname="com.splittesla.core.camera.CameraTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

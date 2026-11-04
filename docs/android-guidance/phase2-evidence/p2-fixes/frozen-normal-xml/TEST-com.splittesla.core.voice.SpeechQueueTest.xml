@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.voice.SpeechQueueTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:48:28.099Z" hostname="44803f7d0664" time="0.015">
+  <properties/>
+  <testcase name="initializationPreservesMultipleRequestsAndPriorityIsStable()" classname="com.splittesla.core.voice.SpeechQueueTest" time="0.002"/>
+  <testcase name="boundedQueueKeepsEssentialWorkAndClearCancelsAll()" classname="com.splittesla.core.voice.SpeechQueueTest" time="0.002"/>
+  <testcase name="equalPrioritiesAreFifoAndExpiredUrgencyDoesNotBlock()" classname="com.splittesla.core.voice.SpeechQueueTest" time="0.001"/>
+  <testcase name="urgentWaitingWorkDoesNotPreemptActiveSpeech()" classname="com.splittesla.core.voice.SpeechQueueTest" time="0.001"/>
+  <testcase name="cancellationAndReleaseCannotCutAnotherOwner()" classname="com.splittesla.core.voice.SpeechQueueTest" time="0.002"/>
+  <testcase name="expiryDuplicateAndCooldownUseMonotonicTime()" classname="com.splittesla.core.voice.SpeechQueueTest" time="0.001"/>
+  <testcase name="finalPreemptsTurnsButOrdinaryApproachDoesNot()" classname="com.splittesla.core.voice.SpeechQueueTest" time="0.001"/>
+  <testcase name="cameraStageSupersedesOnlyOwnWaitingStage()" classname="com.splittesla.core.voice.SpeechQueueTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

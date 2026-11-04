@@ -1,0 +1,27 @@
+{
+  "snapshot": "/tmp/splittesla-final-review-hcoa8owb",
+  "frozenAtUtc": "2026-11-03T19:32:19.130182+00:00",
+  "manifestSha256": "6c2940d6651c31865d20728020a0b12393e3cba13dd35240d4803fa6361337e5",
+  "sourceFiles": 56,
+  "sourceChangesAfterTests": {
+    "workspace": [],
+    "snapshot": []
+  },
+  "normal": {
+    "tests": 126,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 8,
+    "passed": 118
+  },
+  "qaRepro": {
+    "tests": 29,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 29
+  },
+  "defectReproductions": 8,
+  "qaNormalAndPolicy": 21,
+  "androidBuild": "FAILED: SDK location not found; app Kotlin/APK/device unverified"
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:50:14.923Z" hostname="44803f7d0664" time="0.098">
+  <properties/>
+  <testcase name="r4d_vagueOnRouteFixDoesNotBecomeACertainPosition()" classname="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" time="0.082"/>
+  <testcase name="r4c_vagueFixesDoNotExtendTheEstimatedTurnWindow()" classname="com.splittesla.core.qa.AndroidGuidanceQaR4PolicyProbeTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

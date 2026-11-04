@@ -1,0 +1,269 @@
+package com.splittesla.core.qa
+
+import com.splittesla.core.assistant.LatLon
+import com.splittesla.core.camera.CameraAlert
+import com.splittesla.core.camera.CameraAlerter
+import com.splittesla.core.camera.CameraIndex
+import com.splittesla.core.camera.CameraWarningPreset
+import com.splittesla.core.camera.SpeedCamera
+import com.splittesla.core.camera.spokenText
+import com.splittesla.core.navi.GuidanceAnnouncer
+import com.splittesla.core.navi.GuidancePositionState
+import com.splittesla.core.navi.NaviPlace
+import com.splittesla.core.navi.NaviRoute
+import com.splittesla.core.navi.RouteGuide
+import com.splittesla.core.navi.RouteOption
+import com.splittesla.core.navi.RouteTracker
+import com.splittesla.core.voice.SpeechQueue
+import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.BeforeEach
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+/**
+ * Independent phase-2 QA (docs/android-guidance/phase2-qa.md), manifest 57153e1e…. Skipped
+ * unless QA_REPRO=1. Tests named f*_ assert expected behaviour and may fail: a failure is a
+ * finding and never a pass.
+ */
+class AndroidGuidanceQaPhase2Test {
+    @BeforeEach fun gate() = assumeTrue(System.getenv("QA_REPRO") == "1", "QA_REPRO=1 to run phase-2 QA")
+
+    // ── Queue ──
+    private fun r(owner: Long, key: String, p: Int, exp: Long = 10_000, group: String? = null) =
+        SpeechQueue.Request(owner, key, key, p, exp, group)
+
+    @Test fun finalOutranksTurnOutranksApproachOutranksRerouteOutranksAssistant() {
+        val q = SpeechQueue()
+        listOf(r(1, "비서", 10), r(2, "재탐색", 30), r(3, "예고", 60), r(2, "턴", 70), r(3, "최종", 100)).forEach { assertTrue(q.offer(it, 0)) }
+        val order = generateSequence { q.next(0)?.also { q.finish() }?.key }.toList()
+        assertEquals(listOf("최종", "턴", "예고", "재탐색", "비서"), order)
+    }
+
+    /** Policy v2 (PM msg_15c90d245ace): Final may cut a turn. v1 asserted the opposite; see policy-v1/ in phase2-qa-evidence. */
+    @Test fun preemptionFollowsPolicyV2() {
+        val q = SpeechQueue()
+        q.offer(r(1, "비서", 10), 0); q.next(0)
+        assertFalse(q.shouldPreempt(r(2, "재탐색", 30)))
+        assertTrue(q.shouldPreempt(r(2, "예고", 60)))
+        q.finish(); q.offer(r(1, "턴", 70), 0); q.next(0)
+        assertTrue(q.shouldPreempt(r(2, "최종", 100)))
+        assertFalse(q.shouldPreempt(r(2, "예고", 60)), "an approach never cuts a turn")
+    }
+
+    @Test fun fullQueueNeverLosesEssentialToConversation() {
+        val q = SpeechQueue(capacity = 2)
+        q.offer(r(1, "a", 10), 0); q.offer(r(1, "b", 10), 0)
+        assertTrue(q.offer(r(2, "최종", 100), 0))
+        assertTrue(q.offer(r(2, "턴", 70), 0))
+        assertFalse(q.offer(r(2, "낮음", 10), 0))
+        assertEquals("최종", q.next(0)?.key)
+    }
+
+    @Test fun laterStageReplacesOnlySameOwnerAndCameraGroup() {
+        val q = SpeechQueue()
+        q.offer(r(1, "A예고", 60, group = "cam:A"), 0)
+        q.offer(r(1, "B예고", 60, group = "cam:B"), 0)
+        q.offer(r(2, "남의", 60, group = "cam:A"), 0)
+        q.offer(r(1, "A최종", 100, group = "cam:A"), 0)
+        val order = generateSequence { q.next(0)?.also { q.finish() }?.key }.toList()
+        assertEquals(listOf("A최종", "B예고", "남의"), order)
+    }
+
+    @Test fun expiryBoundaryAndBlankAreDropped() {
+        val q = SpeechQueue()
+        assertFalse(q.offer(r(1, "만료", 60, exp = 100), 100))
+        assertFalse(q.offer(SpeechQueue.Request(1, "  ", "k", 60, 500), 0))
+        assertTrue(q.offer(r(1, "경계", 60, exp = 100), 99))
+        assertNull(q.next(100))
+    }
+
+    @Test fun duplicateIsBlockedWhilePlayingAndForEightSecondsAfterStart() {
+        val q = SpeechQueue()
+        q.offer(r(1, "k", 60, exp = 100_000), 0); q.next(0)
+        assertFalse(q.offer(r(1, "k", 60, exp = 100_000), 1))
+        q.finish()
+        assertFalse(q.offer(r(1, "k", 60, exp = 100_000), 7_999))
+        assertTrue(q.offer(r(1, "k", 60, exp = 100_000), 8_000))
+    }
+
+    @Test fun ownerCancelWithoutActiveIsSafeAndClearEmpties() {
+        val q = SpeechQueue()
+        assertFalse(q.cancel(9))
+        q.offer(r(1, "a", 60), 0); q.next(0); q.offer(r(2, "b", 60), 0)
+        assertFalse(q.cancel(2)); assertEquals("a", q.active?.key)
+        assertTrue(q.cancel(1)); assertNull(q.next(0))
+        q.offer(r(1, "c", 60), 0); q.clear(); assertNull(q.next(0))
+    }
+
+    // ── Preset ──
+    private val metre = 1 / 111_195.0
+    private fun cam(limit: Int, id: String = "C") = SpeedCamera(id, 37.6, 127.0, limit, "테스트")
+    private fun alerter(vararg c: SpeedCamera, p: CameraWarningPreset? = null) =
+        CameraAlerter(CameraIndex(c.toList())).also { a -> p?.let { a.warningPreset = it } }
+
+    /** Drives north towards 37.6 from [fromM] metres out, stopping [toM] metres past it. */
+    private fun drive(a: CameraAlerter, fromM: Double, kmh: Double, toM: Double = -60.0, stepMs: Long = 1000, startMs: Long = 0, speed: Double? = kmh,
+                      at: (Double) -> Unit = {}): List<CameraAlert> {
+        val out = ArrayList<CameraAlert>()
+        var d = fromM; var t = startMs
+        while (d > toM) {
+            at(d)
+            out += a.update(37.6 - d * metre, 127.0, 0.0, speed ?: Double.NaN, t, measuredSpeedKmh = speed)
+            d -= kmh / 3.6 * stepMs / 1000; t += stepMs
+        }
+        return out
+    }
+    private fun List<CameraAlert>.ap() = filterIsInstance<CameraAlert.Approaching>()
+    private fun List<CameraAlert>.fin() = filterIsInstance<CameraAlert.Final>()
+
+    @Test fun defaultStaysSpeedBasedAndUnchanged() {
+        val a = alerter(cam(100))
+        assertEquals(CameraWarningPreset.SPEED, a.warningPreset)
+        val al = drive(a, 1500.0, 90.0)
+        assertEquals(1, al.ap().size); assertEquals(1, al.fin().size)
+        assertTrue(al.ap().single().distanceM in 280.0..300.0, "${al.ap()}")
+    }
+
+    @Test fun limitTiersGiveTheirStagesThenOneFinal() {
+        for ((limit, want) in listOf(100 to listOf(1000.0, 500.0), 80 to listOf(1000.0, 500.0), 79 to listOf(600.0, 300.0), 50 to listOf(600.0, 300.0), 49 to listOf(300.0), 30 to listOf(300.0))) {
+            val al = drive(alerter(cam(limit), p = CameraWarningPreset.LIMIT), 1400.0, 60.0)
+            assertEquals(want.size, al.ap().size, "limit $limit: ${al.ap().map { it.distanceM }}")
+            al.ap().zip(want).forEach { (x, w) -> assertTrue(x.distanceM in (w - 30)..w, "limit $limit stage $w at ${x.distanceM}") }
+            assertEquals(1, al.fin().size)
+            assertTrue(al.fin().single().distanceM <= 100)
+        }
+    }
+
+    @Test fun skippingBothWindowsGivesOneCurrentWarningAndOneFinal() {
+        val al = drive(alerter(cam(100), p = CameraWarningPreset.LIMIT), 430.0, 100.0)
+        assertEquals(1, al.ap().size); assertTrue(al.ap().single().distanceM < 430)
+        assertEquals(1, al.fin().size)
+    }
+
+    @Test fun lowRateFixesStillGiveEachCrossedStageOnce() {
+        val al = drive(alerter(cam(100), p = CameraWarningPreset.LIMIT), 1500.0, 100.0, stepMs = 4000)
+        assertEquals(2, al.ap().size, "${al.ap().map { it.distanceM }}")
+        assertTrue(al.fin().size <= 1)
+    }
+
+    @Test fun firstDetectionInsideOneHundredMetresIsFinalOnly() {
+        val al = drive(alerter(cam(60), p = CameraWarningPreset.LIMIT), 95.0, 40.0)
+        assertTrue(al.ap().isEmpty()); assertEquals(1, al.fin().size)
+    }
+
+    @Test fun togglingAfterAWarningAddsNothingAndKeepsFinal() {
+        for ((from, to) in listOf(CameraWarningPreset.SPEED to CameraWarningPreset.LIMIT, CameraWarningPreset.LIMIT to CameraWarningPreset.SPEED)) {
+            val a = alerter(cam(100), p = from)
+            val first = drive(a, 1100.0, 60.0, toM = 180.0)
+            assertTrue(first.ap().isNotEmpty())
+            a.warningPreset = to
+            val rest = drive(a, 180.0, 60.0, startMs = 100_000)
+            assertTrue(rest.ap().isEmpty(), "$from→$to ${rest.ap().map { it.distanceM }}")
+            assertEquals(1, rest.fin().size)
+        }
+    }
+
+    @Test fun togglingBeforeAnyWarningAppliesFromTheNextFix() {
+        val a = alerter(cam(100))
+        assertTrue(drive(a, 1100.0, 60.0, toM = 800.0).isEmpty())
+        a.warningPreset = CameraWarningPreset.LIMIT
+        val al = drive(a, 790.0, 60.0, startMs = 19_000)
+        assertEquals(2, al.ap().size, "catch-up then 500 m: ${al.ap().map { it.distanceM }}")
+    }
+
+    @Test fun togglingRepeatedlyNeverRepeatsAStage() {
+        val a = alerter(cam(100), p = CameraWarningPreset.LIMIT)
+        val al = drive(a, 1100.0, 60.0) { d -> if (d.toInt() % 7 == 0) a.warningPreset = if (a.warningPreset == CameraWarningPreset.LIMIT) CameraWarningPreset.SPEED else CameraWarningPreset.LIMIT }
+        assertTrue(al.ap().size <= 2, "${al.ap().map { it.distanceM }}")
+        assertEquals(1, al.fin().size)
+    }
+
+    @Test fun missingSpeedStillWarnsOnLimitWithoutClaimingSpeeding() {
+        val al = drive(alerter(cam(60), p = CameraWarningPreset.LIMIT), 800.0, 100.0, speed = null)
+        assertEquals(2, al.ap().size); assertEquals(1, al.fin().size)
+        assertTrue(al.ap().none { it.overLimit }); assertTrue(al.fin().none { it.overLimit })
+    }
+
+    @Test fun emptyRouteFilterSilencesLimitPresetToo() {
+        val a = alerter(cam(100), p = CameraWarningPreset.LIMIT).apply { routeCameraIds = emptySet() }
+        assertTrue(drive(a, 1100.0, 90.0).isEmpty())
+    }
+
+    @Test fun limitPresetDistanceWordsFollowTheRealDistance() {
+        val c = cam(100)
+        assertTrue(CameraAlert.Approaching(c, 985.0, false).spokenText().startsWith("1000미터 앞"))
+        assertTrue(CameraAlert.Approaching(c, 512.0, false).spokenText().startsWith("500미터 앞"))
+        assertTrue(CameraAlert.Approaching(c, 430.0, false).spokenText().startsWith("450미터 앞"))
+        val al = drive(alerter(c, p = CameraWarningPreset.LIMIT), 1100.0, 100.0)
+        val f = al.fin().single()
+        assertTrue(f.spokenText().startsWith("${(f.distanceM / 10).toInt().let { n -> if (f.distanceM / 10 - n >= .5) n + 1 else n } * 10}미터 앞"), f.spokenText())
+    }
+
+    // ── Position state ──
+    @Test fun positionStateTruthTable() {
+        val s = GuidancePositionState.Companion
+        assertEquals(GuidancePositionState.CONFIRMED, s.resolve(true, true, false))
+        assertEquals(GuidancePositionState.CONFIRMED, s.resolve(true, false, false))
+        assertEquals(GuidancePositionState.CHECKING, s.resolve(false, false, false))
+        assertEquals(GuidancePositionState.CHECKING, s.resolve(false, false, true))
+        assertEquals(GuidancePositionState.ESTIMATING, s.resolve(false, true, true))
+        assertEquals(GuidancePositionState.HELD, s.resolve(false, true, false))
+    }
+
+    private val start = LatLon(37.5663, 126.9779)
+    private val path = (0..40).map { LatLon(start.lat + it * 0.0009044, start.lon) }
+    private val route = NaviRoute(RouteOption.FAST, path, emptyList(),
+        listOf(RouteGuide(30, 3, "우회전", 3000, 200_000), RouteGuide(40, 88, "목적지", 1000, 60_000)), 4000, 260_000, 0, NaviPlace("목적지", path.last()))
+    private fun on(m: Double) = LatLon(start.lat + m / 110574.0, start.lon)
+    /** NaviHub's own formulas (NaviHub.kt:444,449), kept here because NaviHub needs Android. */
+    private fun stateAfterTick(p: com.splittesla.core.navi.RouteProgress, realFixFresh: Boolean) = GuidancePositionState.resolve(
+        !p.estimated && !p.positionUncertain && realFixFresh, true, p.estimated && p.canAnnounceTurn)
+
+    @Test fun statesFollowRealTrackerProgressThroughATunnel() {
+        val t = RouteTracker(route); val v = 60 / 3.6
+        var i = 0
+        while (i * v < 200) { t.update(on(i * v), 5.0, i * 1000L); i++ }
+        assertEquals(GuidancePositionState.CONFIRMED, stateAfterTick(t.progress(), true))
+        assertEquals(GuidancePositionState.ESTIMATING, stateAfterTick(t.advance(v, 1000), false))
+        repeat(29) { t.advance(v, 1000) }
+        assertEquals(GuidancePositionState.ESTIMATING, stateAfterTick(t.progress(), false))
+        assertEquals(GuidancePositionState.HELD, stateAfterTick(t.advance(v, 1000), false), "expired")
+    }
+
+    @Test fun noVehicleSpeedMeansHeldNeverEstimating() {
+        val t = RouteTracker(route); val v = 60 / 3.6
+        var i = 0
+        while (i * v < 200) { t.update(on(i * v), 5.0, i * 1000L); i++ }
+        val p = t.update(on(i * v), 40.0, i * 1000L)
+        assertEquals(GuidancePositionState.HELD, stateAfterTick(p, true))
+    }
+
+    // ── Findings ──
+
+    /** Same wording on consecutive guides, NaviService key = text: the second turn's sentence never starts. */
+    @Test fun f1_identicalConsecutiveTurnsAreBothSpoken() {
+        val line = (0..30).map { LatLon(start.lat + it * 0.00018088, start.lon) } // 20 m steps, 600 m
+        val r = NaviRoute(RouteOption.FAST, line, emptyList(), listOf(
+            RouteGuide(10, 3, "우회전", 200, 20_000), RouteGuide(13, 3, "우회전", 60, 6_000), RouteGuide(16, 3, "우회전", 60, 6_000),
+            RouteGuide(30, 88, "목적지", 280, 28_000)), 600, 60_000, 0, NaviPlace("목적지", line.last()))
+        val t = RouteTracker(r); val a = GuidanceAnnouncer(); val q = SpeechQueue()
+        val v = 30 / 3.6
+        val created = ArrayList<String>(); val heard = ArrayList<String>()
+        var s = 0
+        while (s * v < 500) {
+            val now = s * 1000L
+            val p = t.update(on(s * v), 5.0, now)
+            a.next(r, p, 30.0)?.let { text ->
+                created += text
+                q.offer(SpeechQueue.Request(2, text, text, 70, now + 5000), now)
+            }
+            q.finish(); q.next(now)?.let { heard += it.text }
+            s++
+        }
+        println("F1 created=$created heard=$heard")
+        assertEquals(created, heard)
+    }
+}

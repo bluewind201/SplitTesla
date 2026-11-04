@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.app.assistant.SpeakerHarnessTest" tests="18" skipped="0" failures="1" errors="0" timestamp="2026-11-03T21:31:14.243Z" hostname="44803f7d0664" time="1.42">
+  <properties/>
+  <testcase name="nonLastShutdownKeepsTheEngineAndLastShutdownClosesIt()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.833"/>
+  <testcase name="f2_finalCameraWarningSurvivesAFourSecondTurnSentence()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.007"/>
+  <testcase name="f3_turnSentenceIsNotReadLongAfterItWasCreated()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.02"/>
+  <testcase name="essentialPreemptsAssistantWithoutReplay()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.01"/>
+  <testcase name="essentialNeverCutsEssential()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.069">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;0&gt; but was: &lt;1&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;0&gt; but was: &lt;1&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertEquals(JUnitSupport.kt:32)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals(Assertions.kt:63)
+	at app//kotlin.test.AssertionsKt.assertEquals(Unknown Source)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals$default(Assertions.kt:62)
+	at app//kotlin.test.AssertionsKt.assertEquals$default(Unknown Source)
+	at app//com.splittesla.app.assistant.SpeakerHarnessTest.essentialNeverCutsEssential(SpeakerHarnessTest.kt:69)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="engineFailureAndMissingKoreanStaySilent()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.101"/>
+  <testcase name="lateCallbacksOfEveryKindCannotFinishTheNextSentence()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.015"/>
+  <testcase name="muteStopsClearsBlocksAndSurvivesRestart()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.028"/>
+  <testcase name="disabledOwnerIsSkippedAtPlayTime()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.01"/>
+  <testcase name="previewOverrideIsNotSavedAndNextSpeechUsesTheSavedVoice()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.024"/>
+  <testcase name="shutdownBeforeReadyLeavesNoLateEngineWork()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.014"/>
+  <testcase name="f4_repeatingAVoiceSampleIsHeard()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.004"/>
+  <testcase name="watchdogReleasesAMissingCallbackAndSpeakErrorMovesOn()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.014"/>
+  <testcase name="f5_previewWhileMutedIsSilent()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.015"/>
+  <testcase name="requestsBeforeReadyAreKeptByPriorityAndExpiredOnesDropped()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.016"/>
+  <testcase name="f1_sameWordingForTheNextTurnIsStillSpoken()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.018"/>
+  <testcase name="ownerCancelTouchesOnlyThatOwner()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.021"/>
+  <testcase name="focusDeniedSkipsAndFocusLossCancelsWithoutReplay()" classname="com.splittesla.app.assistant.SpeakerHarnessTest" time="0.012"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

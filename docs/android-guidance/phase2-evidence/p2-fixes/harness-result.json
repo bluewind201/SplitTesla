@@ -1,0 +1,10 @@
+{
+  "tests": 24,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 23,
+  "failed_cases": [
+    "com.splittesla.app.assistant.SpeakerHarnessTest.essentialNeverCutsEssential()"
+  ]
+}

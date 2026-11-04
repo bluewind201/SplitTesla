@@ -148,13 +148,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             _ui.collect { s ->
                 val d = s.live
                 val nav = s.nav
+                val speedNow = System.currentTimeMillis()
+                val commanderSpeed = com.splittesla.core.navi.SpeedEvidence.fresh(
+                    CameraState.commanderSpeedKmh?.toDouble(), CameraState.commanderSpeedAt, speedNow)
                 NaviHub.onCar(
                     CarFeed(
                         socPercent = d.socPercent?.toDouble() ?: s.charge?.takeIf { it.hasBatteryLevel() }?.batteryLevel?.toDouble(),
                         remainingKwh = d.nominalRemainingKwh,
                         fullKwh = d.nominalFullPackNowKwh,
                         powerKw = d.batteryPowerKw,
-                        speedKmh = d.speedKmh?.toDouble() ?: nav?.speedKmh,
+                        speedKmh = commanderSpeed ?: nav?.speedKmh,
+                        speedAt = if (commanderSpeed != null) CameraState.commanderSpeedAt else s.navUpdatedAt ?: 0,
                         outsideC = d.outsideTempC?.toDouble(),
                         position = nav?.latitude?.let { lat -> nav.longitude?.let { LatLon(lat, it) } },
                         superchargers = s.chargingSites,

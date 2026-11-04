@@ -1,0 +1,3 @@
+211793f735147b6c9196142957d6e985518daf2539c93165d54bd738306c40f5  docs/android-guidance/phase2-qa-evidence/policy-v2/AndroidGuidanceQaPhase2PolicyTest.kt
+bf14d44def96a0bfeb79822926cea6c73c5ceb9d209dfe4fdc378f44a461cdf2  core/src/test/kotlin/com/splittesla/core/qa/AndroidGuidanceQaPhase2Test.kt
+c1a838b81c38a0f7121b5d8a4ae080d1f28b36af47f98a63f201803dae7b8796  docs/android-guidance/phase2-qa-evidence/speaker-harness/test/SpeakerHarnessTest.kt

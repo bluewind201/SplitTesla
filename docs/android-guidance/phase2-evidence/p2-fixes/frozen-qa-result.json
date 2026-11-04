@@ -1,0 +1,10 @@
+{
+  "tests": 71,
+  "failures": 1,
+  "errors": 0,
+  "skipped": 0,
+  "passed": 70,
+  "failed_cases": [
+    "com.splittesla.core.qa.AndroidGuidanceQaFinalProbeTest.r2_badFirstFixWithGoodClaimedAccuracyRecoversWithinThreeSeconds()"
+  ]
+}

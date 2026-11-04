@@ -1,0 +1,3 @@
+total=2 pass=1 skipped=0 failed=1
+PASS AndroidGuidanceQaRound3ProbeTest.r4control_turnNoticeSpokenWhileDeadReckoningWithoutVagueFix() 
+FAIL AndroidGuidanceQaRound3ProbeTest.r4_turnNoticeStillSpokenWhileDeadReckoningAfterAVagueTunnelMouthFix() org.opentest4j.AssertionFailedError: no turn notice during 40 s of dead reckoning through the turn at 1000 m; spoken=[], last=RouteProgress(alongM=850.0000000000863, remainingM=1150.062511999778, remainingMs=310801, lateralM=0.0, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=150.0312560002386

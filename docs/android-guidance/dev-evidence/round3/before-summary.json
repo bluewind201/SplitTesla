@@ -1,0 +1,20 @@
+[
+  {
+    "name": "r1_fixesTenSecondsApartAreNotLockedOutForever()",
+    "failure": [
+      "org.opentest4j.AssertionFailedError: accepted only 1 of 19 fixes over 3 minutes"
+    ]
+  },
+  {
+    "name": "r3_hairpinAfterGapWithoutDeadReckoningRecoversQuickly()",
+    "failure": [
+      "org.opentest4j.AssertionFailedError: never caught up in 31 fixes (firstOk=null); along fell to 483.3333333327763 while real went 1130 → 1547"
+    ]
+  },
+  {
+    "name": "r2_badFirstFixWithGoodClaimedAccuracyRecoversWithinThreeSeconds()",
+    "failure": [
+      "org.opentest4j.AssertionFailedError: first real fix accepted after 10 s"
+    ]
+  }
+]

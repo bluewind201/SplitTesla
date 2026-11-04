@@ -1,0 +1,728 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:extractIncludeProto UP-TO-DATE
+> Task :core:extractProto UP-TO-DATE
+> Task :core:generateProto UP-TO-DATE
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava UP-TO-DATE
+> Task :core:processResources UP-TO-DATE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar UP-TO-DATE
+> Task :app:generateDebugResValues
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:parseDebugLocalResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:mergeDebugResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebug
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :app:compressDebugAssets
+> Task :app:processDebugResources
+> Task :app:checkDebugDuplicateClasses
+
+> Task :app:mergeExtDexDebug
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+WARNING: /home/orca/.gradle/caches/8.14.3/transforms/24784f642d0ab2645cfaf76f87fe2948/transformed/map-sdk-3.23.3-runtime.jar: D8: Expected stack map table for method with non-linear control flow.
+
+> Task :app:compileDebugKotlin
+e: The daemon has terminated unexpectedly on startup attempt #1 with error code: 0. The daemon process output:
+    1. Kotlin compile daemon is ready
+w: file:///home/orca/orca/workspaces/SplitTesla/android-guidance/app/src/main/kotlin/com/splittesla/app/ui/ManeuverIcon.kt:45:9 'fun quadraticBezierTo(x1: Float, y1: Float, x2: Float, y2: Float): Unit' is deprecated. Use quadraticTo() for consistency with cubicTo().
+
+> Task :app:compileDebugJavaWithJavac NO-SOURCE
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:processDebugJavaRes
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJniLibFolders
+> Task :app:mergeProjectDexDebug
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:mergeDebugNativeLibs
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libnavermap.so.
+
+> Task :app:mergeDebugJavaResource
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+[Incubating] Problems report is available at: file:///home/orca/orca/workspaces/SplitTesla/android-guidance/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 5m 45s
+42 actionable tasks: 35 executed, 7 up-to-date

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.navi.FixGateTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-03T19:59:15.053Z" hostname="44803f7d0664" time="0.032">
+  <properties/>
+  <testcase name="elapsedTimeAloneDoesNotLegalizeTheSameModerateJump()" classname="com.splittesla.core.navi.FixGateTest" time="0.001"/>
+  <testcase name="reacquisitionRequiresATimedCoherentCandidateAndBreaksDistanceEvidence()" classname="com.splittesla.core.navi.FixGateTest" time="0.003"/>
+  <testcase name="oscillatingCandidateMotionDoesNotReacquire()" classname="com.splittesla.core.navi.FixGateTest" time="0.003"/>
+  <testcase name="deadReckoningRequiresFreshVehicleSpeedAndExpiresEvenWithFreshBle()" classname="com.splittesla.core.navi.FixGateTest" time="0.001"/>
+  <testcase name="ignoresMissingInvalidFutureAndStaleMeasuredSpeeds()" classname="com.splittesla.core.navi.FixGateTest" time="0.002"/>
+  <testcase name="aSingleSpikeDoesNotPoisonTheNextRealFix()" classname="com.splittesla.core.navi.FixGateTest" time="0.002"/>
+  <testcase name="repeatedUnrelatedJumpsNeverBecomeAcceptedByCount()" classname="com.splittesla.core.navi.FixGateTest" time="0.002"/>
+  <testcase name="rejectsInvalidInaccurateAndNonMonotonicFixes()" classname="com.splittesla.core.navi.FixGateTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

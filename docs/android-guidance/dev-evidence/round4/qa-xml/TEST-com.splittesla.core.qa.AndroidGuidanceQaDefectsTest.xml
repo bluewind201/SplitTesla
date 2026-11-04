@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-03T20:20:24.889Z" hostname="44803f7d0664" time="0.23">
+  <properties/>
+  <testcase name="d4_tunnelExitDoesNotSnapToAParallelReturnLeg()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.098"/>
+  <testcase name="d8_badFirstFixDoesNotBlackOutTheNextTenSeconds()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.009"/>
+  <testcase name="d3_passingTheEndCameraClearsUnverifiedSectionState()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.06"/>
+  <testcase name="d5_rejectedProjectionDoesNotRelabelDeadReckoningAsReal()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.006"/>
+  <testcase name="d2_sectionStartIsAnnouncedWithTwoSecondFixes()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.017"/>
+  <testcase name="d1_fixesSixSecondsApartAreNotLockedOutForever()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.006"/>
+  <testcase name="d7_passThroughDoesNotSpeakEndOfGuidanceThatIsLaterRevoked()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.016"/>
+  <testcase name="d9_spikeThenShortDropoutRecoversQuickly()" classname="com.splittesla.core.qa.AndroidGuidanceQaDefectsTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" tests="9" skipped="0" failures="1" errors="0" timestamp="2026-11-03T22:09:29.919Z" hostname="44803f7d0664" time="0.226">
+  <properties/>
+  <testcase name="duplicateKeyIsReportedNotLost()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.013"/>
+  <testcase name="expiringWhileWaitingReportsDropped()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.005"/>
+  <testcase name="focusDeniedFocusLostEngineErrorAndWatchdogEachReportOnce()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.014"/>
+  <testcase name="obs_expiryIsReportedWithoutWaitingForTheNextQueueActivity()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.058">
+    <failure message="org.opentest4j.AssertionFailedError: no pump happened while the engine kept talking: [] ==&gt; expected: &lt;[DROPPED]&gt; but was: &lt;[]&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: no pump happened while the engine kept talking: [] ==&gt; expected: &lt;[DROPPED]&gt; but was: &lt;[]&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//kotlin.test.junit5.JUnit5Asserter.assertEquals(JUnitSupport.kt:32)
+	at app//kotlin.test.AssertionsKt__AssertionsKt.assertEquals(Assertions.kt:63)
+	at app//kotlin.test.AssertionsKt.assertEquals(Unknown Source)
+	at app//com.splittesla.app.assistant.SpeakerOutcomeWiringTest.obs_expiryIsReportedWithoutWaitingForTheNextQueueActivity(SpeakerOutcomeWiringTest.kt:90)
+	at java.base@21.0.13/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.13/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="cutByFinalReportsInterruptedOnce()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.004"/>
+  <testcase name="whileMutedDeliveryReportsDropped()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.021"/>
+  <testcase name="invalidAtStartAndDisabledAndExpiredOnArrivalReportDropped()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.003"/>
+  <testcase name="muteOwnerStopAndShutdownReportOnce()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.004"/>
+  <testcase name="completedReportsOnceAndLateCallbackAddsNothing()" classname="com.splittesla.app.assistant.SpeakerOutcomeWiringTest" time="0.023"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

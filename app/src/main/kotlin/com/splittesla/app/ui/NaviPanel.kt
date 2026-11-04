@@ -181,7 +181,7 @@ private fun GuidingView(navi: NaviUi) {
         val d = c.alongM - (p?.alongM ?: 0.0)
         ValueRow("다음 단속카메라", "${km(d)} · 제한 ${c.camera.limitKmh}", highlight = if (d < 1000) Neon.amber else null)
     }
-    if (!navi.gpsOk) Text("GPS 신호 약함: 차량 속도로 위치를 추정 중", fontSize = 12.sp, color = Neon.amber)
+    if (!navi.gpsOk) Text("길안내: ${navi.positionState.label}", fontSize = 13.sp, color = Neon.amber)
     if (navi.waypoints.isNotEmpty()) ValueRow("경유", navi.waypoints.joinToString(" → ") { it.name })
     navi.chargeNote?.let { Text(it, fontSize = 13.sp, color = Neon.amber) }
     navi.chargeStops.forEach { ChargeRow(it) }
@@ -233,13 +233,14 @@ fun TurnBanner(navi: NaviUi, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         ManeuverIcon(guide?.maneuver, Neon.lime, Modifier.size(46.dp))
-        Text(p?.nextGuideDistanceM?.let { km(it) } ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, color = Neon.text, maxLines = 1)
+        if (!navi.gpsOk) Text(navi.positionState.label, fontSize = 13.sp, color = Neon.amber, modifier = Modifier.weight(1f))
+        Text(if (!navi.gpsOk) "—" else p?.nextGuideDistanceM?.let { km(it) } ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, color = Neon.text, maxLines = 1)
         Text(
-            guide?.let { GuidanceAnnouncer.speakable(it) } ?: "${route.goal.name}까지 직진",
+            if (!navi.gpsOk) "위치 확인 후 턴 안내" else guide?.let { GuidanceAnnouncer.speakable(it) } ?: "${route.goal.name}까지 직진",
             fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
-        if (then != null) {
+        if (then != null && navi.gpsOk) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("이어서", fontSize = 13.sp, color = Neon.cyan, maxLines = 1)
                 ManeuverIcon(then.maneuver, Neon.cyan, Modifier.size(26.dp))
@@ -264,16 +265,17 @@ fun TurnCard(navi: NaviUi, modifier: Modifier = Modifier, compact: Boolean = fal
     ) {
         ManeuverIcon(guide?.maneuver, Neon.lime, Modifier.size(if (compact) 40.dp else 58.dp))
         Column(Modifier.weight(1f)) {
+            if (!navi.gpsOk) Text(navi.positionState.label, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Neon.amber)
             Text(
-                p?.nextGuideDistanceM?.let { km(it) } ?: "—",
+                if (!navi.gpsOk) "—" else p?.nextGuideDistanceM?.let { km(it) } ?: "—",
                 fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = if (compact) 22.sp else 30.sp, color = Neon.text,
             )
             Text(
-                guide?.let { GuidanceAnnouncer.speakable(it) } ?: "${route.goal.name}까지 직진",
+                if (!navi.gpsOk) "위치 확인 후 턴 안내" else guide?.let { GuidanceAnnouncer.speakable(it) } ?: "${route.goal.name}까지 직진",
                 fontSize = if (compact) 13.sp else 16.sp, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
         }
-        if (then != null) {
+        if (then != null && navi.gpsOk) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("이어서", style = Caption)
                 ManeuverIcon(then.maneuver, Neon.cyan, Modifier.size(26.dp))

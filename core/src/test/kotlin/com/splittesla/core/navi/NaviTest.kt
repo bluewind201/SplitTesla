@@ -29,6 +29,78 @@ class NaviTest {
         goal = NaviPlace("경복궁", path.last()),
     )
 
+    @Test fun estimatedArrivalIsNeverConfirmed() {
+        val t = RouteTracker(route)
+        t.update(start)
+        assertFalse(t.advance(3000.0).arrived)
+    }
+
+    @Test fun oneEndpointSpikeDoesNotSkipTheRouteOrConfirmArrival() {
+        val t = RouteTracker(route)
+        t.update(start, 5.0, 1000)
+        assertFalse(t.update(path.last(), 5.0, 2000).arrived)
+        assertEquals(0.0, t.progress().alongM, 0.1)
+        // Return inside the frozen reach budget, rather than legalizing the spike by waiting.
+        val real = t.update(LatLon(start.lat + 0.0009044 * 0.5, start.lon), 5.0, 3000)
+        assertEquals(50.0, real.alongM, 2.0)
+        assertFalse(real.arrived)
+    }
+
+    @Test fun arrivalRequiresTwoRealNearbyFixesAndCanBeRevoked() {
+        val t = RouteTracker(route)
+        assertFalse(t.update(path.last(), 5.0, 1000).arrived)
+        assertTrue(t.update(path.last(), 5.0, 2000).arrived)
+        assertFalse(t.update(path.last().copy(lon = start.lon + 0.001), 5.0, 4000).arrived)
+        assertFalse(t.progress().arrived)
+    }
+
+    @Test fun destinationApproachAndTurnFollowUpDoNotRepeatArrivalWords() {
+        val t = RouteTracker(route)
+        val a = GuidanceAnnouncer()
+        val near = t.update(path[19])
+        assertNull(a.next(route, near, 50.0))
+        assertFalse(t.update(path.last()).arrived)
+        val arrived = t.update(path.last())
+        assertNotNull(a.next(route, arrived, 10.0))
+        assertNull(a.next(route, arrived, 10.0))
+    }
+
+    @Test fun geometryProximityCannotJumpToAFarLaterLoopSegment() {
+        // A parallel return leg lies a few metres from the outbound leg.
+        val loop = path + path.reversed().map { it.copy(lon = it.lon + 0.00005) }
+        val t = RouteTracker(route.copy(path = loop, guides = emptyList()))
+        t.update(start, 5.0, 1000)
+        val p = t.update(LatLon(start.lat + 0.0001, start.lon + 0.00005), 5.0, 2000)
+        assertTrue(p.alongM < 100)
+        assertFalse(p.arrived)
+    }
+
+    @Test fun duplicateOrRapidFixesDoNotCountAsArrivalConfirmation() {
+        val t = RouteTracker(route)
+        assertFalse(t.update(path.last(), 5.0, 1000).arrived)
+        assertFalse(t.update(path.last(), 5.0, 1100).arrived)
+        assertFalse(t.update(path.last(), 5.0, 1200).arrived)
+        assertTrue(t.update(path.last(), 5.0, 1600).arrived)
+        t.invalidateArrival()
+        assertFalse(t.progress().arrived)
+    }
+
+    @Test fun repeatedNearbyProjectionCannotBecomeALargeAdvanceJustByWaiting() {
+        val out = path.take(3)
+        val shortLoop = out + out.reversed().map { it.copy(lon = it.lon + 0.00005) }
+        val t = RouteTracker(route.copy(path = shortLoop, guides = emptyList()))
+        t.update(start, 5.0, 1000)
+        for (i in 1..9) {
+            val p = t.update(shortLoop.last(), 5.0, 1000L + i * 1000)
+            assertTrue(p.alongM < 100)
+            assertFalse(p.arrived)
+        }
+        assertFalse(t.update(shortLoop.last(), 5.0, 11_000).arrived)
+        // Same nearby coordinates never prove traversal of the intervening loop.
+        assertFalse(t.update(shortLoop.last(), 5.0, 12_000).arrived)
+        assertTrue(t.progress().alongM < 100)
+    }
+
     @Test fun geometryLengthIsTwoKilometres() {
         val g = RouteGeometry(path)
         assertEquals(2000.0, g.lengthM, 5.0)
@@ -73,7 +145,7 @@ class NaviTest {
         val p = t.advance(1500.0)
         assertEquals(1500.0, p.alongM, 1.0)
         assertEquals(1, p.nextGuideIndex)
-        assertTrue(t.advance(600.0).arrived)
+        assertFalse(t.advance(600.0).arrived)
     }
 
     @Test fun vagueFixesBesideTheRoadNeverMeanOffRoute() {
@@ -123,6 +195,9 @@ class NaviTest {
         val now = a.next(route, t.update(LatLon(start.lat + 0.0009044 * 9.5, start.lon)), 50.0)
         assertEquals("광화문 방면으로 우회전.", now)
         t.advance(2000.0)
+        assertNull(a.next(route, t.progress(), 30.0))
+        t.update(path.last())
+        t.update(path.last())
         assertTrue(a.next(route, t.progress(), 30.0)!!.startsWith("목적지 경복궁"))
         assertNull(a.next(route, t.progress(), 30.0))
     }

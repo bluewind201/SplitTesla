@@ -1,0 +1,3 @@
+total=2 pass=1 skipped=0 failed=1
+PASS AndroidGuidanceQaRound4ProbeTest.r4contract_expiredOrCoarseDeadReckoningIsSilentAndNeverArrives() 
+FAIL AndroidGuidanceQaRound4ProbeTest.r4b_vagueWanderingTunnelMouthFixStillAllowsDeadReckoningTurnNotice() org.opentest4j.AssertionFailedError: spoken=[] last=RouteProgress(alongM=683.33333333342, remainingM=1316.729178666444, remainingMs=322801, lateralM=89.99781477147918, offRoute=false, nextGuideIndex=0, nextGuideDistanceM=316.6979226669049, sectionIndex=null, arrived=false, estimated=true, positionUn

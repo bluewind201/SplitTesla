@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-03T21:50:40.064Z" hostname="44803f7d0664" time="0.038">
+  <properties/>
+  <testcase name="rejectedSentenceDoesNotBurnItsDuplicateKey()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" time="0.006"/>
+  <testcase name="contextExpiresAndRejectsBadNumbersAndClockSteps()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" time="0.002"/>
+  <testcase name="contextValidOnlyForSameRouteGuideStageAndPositionKind()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" time="0.002"/>
+  <testcase name="eventKeySeparatesRouteGuideAndStage()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" time="0.002"/>
+  <testcase name="manyInvalidSentencesDoNotBlockTheQueue()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" time="0.004"/>
+  <testcase name="sameEventKeyIsSuppressedDifferentEventsAreNot()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" time="0.002"/>
+  <testcase name="invalidWaitingTurnGivesWayToTheNextSentence()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" time="0.002"/>
+  <testcase name="validityIsCheckedAtStartNotAtOffer()" classname="com.splittesla.core.qa.AndroidGuidanceQaPhase2PolicyTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

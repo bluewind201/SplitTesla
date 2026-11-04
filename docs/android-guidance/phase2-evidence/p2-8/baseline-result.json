@@ -1,0 +1,16 @@
+{
+  "tests": 15,
+  "failures": 8,
+  "errors": 0,
+  "skipped": 0,
+  "failed_cases": [
+    "f7e_speedingUpAfterTheLastNoticeDoesNotRepeatIt()",
+    "f7d_ordinaryApproachCrossingEightyTwiceHearsTheLastNoticeOnce()",
+    "f7_heardLastNoticeIsNotRepeatedAfterSlowingBelowEightyKmh()",
+    "aCompletedAdvanceDistanceIsNotAnotherStageAfterChangingTier()",
+    "nearFirstHighTierThenSlowingHasOneImmediateNotice()",
+    "tierJitterAndSpeedingUpAfterImmediateGuidanceNeverRepeatIt()",
+    "interruptedImmediateStageSurvivesTierChangeAndCompletesOnlyOnce()",
+    "ordinarySeventyEightEightyTwoSeventyEightApproachHasOneImmediateNotice()"
+  ]
+}

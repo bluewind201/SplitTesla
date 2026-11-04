@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.camera.CameraState
@@ -17,6 +18,8 @@ import com.splittesla.core.navi.ChargeStop
 import com.splittesla.core.navi.ChargerSpot
 import com.splittesla.core.navi.ConsumptionLearner
 import com.splittesla.core.navi.EnergyModel
+import com.splittesla.core.navi.FixGate
+import com.splittesla.core.navi.SpeedEvidence
 import com.splittesla.core.navi.GuidanceAnnouncer
 import com.splittesla.core.navi.Maneuver
 import com.splittesla.core.navi.NaviPlace
@@ -67,6 +70,9 @@ data class NaviUi(
     val position: LatLon? = null,
     val bearing: Float? = null,
     val gpsOk: Boolean = false,
+    val estimatingNow: Boolean = false,
+    val hasPositionAnchor: Boolean = false,
+    val routeVersion: Long = 0,
     val socAtArrival: Double? = null,
     val kwhToGo: Double? = null,
     val learnedWhPerKm: Double? = null,
@@ -78,6 +84,8 @@ data class NaviUi(
     /** Result of the key check on the settings screen, one line per API. */
     val keyTest: List<String> = emptyList(),
 ) {
+    val positionState: com.splittesla.core.navi.GuidancePositionState get() =
+        com.splittesla.core.navi.GuidancePositionState.resolve(gpsOk, hasPositionAnchor, estimatingNow)
     val guiding: Boolean get() = phase == NaviPhase.GUIDING
 }
 
@@ -92,6 +100,8 @@ data class CarFeed(
     val position: LatLon? = null,
     val superchargers: List<ChargingSite> = emptyList(),
     val at: Long = 0,
+    /** Time of the speed sample itself; unrelated UI updates must not refresh it. */
+    val speedAt: Long = at,
 )
 
 /**
@@ -103,10 +113,12 @@ object NaviHub {
     // One thread for all guidance state; network calls suspend onto IO.
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
     private val _state = MutableStateFlow(NaviUi())
+    private val routeVersions = java.util.concurrent.atomic.AtomicLong()
     val state: StateFlow<NaviUi> = _state.asStateFlow()
     // A channel, not a shared flow: the first prompt is said before the service is up to listen.
-    private val _speech = Channel<String>(capacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    val speech: Flow<String> = _speech.receiveAsFlow()
+    private val _speech = Channel<NavigationSpeech>(capacity = 8, onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        onUndeliveredElement = { it.onOutcome(com.splittesla.core.voice.SpeechOutcome.DROPPED) })
+    val speech: Flow<NavigationSpeech> = _speech.receiveAsFlow()
 
     private lateinit var app: Context
     private lateinit var prefs: NaviPrefs
@@ -118,11 +130,18 @@ object NaviHub {
     private var learner = ConsumptionLearner()
     @Volatile private var car = CarFeed()
     @Volatile private var lastFix: Location? = null
-    @Volatile private var lastFixAt = 0L
+    @Volatile private var lastGoodFixAt = 0L
+    @Volatile private var lastEstimatedAt = 0L
+    private var speechSequence = 0L
     private var lastRerouteAt = 0L
     private var lastGuideIndex: Int? = null
     private var chargeChecked = false
     private var arriving = false
+    private var arrivalJob: Job? = null
+    private var fixGate = FixGate(maxAccuracyM = RouteTracker.TRUSTED_ACCURACY_M)
+    private var rerouteSpoken = false
+    private var rerouting = false
+    private var rerouteFailures = 0
     private var cameraIndex: CameraIndex? = null
     private var loops: Job? = null
 
@@ -316,8 +335,12 @@ object NaviHub {
             lastGuideIndex = null
             chargeChecked = false
             arriving = false
+            arrivalJob?.cancel()
+            fixGate = FixGate(maxAccuracyM = RouteTracker.TRUSTED_ACCURACY_M)
+            rerouteSpoken = false
+            rerouteFailures = 0
             prefs.remember(route.goal)
-            _state.update { it.copy(phase = NaviPhase.GUIDING, alternatives = emptyList(), message = null, chargeStops = emptyList(), chargeNote = null) }
+            _state.update { it.copy(phase = NaviPhase.GUIDING, hasPositionAnchor = false, routeVersion = routeVersions.incrementAndGet(), progress = null, gpsOk = false, estimatingNow = false, cameras = emptyList(), alternatives = emptyList(), message = null, chargeStops = emptyList(), chargeNote = null) }
             try {
                 ContextCompat.startForegroundService(app, Intent(app, NaviService::class.java))
             } catch (e: IllegalStateException) {
@@ -341,6 +364,7 @@ object NaviHub {
         loops?.cancel()
         loops = null
         tracker = null
+        arrivalJob?.cancel()
         _state.update { NaviUi(message = reason, destination = it.destination) }
     }
 
@@ -361,22 +385,38 @@ object NaviHub {
     private fun handleFix(fix: Location) {
         val here = LatLon(fix.latitude, fix.longitude)
         val t = tracker
-        // In and around tunnels the chip still reports fixes, wandering beside the road or running
-        // straight on through a bend. While guiding, a vague one is no fix: the car's speed carries on.
-        if (t != null && fix.hasAccuracy() && fix.accuracy > VAGUE_FIX_M) return
-        lastFix = fix
-        lastFixAt = System.currentTimeMillis()
-        if (!CameraState.running.value) CameraState.fix = fix
-        if (t == null || !_state.value.guiding) {
-            _state.update { it.copy(position = here, bearing = fix.takeIf { it.hasBearing() }?.bearing, gpsOk = true) }
+        val receivedAt = System.currentTimeMillis()
+        val sampleAt = SpeedEvidence.fixSampleAtMs(receivedAt, SystemClock.elapsedRealtimeNanos() - fix.elapsedRealtimeNanos)
+        val accuracy = fix.takeIf { it.hasAccuracy() }?.accuracy?.toDouble()
+        val accepted = if (sampleAt != null) {
+            if (t != null) t.validateFix(here, accuracy, fix.elapsedRealtimeNanos / 1_000_000)
+            else fixGate.accept(here, fix.elapsedRealtimeNanos / 1_000_000, accuracy)
+        } else null
+        if (accepted == null || sampleAt == null) {
+            t?.invalidatePositionEvidence()
+            arrivalJob?.cancel()
+            arriving = false
+            _state.update { it.copy(gpsOk = false, estimatingNow = estimateStillLive(it), progress = t?.progress() ?: it.progress) }
             return
         }
-        val p = t.update(here, fix.takeIf { it.hasAccuracy() }?.accuracy?.toDouble())
-        val speed = car.speedKmh ?: fix.takeIf { it.hasSpeed() }?.speed?.times(3.6)?.toDouble()
+        lastFix = fix
+        lastGoodFixAt = sampleAt
+        if (!CameraState.running.value) CameraState.fix = fix
+        if (t == null || !_state.value.guiding) {
+            _state.update { it.copy(position = here, bearing = fix.takeIf { it.hasBearing() }?.bearing, gpsOk = true, estimatingNow = false) }
+            return
+        }
+        val p = t.update(here, fix.takeIf { it.hasAccuracy() }?.accuracy?.toDouble(), fix.elapsedRealtimeNanos / 1_000_000, acceptedFix = accepted)
+        val speed = SpeedEvidence.fresh(car.speedKmh, car.speedAt, System.currentTimeMillis())
+            ?: SpeedEvidence.measured(fix.takeIf { it.hasSpeed() }?.speed?.times(3.6)?.toDouble())
+            ?: accepted.derivedKmh
         afterProgress(t, p, speed, here, fix.takeIf { it.hasBearing() }?.bearing)
-        if (p.offRoute && prefs.autoReroute && System.currentTimeMillis() - lastRerouteAt > 15_000) {
-            say("경로를 벗어나 다시 찾습니다.")
-            reroute("새 경로로 안내합니다.")
+        if (!p.offRoute) rerouteSpoken = false
+        val retryMs = 15_000L * (1L shl rerouteFailures.coerceAtMost(2))
+        if (p.offRoute && prefs.autoReroute && !rerouting && System.currentTimeMillis() - lastRerouteAt > retryMs) {
+            if (!rerouteSpoken) say("경로를 벗어나 다시 찾습니다.", 30)
+            rerouteSpoken = true
+            reroute("")
         }
     }
 
@@ -385,7 +425,7 @@ object NaviHub {
             val prev = car
             car = feed
             val power = feed.powerKw
-            val speed = feed.speedKmh
+            val speed = SpeedEvidence.fresh(feed.speedKmh, feed.speedAt, feed.at)
             // Only while guiding, and only between two readings close in time.
             if (tracker != null && power != null && speed != null && prev.at > 0 && feed.at - prev.at in 1..10_000) {
                 learner.observe(power, speed, (feed.at - prev.at) / 1000.0, feed.outsideC)
@@ -397,36 +437,57 @@ object NaviHub {
         val route = t.route
         // A waypoint behind us is done; later reroutes go to the rest.
         val passed = lastGuideIndex
-        if (passed != null && p.nextGuideIndex != passed && route.guides.getOrNull(passed)?.maneuver == Maneuver.WAYPOINT) {
+        if (!p.estimated && !p.positionUncertain && passed != null && p.nextGuideIndex != passed && route.guides.getOrNull(passed)?.maneuver == Maneuver.WAYPOINT) {
             _state.update { it.copy(waypoints = it.waypoints.drop(1)) }
         }
-        lastGuideIndex = p.nextGuideIndex
+        if (!p.estimated && !p.positionUncertain) lastGuideIndex = p.nextGuideIndex
         val kwh = EnergyModel.kwhToGo(t, p.alongM, learner.factor, car.outsideC)
         val soc = EnergyModel.socAtArrival(car.socPercent, car.remainingKwh, car.fullKwh, kwh)
         val cams = _state.value.cameras
         _state.update {
             it.copy(
                 progress = p,
+                hasPositionAnchor = it.hasPositionAnchor || (!p.estimated && !p.positionUncertain),
                 // On the route the car is drawn on the line, facing along the road, the way navi apps do.
                 position = if (!p.offRoute) t.snapped() else here ?: it.position,
                 bearing = if (!p.offRoute) t.heading().toFloat() else bearing ?: it.bearing,
-                gpsOk = System.currentTimeMillis() - lastFixAt < 4000,
+                gpsOk = !p.estimated && !p.positionUncertain && System.currentTimeMillis() - lastGoodFixAt in 0..3000,
+                estimatingNow = p.estimated && here == null && p.canAnnounceTurn,
                 kwhToGo = kwh,
                 socAtArrival = soc,
                 learnedWhPerKm = learner.whPerKm,
                 nextCamera = RouteCameras.next(cams, p.alongM),
             )
         }
-        announcer.next(route, p, speedKmh)?.let(::say)
+        if (p.estimated && p.canAnnounceTurn && here == null) lastEstimatedAt = SystemClock.elapsedRealtime()
+        if (p.canAnnounceTurn && prefs.voice) announcer.nextForPlayback(route, p, speedKmh, SystemClock.elapsedRealtime())?.let { notice ->
+            val text = notice.text
+            val context = com.splittesla.core.navi.TurnSpeechContext(_state.value.routeVersion,
+                notice.guide, notice.stage, p.alongM, p.nextGuideDistanceM, p.estimated, SystemClock.elapsedRealtime(),
+                notice.thresholds, notice.stepId)
+            _state.update { it.copy(lastSpoken = text) }
+            val speech = NavigationSpeech(text, 70, context.createdAt + 1500,
+                "${context.eventKey}:attempt:${notice.attempt}", context,
+                canStart = { announcer.claimStart(notice) }) { outcome ->
+                if (_state.value.routeVersion == context.routeVersion) announcer.playback(notice, outcome)
+            }
+            if (!_speech.trySend(speech).isSuccess) speech.onOutcome(com.splittesla.core.voice.SpeechOutcome.DROPPED)
+        }
         if (soc != null && soc < prefs.reserveSoc && !chargeChecked) {
             chargeChecked = true
             planCharging(t, p.alongM, soc)
         }
+        if (!p.arrived) {
+            arrivalJob?.cancel()
+            arriving = false
+        }
         if (p.arrived && !arriving) {
             arriving = true
-            scope.launch {
+            arrivalJob = scope.launch {
                 delay(15_000)
-                if (tracker === t) halt("목적지에 도착했습니다")
+                if (tracker === t && t.progress().arrived && System.currentTimeMillis() - lastGoodFixAt in 0..3000) {
+                    halt("목적지에 도착했습니다")
+                } else arriving = false
             }
         }
     }
@@ -441,9 +502,18 @@ object NaviHub {
                     delay(1000)
                     val now = System.currentTimeMillis()
                     val t = tracker ?: continue
-                    val speed = car.speedKmh ?: lastFix?.takeIf { it.hasSpeed() }?.speed?.times(3.6)?.toDouble()
-                    if (now - lastFixAt > 3000 && speed != null && speed > 3) {
-                        afterProgress(t, t.advance(speed / 3.6 * (now - last) / 1000.0), speed, null, null)
+                    val speed = SpeedEvidence.deadReckoningKmh(now, lastGoodFixAt, car.speedKmh, car.speedAt)
+                    if (speed != null && speed > 3 && now - last in 1..2000) {
+                        afterProgress(t, t.advance(speed / 3.6 * (now - last) / 1000.0, elapsedMs = now - last), speed, null, null)
+                    } else {
+                        t.invalidateEstimatedTurn()
+                        _state.update { it.copy(progress = t.progress(), estimatingNow = false) }
+                    }
+                    if (now - lastGoodFixAt !in 0..3000) {
+                        t.invalidateArrival()
+                        arrivalJob?.cancel()
+                        arriving = false
+                        _state.update { it.copy(gpsOk = false, progress = t.progress()) }
                     }
                     last = now
                 }
@@ -458,18 +528,26 @@ object NaviHub {
     }
 
     private fun reroute(done: String) {
+        if (rerouting) return
         lastRerouteAt = System.currentTimeMillis()
         val s = _state.value
         val goal = s.destination ?: s.route?.goal ?: return
         val option = s.route?.option ?: prefs.option
+        rerouting = true
         scope.launch {
-            val from = bestPosition() ?: return@launch
             try {
-                val r = api.directions(from, goal, s.waypoints, listOf(option)).firstOrNull() ?: return@launch
+                val from = bestPosition() ?: throw NaviApiException("현재 위치를 확인할 수 없습니다")
+                val r = api.directions(from, goal, s.waypoints, listOf(option)).firstOrNull()
+                    ?: throw NaviApiException("경로가 없습니다")
+                if (tracker?.route !== s.route || !_state.value.guiding) return@launch
                 replaceRoute(r)
-                say(done)
+                rerouteFailures = 0
+                if (done.isNotBlank()) say(done)
             } catch (e: Exception) {
+                rerouteFailures++
                 fail("재탐색", e)
+            } finally {
+                rerouting = false
             }
         }
     }
@@ -499,10 +577,12 @@ object NaviHub {
         lastGuideIndex = null
         chargeChecked = false
         arriving = false
-        _state.update { it.copy(route = r, chargeStops = emptyList(), chargeNote = null) }
+        arrivalJob?.cancel()
+        fixGate = FixGate(maxAccuracyM = RouteTracker.TRUSTED_ACCURACY_M)
+        _state.update { it.copy(route = r, progress = null, hasPositionAnchor = false, gpsOk = false, estimatingNow = false, routeVersion = routeVersions.incrementAndGet(), cameras = emptyList(), chargeStops = emptyList(), chargeNote = null) }
         loadCameras(r)
         val fix = lastFix
-        if (fix != null) handleFix(fix) else afterProgress(t, t.progress(), car.speedKmh, null, null)
+        if (fix != null) handleFix(fix) else afterProgress(t, t.progress(), null, null, null)
     }
 
     // ── Charging ──
@@ -554,7 +634,7 @@ object NaviHub {
     /** Freshest of: this guidance's GPS, the camera service's GPS, the car's own position, the phone's last known spot. */
     fun bestPosition(): LatLon? {
         val now = System.currentTimeMillis()
-        lastFix?.takeIf { now - lastFixAt < 120_000 }?.let { return LatLon(it.latitude, it.longitude) }
+        lastFix?.takeIf { now - lastGoodFixAt < 120_000 }?.let { return LatLon(it.latitude, it.longitude) }
         CameraState.fix?.takeIf { now - it.time < 120_000 }?.let { return LatLon(it.latitude, it.longitude) }
         car.position?.let { return it }
         return try {
@@ -565,9 +645,30 @@ object NaviHub {
         }
     }
 
-    private fun say(text: String) {
+    /** A rejected sample cannot revoke an already authorized, still-live integration tick. */
+    private fun estimateStillLive(ui: NaviUi): Boolean = com.splittesla.core.navi.GuidanceDisplayPolicy.estimateStillLive(
+        ui.estimatingNow, ui.hasPositionAnchor, lastEstimatedAt, SystemClock.elapsedRealtime(),
+        System.currentTimeMillis(), lastGoodFixAt, car.speedKmh, car.speedAt)
+
+    fun speechStillValid(speech: NavigationSpeech): Boolean {
+        val original = speech.turn ?: return true
+        val ui = _state.value
+        val p = ui.progress ?: return false
+        val usable = ui.guiding && !p.offRoute && p.canAnnounceTurn &&
+            (if (p.estimated) estimateStillLive(ui) else ui.gpsOk && System.currentTimeMillis() - lastGoodFixAt in 0..3000)
+        val current = original.copy(routeVersion = ui.routeVersion, guideIndex = if (p.arrived) null else p.nextGuideIndex,
+            stage = if (p.arrived) -1 else original.thresholds.indices.lastOrNull {
+                (p.nextGuideDistanceM ?: Double.POSITIVE_INFINITY) <= original.thresholds[it]
+            } ?: -2,
+            alongM = p.alongM, distanceM = p.nextGuideDistanceM, estimated = p.estimated)
+        return original.valid(current, SystemClock.elapsedRealtime(), usable)
+    }
+
+    private fun say(text: String) = say(text, 70)
+
+    private fun say(text: String, priority: Int) {
         _state.update { it.copy(lastSpoken = text) }
-        if (prefs.voice) _speech.trySend(text)
+        if (prefs.voice) _speech.trySend(NavigationSpeech(text, priority, SystemClock.elapsedRealtime() + 5000, "navi:${_state.value.routeVersion}:${++speechSequence}"))
     }
 
     private fun fail(what: String, e: Exception) {
@@ -577,9 +678,6 @@ object NaviHub {
     }
 
     private val SEOUL_CITY_HALL = LatLon(37.5663, 126.9779)
-
-    /** Fixes vaguer than this are ignored while guiding; tunnels and their mouths produce them. */
-    private const val VAGUE_FIX_M = 60f
 
     fun minutes(ms: Long): String {
         val m = (ms / 60_000.0).roundToInt().coerceAtLeast(1)

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.tesla.TeslaClientTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-03T19:30:22.098Z" hostname="44803f7d0664" time="0.748">
+  <properties/>
+  <testcase name="vcsecCommandWaitsPastInterimStatus()" classname="com.splittesla.core.tesla.TeslaClientTest" time="0.321"/>
+  <testcase name="infotainmentCommandsRunEncryptedEndToEnd()" classname="com.splittesla.core.tesla.TeslaClientTest" time="0.238"/>
+  <testcase name="navigationReadsRouteAndNearbySites()" classname="com.splittesla.core.tesla.TeslaClientTest" time="0.049"/>
+  <testcase name="vehicleStatusNeedsNoSession()" classname="com.splittesla.core.tesla.TeslaClientTest" time="0.027"/>
+  <testcase name="unenrolledKeyIsReported()" classname="com.splittesla.core.tesla.TeslaClientTest" time="0.047"/>
+  <testcase name="addKeyRequestIsAPresentKeyEnvelope()" classname="com.splittesla.core.tesla.TeslaClientTest" time="0.04"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,5 @@
+57153e1e0d5fff1be2c22b78dd5e5d8bf0bfdca7291e2a0aecbc1459f1d0415d  /home/orca/orca/workspaces/SplitTesla/android-guidance/docs/android-guidance/phase2-evidence/source.sha256
+2026-11-04T06:13:40+09:00
+snapshot-before-mismatch=0
+snapshot-after-mismatch=0
+worktree-after-mismatch=0

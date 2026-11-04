@@ -1,0 +1,52 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :extractIncludeProto
+> Task :extractProto
+> Task :generateProto
+> Task :processResources
+> Task :extractIncludeTestProto
+> Task :extractTestProto
+> Task :generateTestProto NO-SOURCE
+> Task :processTestResources NO-SOURCE
+> Task :compileKotlin
+> Task :compileJava
+> Task :classes
+> Task :jar
+> Task :compileTestKotlin
+> Task :compileTestJava NO-SOURCE
+> Task :testClasses UP-TO-DATE
+
+> Task :test
+
+SpeakerOutcomeWiringTest > obs_expiryIsReportedWithoutWaitingForTheNextQueueActivity() FAILED
+    org.opentest4j.AssertionFailedError at SpeakerOutcomeWiringTest.kt:90
+
+CurrentBehaviourQ1Test > s2_repeatedDiscardAtThirtySixKmhAndAboveStillGivesOneCurrentNotice() FAILED
+    org.opentest4j.AssertionFailedError at JUnitSupport.kt:32
+
+CurrentBehaviourQ1Test > s6_noticeReturnsWhenPositionRecoversAndTheTurnIsStillAhead() FAILED
+    org.opentest4j.AssertionFailedError at JUnitSupport.kt:32
+
+CurrentBehaviourQ1Test > s9_estimatedNoticeReturnsLabelledInsideTheWindow() FAILED
+    org.opentest4j.AssertionFailedError at JUnitSupport.kt:32
+
+CurrentBehaviourQ1Test > s1_cutLastStageTurnIsAnnouncedAgainWhileAheadAndOnlyOnce() FAILED
+    org.opentest4j.AssertionFailedError at JUnitSupport.kt:32
+
+80 tests completed, 5 failed
+
+> Task :test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///tmp/claude-1026/-home-orca-orca-workspaces-SplitTesla-android-guidance/3f44de16-869e-4ef4-aa92-bb6f9f117716/scratchpad/snap-final2-h/core/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 3m 23s
+11 actionable tasks: 11 executed
+exit=1

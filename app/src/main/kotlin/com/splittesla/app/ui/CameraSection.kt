@@ -16,6 +16,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import com.splittesla.app.camera.CameraRepository
+import com.splittesla.core.camera.CameraWarningPreset
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -34,6 +38,9 @@ import kotlin.math.roundToInt
 /** Speed camera alerts: on/off, the camera list, and the next camera ahead. */
 @Composable
 fun CameraSection(vm: AppViewModel, ui: UiState) {
+    val context = LocalContext.current
+    val cameraPrefs = remember { CameraRepository(context) }
+    var limitPreset by rememberSaveable { mutableStateOf(cameraPrefs.warningPreset == CameraWarningPreset.LIMIT) }
     val running by CameraState.running.collectAsState()
     val status by CameraState.status.collectAsState()
     val lastAlert by CameraState.lastAlert.collectAsState()
@@ -62,7 +69,7 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
             Column(Modifier.weight(1f)) {
                 Text(if (running) "켜짐" else "꺼짐", style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "속도에 따라 200~600m 전에 한 번, 100m 전에 한 번 더 음성과 진동으로 알립니다. 화면이 꺼져도 동작합니다.",
+                    "선택한 거리 기준과 최종 100m에서 음성과 진동으로 알립니다. 화면이 꺼져도 동작합니다.",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -83,8 +90,15 @@ fun CameraSection(vm: AppViewModel, ui: UiState) {
             )
         }
 
+        Toggle("제한속도 기준 미리 알림", limitPreset) {
+            limitPreset = it
+            cameraPrefs.warningPreset = if (it) CameraWarningPreset.LIMIT else CameraWarningPreset.SPEED
+        }
+        Text(if (limitPreset) "제한 80 이상: 1000·500m / 50 이상: 600·300m / 50 미만: 300m. 최종 100m 알림 유지."
+            else "기본: 주행 속도에 따라 200~600m, 최종 100m 알림", style = MaterialTheme.typography.bodySmall)
         if (running) {
-            if (!gpsOk) Text("GPS 신호를 기다리는 중…", style = MaterialTheme.typography.bodySmall)
+            if (!gpsOk) Text("카메라: 위치 확인 중 · 경고 일시 보류", style = MaterialTheme.typography.bodySmall)
+            Text(if (gpsOk) "카메라: 위치 수신 중 (길안내 상태와 별도)" else "카메라 거리는 마지막 확인 위치 기준", style = MaterialTheme.typography.bodySmall)
             val ahead = status.ahead
             val distance = status.distanceM
             if (ahead != null && distance != null) {

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" tests="11" skipped="11" failures="0" errors="0" timestamp="2026-11-03T21:10:52.559Z" hostname="44803f7d0664" time="0.053">
+  <properties/>
+  <testcase name="weakFixesFarAheadMoveNothingAndDoNotPoisonTheMotionGate()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="repeatedGoodOffRouteStillReachesOffRoute()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.007">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="l2_sustainedWeakGpsWithVehicleSpeedGoesSilentAfterThirtySeconds()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="repeatedWeakOffRouteNeverCountsAsLeavingTheRoute()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.006">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="weakFixesAtTheDestinationNeverConfirmArrival()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.003">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="trustBoundaryIsThirtyMetresInclusive()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="l2_sustainedWeakGpsWithoutVehicleSpeedFreezesGuidance()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.001">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="estimatedWindowEndsThirtySecondsAfterTheLastGoodFixWhateverWeakFixesSay()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="oneGoodFixAfterExpiryIsNeededBeforeEstimatesMayBeSpokenAgain()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="goodAccuracyContradictionStillCancelsTheAnchor()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <testcase name="sampleTimeUsesAgeAndRejectsOutOfRangeSamples()" classname="com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest" time="0.002">
+    <skipped message="Assumption failed: QA_REPRO=1 to run round-5 probes" type="org.opentest4j.TestAbortedException">org.opentest4j.TestAbortedException: Assumption failed: QA_REPRO=1 to run round-5 probes
+	at org.junit.jupiter.api.Assumptions.throwAssumptionFailed(Assumptions.java:316)
+	at org.junit.jupiter.api.Assumptions.assumeTrue(Assumptions.java:115)
+	at com.splittesla.core.qa.AndroidGuidanceQaRound5ProbeTest.gate(AndroidGuidanceQaRound5ProbeTest.kt:26)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</skipped>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

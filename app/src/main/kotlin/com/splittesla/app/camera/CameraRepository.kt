@@ -24,6 +24,10 @@ class CameraRepository(private val context: Context) {
     private val file get() = File(context.filesDir, "cameras.tsv")
     private val prefs = context.getSharedPreferences("splittesla", Context.MODE_PRIVATE)
 
+    var warningPreset: com.splittesla.core.camera.CameraWarningPreset
+        get() = if (prefs.getBoolean("camera_limit_preset", false)) com.splittesla.core.camera.CameraWarningPreset.LIMIT else com.splittesla.core.camera.CameraWarningPreset.SPEED
+        set(value) = prefs.edit().putBoolean("camera_limit_preset", value == com.splittesla.core.camera.CameraWarningPreset.LIMIT).apply()
+
     val count: Int get() = prefs.getInt("camera_count", 0)
     val updatedAt: Long get() = prefs.getLong("camera_updated", 0)
     var apiKey: String

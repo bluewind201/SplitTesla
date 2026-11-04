@@ -1,0 +1,15 @@
+JDK: JAVA_HOME=/home/orca/project_folder/SplitTesla/tools/jdk-21
+1. ./gradlew -p core clean test --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+   core-normal.log: production/core compilation succeeded; one new fixture made a 310m/2s jump and was rejected by existing FixGate, leaving final assertion unmet (no production threshold change).
+2. ./gradlew -p core test --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+   core-normal-final.log: final valid-motion fixture, BUILD SUCCESSFUL; normal-result.json and normal-xml.
+3. QA_REPRO=1 ./gradlew -p core test --tests 'com.splittesla.core.qa.*' --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+   core-qa.log; QA owner sources unchanged.
+4. ANDROID_HOME=$PWD/.tools/android-sdk ./gradlew :app:assembleDebug --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+   android-with-tools.log: SDK licenses not accepted, platforms;android-35 and build-tools;34.0.0.
+5. ANDROID_HOME=$PWD/.tools/android-sdk ./gradlew :app:assembleDebug --offline --no-daemon -Dorg.gradle.jvmargs='-Xmx1536m -XX:MaxMetaspaceSize=768m'
+   android-final.log: Failed to find target with hash string android-35, exit1.
+6. .tools/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$PWD/.tools/android-sdk --list
+   sdk-list.log: succeeded, command-line tools available.
+7. .tools/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=$PWD/.tools/android-sdk 'platforms;android-35' 'build-tools;34.0.0' < /dev/null
+   sdk-license-required.log: no acceptance input; both packages skipped as license not accepted.

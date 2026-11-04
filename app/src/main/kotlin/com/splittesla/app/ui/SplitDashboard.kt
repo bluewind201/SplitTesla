@@ -297,11 +297,12 @@ private fun NaviCard(navi: NaviUi, modifier: Modifier) {
     val guide = p?.nextGuideIndex?.let { navi.route?.guides?.getOrNull(it) }
     Card(modifier, Neon.lime) {
         Text("길안내 · ${navi.route?.goal?.name ?: ""}", style = Caption, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        if (!navi.gpsOk) Text(navi.positionState.label, fontSize = 12.sp, color = Neon.amber)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ManeuverIcon(guide?.maneuver, Neon.lime, Modifier.size(32.dp))
-            Text(p?.nextGuideDistanceM?.let(::distanceText) ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Neon.text)
+            ManeuverIcon(guide?.maneuver.takeIf { navi.gpsOk }, Neon.lime, Modifier.size(32.dp))
+            Text(if (!navi.gpsOk) "—" else p?.nextGuideDistanceM?.let(::distanceText) ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Neon.text)
         }
-        Text(guide?.let { GuidanceAnnouncer.speakable(it) } ?: "직진", fontSize = 12.sp, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(if (!navi.gpsOk) "위치 확인 후 턴 안내" else guide?.let { GuidanceAnnouncer.speakable(it) } ?: "직진", fontSize = 12.sp, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(
             listOfNotNull(
                 p?.let { arrivalClock(it.remainingMs / 60_000.0) },

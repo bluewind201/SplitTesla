@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.splittesla.core.qa.AndroidGuidanceQaTest" tests="21" skipped="0" failures="0" errors="0" timestamp="2026-11-03T20:46:15.864Z" hostname="44803f7d0664" time="0.166">
+  <properties/>
+  <testcase name="eachCameraIsAnnouncedAtMostOncePerStageEvenWithASpikeInBetween()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.027"/>
+  <testcase name="deadReckoningIgnoresNanAndInfiniteDistancesAndNeverArrives()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.006"/>
+  <testcase name="deadReckoningWindowIsBoundedOnBothSides()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.002"/>
+  <testcase name="speedEvidenceRejectsNanInfiniteNegativeOverRangeFutureZeroAndStale()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.006"/>
+  <testcase name="emptyRouteFilterSilencesAndNullFilterWarns()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.008"/>
+  <testcase name="crossingLaterLegDoesNotPullProgressForward()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.004"/>
+  <testcase name="tunnelExitReacquiresWithinAboutSixSecondsAt1Hz()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.001"/>
+  <testcase name="stationaryJitterIsAcceptedWithoutBecomingAReacquire()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.002"/>
+  <testcase name="sectionStartIsAnnouncedAt1HzOnAHighwayAtEveryPhase()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.013"/>
+  <testcase name="lowRateFixesUpToFiveSecondsApartAreAccepted()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.001"/>
+  <testcase name="unverifiedSectionAt1HzSaysStartAndUnverifiedEndWithoutNumbers()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.007"/>
+  <testcase name="missingSpeedAndMissingBearingStillWarnFromPositions()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.005"/>
+  <testcase name="arrivalAnnouncementIsSpokenOnce()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.002"/>
+  <testcase name="spokenDistancesFollowTheRealDistance()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.017"/>
+  <testcase name="duplicateAndBackwardsTimestampsAreRejected()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.001"/>
+  <testcase name="normalDriveProgressesAndArrivesOnlyAfterRealStops()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.008"/>
+  <testcase name="highSpeedAt1HzIsNeverRejected()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.004"/>
+  <testcase name="verifiedPairMeasuresOnlyWhileEvidenceIsContinuous()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.006"/>
+  <testcase name="stationaryNearACameraWithoutSpeedDoesNotWarn()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.004"/>
+  <testcase name="policyLimitParkedFortyFiveMetresBesideTheEndIsNotAutoArrival()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.004"/>
+  <testcase name="alternatingTrueAndJumpedFixesNeverAcceptTheJump()" classname="com.splittesla.core.qa.AndroidGuidanceQaTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

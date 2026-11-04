@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * text-to-speech voice name; null keeps the engine's own Korean voice.
  */
 object VoiceChoice {
-    data class Setting(val voiceName: String? = null, val rate: Float = 1f)
+    data class Setting(val voiceName: String? = null, val rate: Float = 1f, val muted: Boolean = false)
 
     private const val PREFS = "voice"
     private val _setting = MutableStateFlow(Setting())
@@ -22,7 +22,7 @@ object VoiceChoice {
     fun load(context: Context) {
         if (loaded) return
         val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        _setting.value = Setting(p.getString("name", null), p.getFloat("rate", 1f))
+        _setting.value = Setting(p.getString("name", null), p.getFloat("rate", 1f), p.getBoolean("muted", false))
         loaded = true
     }
 
@@ -30,6 +30,7 @@ object VoiceChoice {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putString("name", setting.voiceName)
             .putFloat("rate", setting.rate)
+            .putBoolean("muted", setting.muted)
             .apply()
         _setting.value = setting
         loaded = true
