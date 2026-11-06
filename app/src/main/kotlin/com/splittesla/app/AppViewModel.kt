@@ -5,16 +5,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import android.net.Uri
 import com.splittesla.app.assistant.DriveAssistant
-import com.splittesla.app.assistant.RouteSync
 import com.splittesla.app.ble.CommanderLink
-import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.logbook.LogbookController
-import com.splittesla.app.camera.CameraState
-import com.splittesla.app.camera.SpeedCameraService
-import com.splittesla.app.navi.CarFeed
-import com.splittesla.app.navi.NaviHub
+import com.splittesla.app.overlay.DashboardOverlay
 import com.splittesla.app.ble.TeslaLink
-import com.splittesla.app.ui.CockpitLayout
 import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.app.weather.Weather
 import com.splittesla.app.weather.RegionRepository
@@ -76,14 +70,10 @@ data class UiState(
     val navUpdatedAt: Long? = null,
     val navAutoRefresh: Boolean = false,
     val chargingSites: List<ChargingSite> = emptyList(),
-    val cameraCount: Int = 0,
-    val cameraUpdatedAt: Long = 0,
-    val cameraApiKey: String = "",
-    /** Result of the last speed camera API connection test. */
-    val cameraTest: String? = null,
     val weather: Weather? = null,
     val gaugeStyle: GaugeStyle = GaugeStyle.TRACK,
-    val cockpitLayout: CockpitLayout = CockpitLayout.BALANCED,
+    /** Show the dashboard over other apps while this app is in the background. */
+    val overlay: Boolean = true,
     val demo: Boolean = false,
     /** District and neighbourhood, such as "분당구 정자동". */
     val region: String? = null,
@@ -99,7 +89,6 @@ data class UiState(
  */
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Prefs(app)
-    private val cameras = CameraRepository(app)
     private val weatherRepo = WeatherRepository(app)
     private val regions = RegionRepository(app)
     private val _ui = MutableStateFlow(
@@ -107,11 +96,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             vin = prefs.vin,
             keyPaired = prefs.keyPaired,
             favorites = prefs.favorites,
-            cameraCount = cameras.count,
-            cameraUpdatedAt = cameras.updatedAt,
-            cameraApiKey = cameras.apiKey,
             gaugeStyle = prefs.gaugeStyle,
-            cockpitLayout = prefs.cockpitLayout,
+            overlay = prefs.overlay,
         ),
     )
     val ui: StateFlow<UiState> = _ui.asStateFlow()
@@ -132,41 +118,22 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Assistant: spoken driving notes and typed commands. */
     val assistant = DriveAssistant(this, viewModelScope)
 
-    /** Sends the car's destination to the phone's navigation app when it changes. */
-    val routeSync = RouteSync(this, viewModelScope).also { it.start() }
-
     init {
-        // In-app guidance reads battery, speed and the car's superchargers from both links.
-        NaviHub.init(app) { log(it) }
         viewModelScope.launch {
             while (isActive) {
-                NaviHub.bestPosition()?.let { p -> regions.nameAt(p)?.let { r -> _ui.update { it.copy(region = r) } } }
+                position()?.let { p -> regions.nameAt(p)?.let { r -> _ui.update { it.copy(region = r) } } }
                 delay(60_000)
             }
         }
-        viewModelScope.launch {
-            _ui.collect { s ->
-                val d = s.live
-                val nav = s.nav
-                val speedNow = System.currentTimeMillis()
-                val commanderSpeed = com.splittesla.core.navi.SpeedEvidence.fresh(
-                    CameraState.commanderSpeedKmh?.toDouble(), CameraState.commanderSpeedAt, speedNow)
-                NaviHub.onCar(
-                    CarFeed(
-                        socPercent = d.socPercent?.toDouble() ?: s.charge?.takeIf { it.hasBatteryLevel() }?.batteryLevel?.toDouble(),
-                        remainingKwh = d.nominalRemainingKwh,
-                        fullKwh = d.nominalFullPackNowKwh,
-                        powerKw = d.batteryPowerKw,
-                        speedKmh = commanderSpeed ?: nav?.speedKmh,
-                        speedAt = if (commanderSpeed != null) CameraState.commanderSpeedAt else s.navUpdatedAt ?: 0,
-                        outsideC = d.outsideTempC?.toDouble(),
-                        position = nav?.latitude?.let { lat -> nav.longitude?.let { LatLon(lat, it) } },
-                        superchargers = s.chargingSites,
-                        at = System.currentTimeMillis(),
-                    ),
-                )
-            }
-        }
+    }
+
+    /** Where the car is: its own GPS over BLE when known, else the phone's last fix. */
+    private fun position(): LatLon? {
+        val nav = _ui.value.nav
+        val lat = nav?.latitude
+        val lon = nav?.longitude
+        if (lat != null && lon != null) return LatLon(lat, lon)
+        return weatherRepo.lastKnownLocation()?.let { LatLon(it.latitude, it.longitude) }
     }
 
     /** True while the app is on screen, including split screen beside a map. */
@@ -201,9 +168,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update { it.copy(gaugeStyle = style) }
     }
 
-    fun setCockpitLayout(layout: CockpitLayout) {
-        prefs.cockpitLayout = layout
-        _ui.update { it.copy(cockpitLayout = layout) }
+    fun setOverlay(on: Boolean) {
+        prefs.overlay = on
+        _ui.update { it.copy(overlay = on) }
+        DashboardOverlay.sync(getApplication(), on)
     }
 
     fun setDemo(on: Boolean) = _ui.update { it.copy(demo = on) }
@@ -266,7 +234,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         autoJob = viewModelScope.launch {
             var failures = 0
             while (isActive) {
-                if (isForeground) {
+                // The dashboard over the navi counts as on screen: it needs live data too.
+                if (isForeground || overlayShown) {
                     val s = _ui.value
                     val idle = setOf(LinkState.DISCONNECTED, LinkState.FAILED)
                     val tries = buildList {
@@ -289,6 +258,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun setForeground(on: Boolean) {
         isForeground = on
     }
+
+    /** Set by the overlay service while the floating dashboard is on screen. */
+    @Volatile
+    var overlayShown = false
 
     private suspend fun autoTry(name: String, block: suspend () -> Unit) {
         try {
@@ -319,18 +292,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val link = CommanderLink(
                 context = getApplication(),
                 phoneUuid = prefs.commanderPhoneUuid,
-                onData = { delta ->
-                    delta.speedKmh?.let {
-                        CameraState.commanderSpeedKmh = it
-                        CameraState.commanderSpeedAt = System.currentTimeMillis()
-                    }
-                    delta.speedLimit?.let { CameraState.commanderLimitKmh = it }
-                    queueLive(delta)
-                },
+                onData = { delta -> queueLive(delta) },
                 onRawPush = { bytes -> if (_ui.value.logRawPushes) log("PUSH ${bytes.hex()}") },
                 onDisconnect = {
                     log("Commander 연결 끊김")
-                    CameraState.commanderLimitKmh = null
                     _ui.update { it.copy(commander = LinkState.DISCONNECTED) }
                 },
                 log = ::log,
@@ -655,94 +620,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun exportLogbook(uri: Uri) = run("차계부 내보내기") { logbook.exportCsv(uri) }
 
-    // ── Speed cameras ──
-
-    fun importCameras(uri: Uri) = run("카메라 데이터 가져오기", silent = true) {
-        onCamerasLoaded(cameras.importCsv(uri))
-    }
-
-    fun downloadCameras(key: String) = run("카메라 데이터 받기", silent = true) {
-        cameras.apiKey = key
-        _ui.update { it.copy(cameraApiKey = cameras.apiKey) }
-        onCamerasLoaded(cameras.download(cameras.apiKey))
-    }
-
-    /** Saves the key and asks the API for one row, to show whether the key works. */
-    fun testCameraKey(key: String) = run("카메라 API 연결 테스트", silent = true) {
-        cameras.apiKey = key
-        _ui.update { it.copy(cameraApiKey = cameras.apiKey, cameraTest = "연결 확인 중…") }
-        val result = try {
-            val total = cameras.test(cameras.apiKey)
-            log("카메라 API 연결 테스트 성공: 전국 ${total}개")
-            "✅ 연결 성공 · 전국 카메라 ${total}개 조회 가능"
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            log("카메라 API 연결 테스트 실패: ${e.message}")
-            "❌ 연결 실패: ${e.message}"
-        }
-        _ui.update { it.copy(cameraTest = result, toast = result) }
-    }
-
-    /** The camera ahead watches the other direction; skip it when driving this way from now on. */
-    fun ignoreCamera(id: String, headingDeg: Double) {
-        cameras.ignore(id, headingDeg)
-        log("카메라 $id 를 이 방향(${headingDeg.toInt()}°)에서 제외")
-        _ui.update { it.copy(toast = "이 방향으로 갈 때는 이 카메라를 알리지 않습니다") }
-    }
-
-    val ignoredCameraCount: Int get() = cameras.ignoredCount
-
-    var cameraRoadCheck: Boolean
-        get() = cameras.roadLimitCheck
-        set(value) {
-            cameras.roadLimitCheck = value
-        }
-
-    var cameraLearning: Boolean
-        get() = cameras.learnMisses
-        set(value) {
-            cameras.learnMisses = value
-        }
-
-    fun clearIgnoredCameras() {
-        cameras.clearIgnored()
-        _ui.update { it.copy(toast = "제외한 카메라를 모두 되살렸습니다") }
-    }
-
-    private fun onCamerasLoaded(n: Int) {
-        log("과속 카메라 ${n}개 저장")
-        _ui.update { it.copy(cameraCount = n, cameraUpdatedAt = cameras.updatedAt, toast = "✅ 과속 카메라 ${n}개를 등록했습니다") }
-        // A running service keeps its old list; restart it to pick up the new one.
-        if (CameraState.running.value) {
-            SpeedCameraService.stop(getApplication())
-            SpeedCameraService.start(getApplication())
-        }
-    }
-
-    fun setCameraAlerts(on: Boolean) {
-        if (!on) {
-            prefs.cameraAlerts = false
-            SpeedCameraService.stop(getApplication())
-        } else if (cameras.count == 0) {
-            _ui.update { it.copy(toast = "먼저 내비 탭에서 공공데이터 카메라 데이터를 받으세요") }
-        } else {
-            prefs.cameraAlerts = true
-            SpeedCameraService.start(getApplication())
-        }
-    }
-
-    /** Starts the alerts again on app start when they were left on, so the dashboard has camera data. */
-    fun resumeCameraAlerts(locationAllowed: Boolean) {
-        if (prefs.cameraAlerts && locationAllowed && cameras.count > 0 && !CameraState.running.value) {
-            try {
-                SpeedCameraService.start(getApplication())
-            } catch (e: Exception) {
-                log("과속카메라 알림 다시 켜기 실패: ${e.message}")
-            }
-        }
-    }
-
     private fun withCar(label: String, silent: Boolean = false, block: suspend (TeslaClient) -> Unit) =
         run(label, silent) { block(ensureCar()) }
 
@@ -767,6 +644,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     override fun onCleared() {
+        // The app is closed for good: the floating dashboard goes with it.
+        DashboardOverlay.stop(getApplication())
         assistant.shutdown()
         commander?.disconnect()
         car?.disconnect()

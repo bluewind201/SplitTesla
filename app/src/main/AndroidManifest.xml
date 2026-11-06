@@ -13,30 +13,23 @@
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
 
-    <!-- Speed camera alerts: GPS in a foreground service, spoken warnings, data download -->
+    <!-- Location: BLE scans that may see beacons need it, and the weather uses it -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Optional: lets a changed Tesla destination open the navigation app while
-         this app is in the background. Without it a notification is shown. -->
+    <!-- The dashboard floating over the navigation app while this app is in the
+         background, in a foreground service that keeps the car links alive. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Android 11+ package visibility: the TTS engine and map apps -->
+    <!-- Android 11+ package visibility: the TTS engine -->
     <queries>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
-        <package android:name="com.nhn.android.nmap" />
-        <package android:name="net.daum.android.map" />
-        <package android:name="com.skt.tmap.ku" />
-        <package android:name="com.skt.skaf.l001mtm091" />
-        <package android:name="com.locnall.KimGiSa" />
-        <package android:name="com.waze" />
     </queries>
 
     <application
@@ -58,14 +51,13 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".camera.SpeedCameraService"
+            android:name=".overlay.DashboardOverlayService"
             android:exported="false"
             android:stopWithTask="true"
-            android:foregroundServiceType="location" />
-        <service
-            android:name=".navi.NaviService"
-            android:exported="false"
-            android:stopWithTask="true"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Car dashboard drawn over the navigation app while driving" />
+        </service>
     </application>
 </manifest>

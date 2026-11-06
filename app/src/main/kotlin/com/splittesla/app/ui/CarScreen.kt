@@ -45,7 +45,6 @@ import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.Refresh
 import com.splittesla.app.UiState
-import com.splittesla.app.camera.CameraState
 import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Metric
 import com.splittesla.app.ui.theme.Neon
@@ -68,8 +67,7 @@ fun CarScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
     val confirm = rememberConfirmer()
     val idle = ui.busy == null
     val status = ui.vehicleStatus
-    val camera by CameraState.status.collectAsState()
-    val cockpit = Cockpit.from(ui, camera, null)
+    val cockpit = Cockpit.from(ui)
     val locked = cockpit.locked
     val portOpen = ui.charge?.takeIf { it.hasChargePortDoorOpen() }?.chargePortDoorOpen
 

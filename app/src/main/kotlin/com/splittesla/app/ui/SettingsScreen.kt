@@ -39,7 +39,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
-import com.splittesla.app.assistant.NaviApp
+import com.splittesla.app.overlay.DashboardOverlay
 import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.app.ui.theme.Caption
 import com.splittesla.app.ui.theme.GlowButton
@@ -50,14 +50,13 @@ import com.splittesla.app.ui.theme.Neon
 fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
     val log by vm.log.collectAsState()
     val assistant by vm.assistant.state.collectAsState()
-    val lastShared by vm.routeSync.last.collectAsState()
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
     var vin by rememberSaveable { mutableStateOf(ui.vin) }
     var its by rememberSaveable { mutableStateOf(assistant.itsKey) }
-    var overlay by remember { mutableStateOf(vm.routeSync.canOpenFromBackground()) }
+    var canDraw by remember { mutableStateOf(DashboardOverlay.canDraw(context)) }
     // Coming back from the system screen that grants it.
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { overlay = vm.routeSync.canOpenFromBackground() }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { canDraw = DashboardOverlay.canDraw(context) }
     // Commands connect on demand, so only a missing VIN or a running command blocks them.
     val carReady = ui.vin.length == 17 && ui.busy == null
 
@@ -160,54 +159,47 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
         }
         Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FoldSection(
-                "테슬라 목적지 → 폰 내비 자동 공유",
-                summary = if (assistant.autoShareRoute) "${assistant.naviApp.label} 자동" else "꺼짐",
-                summaryColor = if (assistant.autoShareRoute) Neon.green else Neon.muted,
+                "내비 위 계기판 (다른 앱 위에 표시)",
+                summary = when {
+                    !ui.overlay -> "꺼짐"
+                    canDraw -> "✓ 켜짐"
+                    else -> "권한 필요"
+                },
+                summaryColor = when {
+                    !ui.overlay -> Neon.muted
+                    canDraw -> Neon.green
+                    else -> Neon.amber
+                },
+                startOpen = ui.overlay && !canDraw,
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    NaviApp.entries.forEach { a -> GlowButton(a.label, { vm.assistant.setNaviApp(a) }, active = a == assistant.naviApp) }
-                }
-                Toggle("차에서 목적지가 바뀌면 자동으로 보내기", assistant.autoShareRoute, vm.assistant::setAutoShareRoute)
+                Toggle("앱이 뒤로 가면 계기판을 내비 위에 띄우기", ui.overlay, vm::setOverlay)
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        if (overlay) "✓ 앱이 뒤에 있어도 내비를 바로 엽니다" else "앱이 뒤에 있으면 알림을 한 번 눌러야 합니다",
-                        color = if (overlay) Neon.green else Neon.amber,
+                        if (canDraw) "✓ 다른 앱 위에 표시 허용됨" else "'다른 앱 위에 표시' 권한이 있어야 띄울 수 있어요",
+                        color = if (canDraw) Neon.green else Neon.amber,
                         fontSize = 13.sp,
                         modifier = Modifier.weight(1f),
                     )
-                    if (!overlay) GlowButton("다른 앱 위에 표시 허용", { context.startActivity(vm.routeSync.overlaySettingsIntent()) })
+                    if (!canDraw) GlowButton("권한 허용", { context.startActivity(DashboardOverlay.permissionIntent(context)) })
                 }
-                lastShared?.let { Text("최근 전송: $it", fontSize = 13.sp, color = Neon.cyan) }
                 Hint(
-                    "차 화면에서 목적지를 정하거나 바꾸면 10초 안에 고른 앱이 그 목적지로 안내를 시작합니다(차량 BLE 연결 필요). " +
-                        "폰 내비는 자기 경로를 다시 계산하므로 테슬라와 경로가 다를 수 있고, 테슬라의 경유지는 전달되지 않습니다. " +
-                        "카카오맵은 경로 화면까지 열리고 '안내 시작'을 한 번 눌러야 합니다. 반대로 폰 내비의 경로를 차로 보내는 것은 원격 API 전용이라 안 됩니다.",
+                    "내비 앱으로 넘어가거나 홈 버튼을 누르면 속도계가 작은 창으로 뜹니다(가로 화면은 폭의 1/3, 세로 화면은 화면의 1/6). " +
+                        "손가락으로 끌어 원하는 곳에 두면 다음에도 그 자리에 뜹니다. 차량 상태와 날씨는 AI 비서가 음성으로 알려 줍니다. " +
+                        "↗를 누르면 이 앱으로 돌아오고, ✕를 누르면 이 앱을 다시 열 때까지 숨깁니다. " +
+                        "최근 앱 목록에서 이 앱을 지우거나 뒤로 가기로 완전히 닫으면 계기판도 함께 사라집니다.",
                 )
             }
 
             VoiceSettingsCard()
 
-            FoldSection("계기판", summary = "${ui.cockpitLayout.letter} ${ui.cockpitLayout.title} · ${ui.gaugeStyle.title}") {
-                Text("배치", style = Caption)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CockpitLayout.entries.forEach { l ->
-                        GlowButton("${l.letter} ${l.title}", { vm.setCockpitLayout(l) }, active = l == ui.cockpitLayout)
-                    }
-                }
+            FoldSection("계기판", summary = ui.gaugeStyle.title) {
                 Text("게이지", style = Caption)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     GaugeStyle.entries.forEach { g -> GlowButton(g.title, { vm.setGaugeStyle(g) }, active = g == ui.gaugeStyle) }
                     GlowButton("DEMO", { vm.setDemo(!ui.demo) }, active = ui.demo, accent = Neon.cyan)
                 }
-                Hint(
-                    "A 균형형: 게이지 | 안내·카메라·도착 | 세로 지도. B 센터 게이지: 안내·카메라 | 게이지 | 세로 지도. " +
-                        "C 몰입형: 탭 메뉴를 숨기고 게이지를 가장 크게, 메뉴는 왼쪽 위 ≡ 버튼. " +
-                        "계기판에서 게이지를 누르면 모양이, 길게 누르면 배치가 바뀝니다. " +
-                        "지도는 길안내 API의 NCP 키를 쓰며, NCP 콘솔의 같은 애플리케이션에서 Dynamic Map을 켜고 Android 패키지 com.splittesla.app을 등록해야 나옵니다.",
-                )
+                Hint("계기판에서 게이지를 누르면 모양이 바뀝니다. DEMO는 주차 중에 계기판을 미리 보는 가짜 주행입니다.")
             }
-
-            NaviSettingsCard()
 
             FoldSection(
                 "교통정보 API (사고·공사)",

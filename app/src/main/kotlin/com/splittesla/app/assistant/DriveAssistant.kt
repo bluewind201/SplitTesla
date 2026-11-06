@@ -3,8 +3,6 @@ package com.splittesla.app.assistant
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
-import com.splittesla.app.camera.CameraState
-import com.splittesla.app.navi.NaviHub
 import com.splittesla.app.ui.Cockpit
 import com.splittesla.app.weather.Weather
 import com.splittesla.app.weather.WeatherRepository
@@ -12,7 +10,6 @@ import com.splittesla.core.assistant.Geo
 import com.splittesla.core.assistant.LatLon
 import com.splittesla.core.assistant.VoiceAction
 import com.splittesla.core.assistant.VoiceRules
-import com.splittesla.core.navi.NaviPlace
 import com.splittesla.core.tesla.NavigationInfo
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -37,11 +34,6 @@ data class AssistantUi(
     val hasKey: Boolean = false,
     val model: String = "",
     val announcements: Boolean = true,
-    val naviApp: NaviApp = NaviApp.NAVER,
-    val autoShareRoute: Boolean = true,
-    val companionNavi: CompanionNavi = CompanionNavi.NONE,
-    val homeAddress: String = "",
-    val workAddress: String = "",
     val itsKey: String = "",
     /** Result of the last traffic API connection test, shown under the key. */
     val itsTest: String? = null,
@@ -64,8 +56,8 @@ data class AssistantUi(
  *
  * Wording comes from the chosen AI model when a key is saved, and from fixed
  * Korean sentences otherwise, so it still works offline or without a key.
- * The car's own route cannot be changed without the Fleet API, so route
- * commands open the chosen phone navigation app with the new destination.
+ * Route guidance is left to the phone's own navigation app; the assistant
+ * only reads the car's route and status.
  */
 class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineScope) {
     private val context = vm.getApplication<android.app.Application>()
@@ -85,11 +77,6 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         hasKey = prefs.apiKey(prefs.provider).isNotBlank(),
         model = prefs.model(prefs.provider),
         announcements = prefs.announcements,
-        naviApp = prefs.naviApp,
-        autoShareRoute = prefs.autoShareRoute,
-        companionNavi = prefs.companionNavi,
-        homeAddress = prefs.homeAddress,
-        workAddress = prefs.workAddress,
         itsKey = prefs.itsKey,
     )
 
@@ -104,13 +91,6 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         prefs.setModel(provider, model)
         reloadPrefs()
         vm.toast(if (key.isBlank()) "${provider.label} 키를 지웠습니다" else "✅ ${provider.label} 키를 등록했습니다")
-    }
-
-    fun savePlaces(home: String, work: String) {
-        prefs.homeAddress = home
-        prefs.workAddress = work
-        reloadPrefs()
-        vm.toast("✅ 집·회사 주소를 저장했습니다")
     }
 
     fun saveItsKey(key: String) {
@@ -145,22 +125,6 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             _state.update { it.copy(itsTest = result) }
             vm.toast(result)
         }
-    }
-
-    fun setCompanionNavi(app: CompanionNavi) {
-        prefs.companionNavi = app
-        reloadPrefs()
-    }
-
-    fun setNaviApp(app: NaviApp) {
-        prefs.naviApp = app
-        reloadPrefs()
-        vm.toast("✅ 길 안내 앱: ${app.label}")
-    }
-
-    fun setAutoShareRoute(on: Boolean) {
-        prefs.autoShareRoute = on
-        reloadPrefs()
     }
 
     fun setAnnouncements(on: Boolean) {
@@ -217,31 +181,8 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     private suspend fun perform(action: VoiceAction, reply: String?) {
         val ui = vm.ui.value
         when (action) {
-            is VoiceAction.Navigate -> {
-                val place = resolveSaved(action.place) ?: run {
-                    say("${action.place} 주소를 AI 탭에 먼저 저장해 주세요.")
-                    return
-                }
-                say(reply ?: "${action.place}(으)로 안내를 시작합니다.")
-                if (NaviHub.handlesVoice) NaviHub.navigateTo(place) { say(it) }
-                else RouteHandoff.navigate(context, prefs.naviApp, place, here(ui), vm::log)
-            }
-            is VoiceAction.AddStop -> {
-                if (NaviHub.handlesVoice && NaviHub.state.value.guiding) {
-                    say(reply ?: "${action.place}를 경유지로 넣습니다.")
-                    NaviHub.addStopTo(action.place) { say(it) }
-                    return
-                }
-                val nav = ui.nav
-                val dest = nav?.let { n -> n.destinationLat?.let { lat -> n.destinationLon?.let { LatLon(lat, it) } } }
-                if (nav == null || dest == null) {
-                    say(reply ?: "${action.place}(으)로 안내합니다. 차량에 설정된 목적지가 없어 경유지 대신 바로 안내해요.")
-                    RouteHandoff.navigate(context, prefs.naviApp, action.place, here(ui), vm::log)
-                } else {
-                    say(reply ?: "${action.place}를 경유지로 넣어 ${nav.destination ?: "목적지"}까지 안내합니다.")
-                    RouteHandoff.viaStop(context, prefs.naviApp, action.place, dest, nav.destination ?: "목적지", here(ui), vm::log)
-                }
-            }
+            is VoiceAction.Navigate, is VoiceAction.AddStop ->
+                say("길 안내는 쓰시는 내비 앱에서 해 주세요. 저는 차량 상태와 날씨를 알려 드려요.")
             VoiceAction.NearestCharger -> nearestCharger(reply)
             is VoiceAction.Climate -> {
                 say(reply ?: if (action.on) "공조를 켭니다." else "공조를 끕니다.")
@@ -261,14 +202,8 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
                 setAnnouncements(action.on)
                 say(reply ?: if (action.on) "자동 안내를 다시 켭니다." else "알겠어요. 자동 안내를 끕니다.")
             }
-            VoiceAction.None -> say(reply ?: "잘 못 알아들었어요. 예를 들어 '강남역으로 가자'처럼 말해 주세요.")
+            VoiceAction.None -> say(reply ?: "잘 못 알아들었어요. 예를 들어 '배터리 얼마야', '에어컨 켜'처럼 말해 주세요.")
         }
-    }
-
-    private fun resolveSaved(place: String): String? = when (place.replace(" ", "")) {
-        "집", "우리집" -> prefs.homeAddress.takeIf { it.isNotBlank() }
-        "회사", "직장" -> prefs.workAddress.takeIf { it.isNotBlank() }
-        else -> place
     }
 
     private suspend fun nearestCharger(reply: String?) {
@@ -289,12 +224,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             say("주변 슈퍼차저를 찾지 못했어요. 차량 연결을 확인해 주세요.")
             return
         }
-        say(reply ?: "${site.name} 슈퍼차저로 안내합니다. ${site.distanceKm.roundToInt()}킬로미터, 빈 자리 ${site.availableStalls}개예요.")
-        val spot = NaviPlace("${site.name} 슈퍼차저", LatLon(site.latitude, site.longitude), site.address, "슈퍼차저")
-        // Guiding here already: the charger becomes a stop on the way.
-        if (NaviHub.handlesVoice && NaviHub.state.value.guiding) return NaviHub.addStop(spot)
-        if (NaviHub.handlesVoice) return NaviHub.preview(spot) { NaviHub.start() }
-        RouteHandoff.toPoint(context, prefs.naviApp, LatLon(site.latitude, site.longitude), "${site.name} 슈퍼차저")
+        say(reply ?: "가장 가까운 곳은 ${site.name} 슈퍼차저예요. ${site.distanceKm.roundToInt()}킬로미터, 빈 자리 ${site.availableStalls}개예요.")
     }
 
     // ── Automatic announcements ──
@@ -372,8 +302,6 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         // About 100 m of rounding: the car reports the same destination with jittering decimals.
         val routeKey = listOf(nav.destination, nav.destinationLat?.let { "%.3f".format(it) }, nav.destinationLon?.let { "%.3f".format(it) })
             .joinToString("|")
-        // In-app guidance speaks its own start and arrival; saying them again here doubled them.
-        val guidedHere = NaviHub.state.value.guiding
 
         // New route.
         if (routeKey != lastRouteKey) {
@@ -387,7 +315,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             val events = checkEvents(ui, force = true)
             val announcedLately = announcedRoutes[routeKey]?.let { now - it < REPEAT_ROUTE_MS } == true
             announcedRoutes[routeKey] = now
-            if (!guidedHere && !announcedLately) {
+            if (!announcedLately) {
                 announce(
                     "경로 시작",
                     "새 경로가 설정됐습니다. 도착 예정과 정체, 경로상 사고나 공사 중 운전에 필요한 것만 한 문장으로 말하세요.",
@@ -397,7 +325,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         }
         // Arrival.
         val minutes = nav.minutesToArrival
-        if (minutes != null && minutes <= 1.5 && arrivedKey != routeKey && !guidedHere) {
+        if (minutes != null && minutes <= 1.5 && arrivedKey != routeKey) {
             arrivedKey = routeKey
             val w = _state.value.destinationWeather
             announce("도착", "곧 목적지에 도착합니다. 도착 안내와 함께 도착지 날씨에 맞는 짧은 한마디를 하세요.") {
@@ -492,21 +420,16 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         val its = prefs.itsKey.isNotBlank()
         return when {
             hasRoute -> "테슬라 경로 기준으로 안내 중" + if (its) " (사고·공사 포함)" else " (교통정보 키를 넣으면 사고·공사도 안내)"
-            ui.car != LinkState.CONNECTED && freshFix() == null ->
-                "차량 BLE 미연결이라 경로를 모릅니다. 과속카메라 알림을 켜면 폰 GPS로 전방 교통상황을 안내합니다"
+            ui.car != LinkState.CONNECTED ->
+                "차량 BLE 미연결이라 경로와 진행 방향을 모릅니다"
             !its -> "경로 없음. 설정 탭에 교통정보 키를 넣으면 진행 방향의 사고·공사를 안내합니다"
             heading(ui) == null -> "정차 중. 출발하면 진행 방향 ${AHEAD_KM.roundToInt()}km 안의 사고·공사를 확인합니다"
             else -> "진행 방향 ${AHEAD_KM.roundToInt()}km 안의 사고·공사를 3분마다 확인 중"
         }
     }
 
-    private fun freshFix(): android.location.Location? =
-        CameraState.fix?.takeIf { System.currentTimeMillis() - it.time < 2 * 60_000 }
-
-    /** Direction of travel, only while moving fast enough for it to mean something. */
+    /** Direction of travel from the car, only while moving fast enough for it to mean something. */
     private fun heading(ui: UiState): Double? {
-        val fix = freshFix()
-        if (fix != null && fix.hasBearing() && fix.hasSpeed() && fix.speed > 4f) return fix.bearing.toDouble()
         val nav = ui.nav
         val moving = (nav?.speedKmh ?: 0.0) > 15 || (ui.live.speedKmh ?: 0L) > 15
         return nav?.heading?.toDouble()?.takeIf { moving && ui.car == LinkState.CONNECTED }
@@ -617,7 +540,6 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     private fun here(ui: UiState): LatLon? {
         val nav = ui.nav
         if (ui.car == LinkState.CONNECTED && nav?.latitude != null && nav.longitude != null) return LatLon(nav.latitude!!, nav.longitude!!)
-        freshFix()?.let { return LatLon(it.latitude, it.longitude) }
         if (nav?.latitude != null && nav.longitude != null) return LatLon(nav.latitude!!, nav.longitude!!)
         return weatherRepo.lastKnownLocation()?.let { LatLon(it.latitude, it.longitude) }
     }
@@ -638,14 +560,13 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
     /** Everything the model may use, as plain Korean lines. */
     private fun facts(): String {
         val ui = vm.ui.value
-        val c = Cockpit.from(ui, CameraState.status.value, CameraState.gpsSpeedKmh.value)
+        val c = Cockpit.from(ui)
         val s = _state.value
         val nav = ui.nav
         return buildString {
             appendLine("[차량 상황]")
             appendLine("시각: ${SimpleDateFormat("M월 d일 E요일 HH:mm", Locale.KOREA).format(Date())}")
             c.speedKmh?.let { appendLine("속도: ${it.roundToInt()}km/h") }
-            c.activeLimit?.let { appendLine("단속카메라 제한속도: ${it}km/h") }
             c.limitKmh?.let { appendLine("도로 제한속도(테슬라 지도): ${it}km/h") }
             c.gear?.let { appendLine("기어: $it") }
             c.socPercent?.let { appendLine("배터리: $it%") }
@@ -669,10 +590,6 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
                     appendLine("- ${e.kind} ${e.detail} / ${e.road} / ${e.lanes} / ${e.message.take(60)}")
                 }
             }
-            CameraState.status.value.let { cam ->
-                val d = cam.distanceM
-                if (cam.ahead != null && d != null && d < 2000) appendLine("과속카메라: ${d.roundToInt()}m 앞, 제한 ${cam.ahead!!.limitKmh}km/h")
-            }
         }.trim()
     }
 
@@ -683,7 +600,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         VoiceAction.catalog.forEach { (name, desc) -> appendLine("- $name: $desc") }
         appendLine("규칙: say는 한두 문장, 존댓말, 숫자는 읽기 쉽게. 이모지와 마크다운 금지. 운전 중이므로 안전을 우선하세요.")
         appendLine("질문(배터리, 도착 시간, 날씨 등)에는 아래 차량 상황으로 답하고 action은 none으로 합니다. 모르는 값은 지어내지 마세요.")
-        appendLine("경로 변경이나 목적지 설정은 폰의 ${prefs.naviApp.label} 앱으로 넘겨서 안내합니다.")
+        appendLine("길 안내와 목적지 설정은 하지 않습니다. 그런 요청에는 내비 앱을 쓰라고 짧게 답하고 action은 none으로 합니다.")
     }
 
     private fun greetingText(ui: UiState): String {
@@ -694,7 +611,7 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
             in 17..21 -> "좋은 저녁이에요."
             else -> "늦은 시간이네요, 안전 운전하세요."
         }
-        val c = Cockpit.from(ui, CameraState.status.value, null)
+        val c = Cockpit.from(ui)
         val battery = c.socPercent?.let { " 배터리는 $it%" + (c.rangeKm?.let { r -> ", 약 ${r}킬로미터 갈 수 있어요." } ?: "예요.") } ?: ""
         val weather = ui.weather?.let { " 지금 바깥은 ${it.label}, ${it.tempC.roundToInt()}도입니다." } ?: ""
         return hello + battery + weather
