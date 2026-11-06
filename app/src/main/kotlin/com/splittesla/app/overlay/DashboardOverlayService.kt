@@ -15,6 +15,24 @@ import android.view.Gravity
 import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.min
+import androidx.compose.ui.unit.sp
+import com.splittesla.app.ui.Cockpit
+import com.splittesla.app.ui.gauge.GaugeStyle
+import com.splittesla.app.ui.gauge.Speedometer
+import kotlin.math.sqrt
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -39,14 +57,10 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.splittesla.app.MainActivity
 import com.splittesla.app.R
-import com.splittesla.app.ui.DriveDashboard
-import com.splittesla.app.ui.DriveTopBar
 import com.splittesla.app.ui.rememberCockpit
 import com.splittesla.app.ui.theme.Glass
-import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.SplitTheme
-import com.splittesla.app.ui.theme.glassBackdrop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -55,8 +69,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 /**
- * Draws the dashboard over other apps, docked on the left at 3/5 of the
- * screen's width and its full height, while this app is out of sight. A
+ * Draws the speedometer over other apps in a small window the driver can
+ * drag anywhere (a third of the width in landscape, a sixth of the screen in
+ * portrait), while this app is out of sight. A
  * foreground service, so Android keeps the app (and its car links) alive
  * while the navigation app has the screen. Stops with the app's task.
  */
@@ -113,6 +128,8 @@ class DashboardOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
     private fun show() {
         val vm = DashboardOverlay.vm ?: return
         if (view != null || !DashboardOverlay.canDraw(this)) return
+        val p = layoutParams(vm.ui.value.gaugeStyle.aspect)
+        params = p
         val compose = ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@DashboardOverlayService)
             setViewTreeSavedStateRegistryOwner(this@DashboardOverlayService)
@@ -121,27 +138,31 @@ class DashboardOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
                 SplitTheme {
                     val ui by vm.ui.collectAsState()
                     val c = rememberCockpit(ui)
-                    val shape = RoundedCornerShape(topEnd = 18.dp, bottomEnd = 18.dp)
+                    val shape = RoundedCornerShape(18.dp)
+                    // Only the gauge: the car's state and the weather are spoken by the assistant.
+                    // Drag anywhere to move it off what the navi needs.
                     Box(
                         Modifier
                             .fillMaxSize()
                             .clip(shape)
-                            .background(Color(0xFF0B0E13))
-                            .glassBackdrop()
-                            .border(1.dp, Glass.edgeLit, shape),
+                            .background(Color(0xE60B0E13))
+                            .border(1.dp, Glass.edgeLit, shape)
+                            .pointerInput(Unit) {
+                                detectDragGestures(onDragEnd = { savePosition() }) { change, drag ->
+                                    change.consume()
+                                    moveBy(drag.x, drag.y)
+                                }
+                            },
                     ) {
-                        DriveDashboard(vm, ui, c, Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 6.dp)) {
-                            DriveTopBar(vm, ui, c) {
-                                GlowButton("앱 열기", { startActivity(openAppIntent()) }, accent = Neon.cyan)
-                                GlowButton("✕", { DashboardOverlay.dismiss() })
-                            }
-                        }
+                        OverlayGauge(ui.gaugeStyle, c, Modifier.fillMaxSize().padding(6.dp))
+                        CornerButton("↗", Modifier.align(Alignment.TopStart)) { startActivity(openAppIntent()) }
+                        CornerButton("✕", Modifier.align(Alignment.TopEnd)) { DashboardOverlay.dismiss() }
                     }
                 }
             }
         }
         try {
-            windows.addView(compose, layoutParams())
+            windows.addView(compose, p)
             view = compose
             vm.overlayShown = true
         } catch (e: Exception) {
@@ -156,39 +177,84 @@ class DashboardOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
         runCatching { windows.removeView(v) }
     }
 
-    /** Left edge, 3/5 of the screen's width, full height. */
-    private fun layoutParams() = WindowManager.LayoutParams(
-        overlayWidth(),
-        WindowManager.LayoutParams.MATCH_PARENT,
-        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-        PixelFormat.TRANSLUCENT,
-    ).apply {
-        gravity = Gravity.LEFT or Gravity.TOP
-        x = 0
-        y = 0
-        title = "SplitTesla dashboard"
+    private var params: WindowManager.LayoutParams? = null
+
+    private fun moveBy(dx: Float, dy: Float) {
+        val v = view ?: return
+        val p = params ?: return
+        val (w, h) = screenSize()
+        p.x = (p.x + dx.toInt()).coerceIn(0, (w - p.width).coerceAtLeast(0))
+        p.y = (p.y + dy.toInt()).coerceIn(0, (h - p.height).coerceAtLeast(0))
+        runCatching { windows.updateViewLayout(v, p) }
+    }
+
+    private val positions by lazy { getSharedPreferences("overlay", MODE_PRIVATE) }
+
+    private fun orientationKey(): String {
+        val (w, h) = screenSize()
+        return if (w >= h) "land" else "port"
+    }
+
+    /** Remembers where the driver left it, separately for landscape and portrait. */
+    private fun savePosition() {
+        val p = params ?: return
+        val k = orientationKey()
+        positions.edit().putInt("x_$k", p.x).putInt("y_$k", p.y).apply()
+    }
+
+    /**
+     * Landscape: a third of the screen's width. Portrait: a sixth of the
+     * screen's area. The height follows the gauge face's shape ([aspect] is
+     * width over height). Starts at the left edge, centred vertically, or
+     * wherever it was last dragged to.
+     */
+    private fun layoutParams(aspect: Float): WindowManager.LayoutParams {
+        val (sw, sh) = screenSize()
+        val landscape = sw >= sh
+        var w: Int
+        var h: Int
+        if (landscape) {
+            w = sw / 3
+            h = (w / aspect).toInt()
+        } else {
+            h = sqrt(sw.toDouble() * sh / 6.0 / aspect).toInt()
+            w = (h * aspect).toInt()
+        }
+        if (h > sh) { h = sh; w = (h * aspect).toInt() }
+        if (w > sw) { w = sw; h = (w / aspect).toInt() }
+        val k = if (landscape) "land" else "port"
+        return WindowManager.LayoutParams(
+            w,
+            h,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            gravity = Gravity.LEFT or Gravity.TOP
+            x = positions.getInt("x_$k", 0).coerceIn(0, (sw - w).coerceAtLeast(0))
+            y = positions.getInt("y_$k", (sh - h) / 2).coerceIn(0, (sh - h).coerceAtLeast(0))
+            title = "SplitTesla dashboard"
+        }
     }
 
     @Suppress("DEPRECATION")
-    private fun overlayWidth(): Int {
-        val screen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            windows.currentWindowMetrics.bounds.width()
-        } else {
-            val m = android.util.DisplayMetrics()
-            windows.defaultDisplay.getRealMetrics(m)
-            m.widthPixels
-        }
-        return (screen * WIDTH_FRACTION).toInt()
+    private fun screenSize(): Pair<Int, Int> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        windows.currentWindowMetrics.bounds.let { it.width() to it.height() }
+    } else {
+        val m = android.util.DisplayMetrics()
+        windows.defaultDisplay.getRealMetrics(m)
+        m.widthPixels to m.heightPixels
     }
 
-    /** Turning the phone changes the screen's width; keep the dashboard at 3/5 of it. */
+    /** Turning the phone: resize for the new orientation and go to its remembered spot. */
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         val v = view ?: return
-        runCatching { windows.updateViewLayout(v, layoutParams()) }
+        val p = layoutParams(DashboardOverlay.vm?.ui?.value?.gaugeStyle?.aspect ?: 1f)
+        params = p
+        runCatching { windows.updateViewLayout(v, p) }
     }
 
     /** Swiped away from recent apps: the dashboard goes with the app. */
@@ -208,6 +274,32 @@ class DashboardOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
     private companion object {
         const val CHANNEL = "dashboard_overlay"
         const val NOTIFICATION_ID = 42
-        const val WIDTH_FRACTION = 0.6f
+    }
+}
+
+/** The face is drawn for about 320 dp; a smaller window scales it down as a whole. */
+@Composable
+private fun OverlayGauge(style: GaugeStyle, c: Cockpit, modifier: Modifier) {
+    BoxWithConstraints(modifier) {
+        val base = LocalDensity.current
+        val scale = (min(maxWidth, maxHeight) / 320.dp).coerceIn(0.4f, 2f)
+        CompositionLocalProvider(LocalDensity provides Density(base.density * scale, base.fontScale)) {
+            Speedometer(style, c, Modifier.fillMaxSize())
+        }
+    }
+}
+
+@Composable
+private fun CornerButton(label: String, modifier: Modifier, onClick: () -> Unit) {
+    Box(
+        modifier
+            .padding(4.dp)
+            .size(30.dp)
+            .background(Glass.dense, CircleShape)
+            .border(1.dp, Glass.edgeLit, CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, fontSize = 14.sp, color = Neon.text)
     }
 }
