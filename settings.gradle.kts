@@ -11,11 +11,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // NAVER Map SDK for the dashboard map.
-        maven {
-            url = uri("https://repository.map.naver.com/archive/maven")
-            content { includeGroup("com.naver.maps") }
-        }
     }
 }
 

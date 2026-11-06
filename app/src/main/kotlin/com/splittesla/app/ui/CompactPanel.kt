@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.UiState
-import com.splittesla.app.camera.CameraState
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.glassBackdrop
 import com.splittesla.app.ui.theme.Orbitron
@@ -32,17 +31,13 @@ import kotlin.math.roundToInt
 
 /**
  * The narrow strip shown when the app shares the screen with a navigation app
- * (split screen with the map taking most of it): speed, the limit, the next
- * camera, battery and the last destination sent to the map, big enough to
- * read at a glance.
+ * (split screen with the map taking most of it): speed, the road's limit,
+ * battery and the weather, big enough to read at a glance.
  */
 @Composable
 fun CompactPanel(vm: AppViewModel, ui: UiState) {
-    val camera by CameraState.status.collectAsState()
-    val gpsSpeed by CameraState.gpsSpeedKmh.collectAsState()
     val assistant by vm.assistant.state.collectAsState()
-    val shared by vm.routeSync.last.collectAsState()
-    val c = Cockpit.from(ui, camera, gpsSpeed)
+    val c = Cockpit.from(ui)
     val over = c.overLimit
 
     Column(
@@ -73,11 +68,10 @@ fun CompactPanel(vm: AppViewModel, ui: UiState) {
             }
         }
 
-        val dist = c.cameraDistanceM
-        if (camera.ahead != null && dist != null && dist < 1500) {
+        ui.weather?.let { w ->
             Text(
-                "카메라 ${dist.roundToInt()}m",
-                color = Neon.amber, fontWeight = FontWeight.Bold, fontSize = 18.sp, textAlign = TextAlign.Center,
+                "${w.icon} ${w.tempC.roundToInt()}° ${w.label}",
+                color = Neon.text, fontWeight = FontWeight.Bold, fontSize = 15.sp, textAlign = TextAlign.Center, maxLines = 1,
             )
         }
 
@@ -88,10 +82,6 @@ fun CompactPanel(vm: AppViewModel, ui: UiState) {
 
         assistant.said?.let {
             Text(it, color = Neon.muted, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
-        }
-
-        shared?.let {
-            Text(it, color = Neon.cyan, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
         }
     }
 }

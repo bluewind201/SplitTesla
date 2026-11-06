@@ -29,7 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
@@ -76,10 +75,9 @@ import com.splittesla.app.ui.theme.pressScale
 /** Top-level places. The [primary] four are always in reach; the rest live under 더보기. */
 private enum class Tab(val title: String, val english: String, val primary: Boolean) {
     DASH("계기판", "COCKPIT", true),
-    NAV("내비", "NAVIGATION", true),
     CAR("차량", "VEHICLE", true),
     S3XY("S3XY", "S3XY COMMANDER", true),
-    AI("AI 비서", "AI ASSISTANT", false),
+    AI("AI 비서", "AI ASSISTANT", true),
     DATA("데이터", "TELEMETRY", false),
     LOGBOOK("차계부", "LOGBOOK", false),
     SETTINGS("설정", "SETTINGS", false),
@@ -166,7 +164,6 @@ private fun TabContent(tab: Tab, vm: AppViewModel, ui: UiState, modifier: Modifi
             Tab.DASH -> DashboardScreen(vm, ui, m)
             Tab.CAR -> CarScreen(vm, ui, m)
             Tab.S3XY -> ActionsScreen(vm, ui, m)
-            Tab.NAV -> NavScreen(vm, ui, m)
             Tab.AI -> AssistantScreen(vm, m)
             Tab.DATA -> TelemetryScreen(ui, m)
             Tab.LOGBOOK -> LogbookScreen(vm, m)
@@ -329,7 +326,6 @@ private fun TabIcon(tab: Tab, tint: Color) {
             drawLine(tint, Offset(w * 0.32f, h * 0.30f), Offset(w * 0.32f, h * 0.70f), 2.dp.toPx())
         }
         Tab.S3XY -> Icon(Icons.Filled.Star, null, m, tint)
-        Tab.NAV -> Icon(Icons.Filled.Place, null, m, tint)
         Tab.AI -> Canvas(m) {
             // Speech bubble: the assistant talks, it no longer listens.
             val w = size.width
@@ -345,7 +341,7 @@ private fun TabIcon(tab: Tab, tint: Color) {
     }
 }
 
-/** Title, then search, link state and the clock. [compact] trades the link pills for dots. */
+/** Title, then link state and the clock. [compact] trades the link pills for dots. */
 @Composable
 private fun TopStrip(tab: Tab, vm: AppViewModel, ui: UiState, compact: Boolean, onSplitDash: (() -> Unit)?) {
     val commander = ui.commander
@@ -365,9 +361,6 @@ private fun TopStrip(tab: Tab, vm: AppViewModel, ui: UiState, compact: Boolean, 
             CircularProgressIndicator(Modifier.size(16.dp), color = Neon.lime, strokeWidth = 2.dp)
             if (!compact) Text("$busy…", fontSize = 12.sp, color = Neon.muted, maxLines = 1)
         }
-        var searching by remember { mutableStateOf(false) }
-        SearchPill({ searching = true }, label = !compact)
-        if (searching) DestinationDialog { searching = false }
         if (compact) {
             StatusDot("S3XY", commander) { if (commander == LinkState.CONNECTED) vm.disconnectCommander() else vm.connectCommander() }
             StatusDot("CAR", car) { if (car == LinkState.CONNECTED) vm.disconnectCar() else vm.connectCar() }

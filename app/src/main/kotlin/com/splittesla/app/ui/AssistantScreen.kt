@@ -28,7 +28,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.AppViewModel
-import com.splittesla.app.assistant.CompanionNavi
 import com.splittesla.app.assistant.LlmProvider
 import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Neon
@@ -47,8 +46,6 @@ fun AssistantScreen(vm: AppViewModel, modifier: Modifier) {
     var provider by rememberSaveable { mutableStateOf(s.provider) }
     var key by rememberSaveable(provider) { mutableStateOf(assistant.apiKey(provider)) }
     var model by rememberSaveable(provider) { mutableStateOf(assistant.model(provider)) }
-    var home by rememberSaveable { mutableStateOf(s.homeAddress) }
-    var work by rememberSaveable { mutableStateOf(s.workAddress) }
 
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -60,7 +57,7 @@ fun AssistantScreen(vm: AppViewModel, modifier: Modifier) {
                 s.said?.let { Line("비서", it, Neon.lime) }
                 Hint(
                     "자동으로 말하는 때: 앱 시작(탑승), 차에 새 경로, 경로 앞 사고·공사, 정체가 5분 이상 늘거나 풀릴 때, " +
-                        "긴 주행 중 15분마다 브리핑, 비·눈 시작, 도착 직전. 차량 경로가 없어도 폰 GPS로 진행 방향 8km 안의 사고·공사를 알려줍니다.",
+                        "긴 주행 중 15분마다 브리핑, 비·눈 시작, 도착 직전. 차량 경로가 없어도 차의 진행 방향 8km 안의 사고·공사를 알려줍니다.",
                 )
                 ButtonGrid(
                     true,
@@ -70,13 +67,13 @@ fun AssistantScreen(vm: AppViewModel, modifier: Modifier) {
             }
 
             FoldSection("직접 입력") {
-                Field(typed, { typed = it }, "예: 강남역으로 가자, 가는 길에 스타벅스 들러줘", onDone = {
+                Field(typed, { typed = it }, "예: 배터리 얼마야, 에어컨 켜줘, 날씨 어때", onDone = {
                     if (typed.isNotBlank()) assistant.handleCommandText(typed)
                 })
                 ButtonGrid(typed.isNotBlank(), "실행" to { assistant.handleCommandText(typed) })
                 s.heard?.let { Line("입력", it) }
                 Hint(
-                    "할 수 있는 말: ○○으로 가자 · 가는 길에 ○○ 들러줘 · 가까운 충전소 · 집으로 가자 · 에어컨 켜/꺼 · 온도 22도 · 문 잠가 · " +
+                    "할 수 있는 말: 가까운 충전소 · 에어컨 켜/꺼 · 온도 22도 · 문 잠가 · " +
                         "언제 도착해 · 날씨 어때 · 조용히 해 / 안내 다시 켜. AI 키가 있으면 자유롭게 물어봐도 됩니다.",
                 )
             }
@@ -105,29 +102,7 @@ fun AssistantScreen(vm: AppViewModel, modifier: Modifier) {
                 )
             }
 
-            FoldSection(
-                "자주 가는 곳",
-                summary = listOfNotNull(s.homeAddress.takeIf { it.isNotBlank() }?.let { "집" }, s.workAddress.takeIf { it.isNotBlank() }?.let { "회사" })
-                    .joinToString("·").ifEmpty { null }?.let { "✓ $it 저장됨" },
-                summaryColor = Neon.green,
-            ) {
-                Field(home, { home = it }, "집 주소")
-                Field(work, { work = it }, "회사 주소")
-                ButtonGrid(true, "저장" to { assistant.savePlaces(home, work) })
-            }
-
-            FoldSection("앱 켤 때 같이 띄울 내비", summary = s.companionNavi.label) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CompanionNavi.entries.forEach { a -> GlowButton(a.label, { assistant.setCompanionNavi(a) }, active = a == s.companionNavi) }
-                }
-                Hint(
-                    "앱을 켜면 고른 내비를 화면 분할로 옆에 엽니다. 비율은 가운데 막대를 끌어 맞추면 다음부터 그대로 열리는 폰이 많아요. " +
-                        "분할을 못 하는 폰에서는 내비가 전체 화면으로 열립니다. " +
-                        "분할 화면에서는 탭 없이 계기판만 크게 보이고, 카메라·경로·교통·차량 상태가 한 화면에 모입니다. 오른쪽 위 '메뉴'로 탭 화면에 갈 수 있어요.",
-                )
-            }
-
-            Hint("길 안내 앱 선택, 테슬라 목적지 자동 공유, 교통정보 API 키는 설정 탭에 있습니다.")
+            Hint("교통정보 API 키는 설정 탭에 있습니다. 길 안내는 쓰시는 내비 앱에서 하고, 이 앱은 그 위에 계기판을 띄웁니다.")
         }
     }
 }

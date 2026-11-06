@@ -15,8 +15,6 @@ android {
         // Each CI build counts up, so every published APK is a clear update over the last.
         versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
         versionName = "0.1.0"
-        // NAVER Map's native library is ~20 MB per ABI; phones are arm64, so ship only that.
-        ndk { abiFilters += "arm64-v8a" }
     }
 
     // A fixed key so each CI build installs over the previous one. A new
@@ -82,5 +80,4 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("com.naver.maps:map-sdk:3.23.3")
 }

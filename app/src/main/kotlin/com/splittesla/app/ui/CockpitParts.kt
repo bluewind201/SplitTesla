@@ -60,10 +60,6 @@ import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.Refresh
 import com.splittesla.app.UiState
-import com.splittesla.app.camera.CameraState
-import com.splittesla.app.navi.NaviHub
-import com.splittesla.app.navi.NaviPhase
-import com.splittesla.app.navi.NaviUi
 import com.splittesla.app.ui.gauge.GaugeStyle
 import com.splittesla.app.ui.gauge.LimitSign
 import com.splittesla.app.ui.gauge.Speedometer
@@ -80,13 +76,6 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.unit.min
 import kotlin.math.roundToInt
-
-/** The three dashboard arrangements the driver can pick from (Settings, or a long press on the gauge). */
-enum class CockpitLayout(val letter: String, val title: String) {
-    BALANCED("A", "균형형"),
-    CENTER("B", "센터 게이지"),
-    IMMERSIVE("C", "몰입형"),
-}
 
 /**
  * Weather, wind, battery, area and locks as one line of small icons, so the
@@ -212,22 +201,19 @@ fun StatusClock(fontSize: TextUnit = 16.sp) {
 }
 
 /**
- * The dashboard's only chrome: the menu button, the status icons, destination
- * search, link dots and the clock.
+ * The dashboard's only chrome: the menu button, the status icons, link dots
+ * and the clock.
  */
 @Composable
 fun CockpitTopLine(vm: AppViewModel, ui: UiState, c: Cockpit, onMenu: () -> Unit) {
-    var searching by remember { mutableStateOf(false) }
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         RoundIcon({ Icon(Icons.Filled.Menu, "메뉴", Modifier.size(18.dp), Neon.text) }, onMenu)
         CockpitStatus(vm, ui, c, Modifier.weight(1f))
         if (ui.busy != null) CircularProgressIndicator(Modifier.size(16.dp), color = Neon.lime, strokeWidth = 2.dp)
-        RoundIcon({ Icon(Icons.Filled.Search, "목적지 검색", Modifier.size(18.dp), Neon.text) }) { searching = true }
         StatusDot("S3XY", ui.commander) { if (ui.commander != LinkState.CONNECTED) vm.connectCommander() }
         StatusDot("CAR", ui.car) { if (ui.car != LinkState.CONNECTED) vm.connectCar() }
         StatusClock(14.sp)
     }
-    if (searching) DestinationDialog { searching = false }
 }
 
 @Composable
@@ -245,8 +231,8 @@ fun StatusDot(label: String, state: LinkState, onClick: () -> Unit) {
 }
 
 /**
- * The speedometer in a box shaped for the chosen face. A tap changes the face,
- * a long press the dashboard layout. The faces are drawn for about 320 dp;
+ * The speedometer in a box shaped for the chosen face. A tap changes the face.
+ * The faces are drawn for about 320 dp;
  * a bigger or smaller box scales everything in them (digits, ticks, badges)
  * together, so a large screen gets a large gauge rather than small type.
  */
@@ -266,11 +252,6 @@ fun GaugeBox(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier) {
                     interactionSource = source,
                     indication = null,
                     onClick = { vm.setGaugeStyle(GaugeStyle.entries[(ui.gaugeStyle.ordinal + 1) % GaugeStyle.entries.size]) },
-                    onLongClick = {
-                        val next = CockpitLayout.entries[(ui.cockpitLayout.ordinal + 1) % CockpitLayout.entries.size]
-                        vm.setCockpitLayout(next)
-                        vm.toast("계기판 배치 ${next.letter} · ${next.title}")
-                    },
                 ),
                 contentAlignment = Alignment.Center,
             ) { style -> Speedometer(style, c, Modifier.fillMaxSize()) }
@@ -292,139 +273,4 @@ private fun SideSignal(turn: Boolean, blind: Boolean, left: Boolean, modifier: M
         fontSize = 34.sp,
         color = color.copy(alpha = if (turn) a else 1f),
     )
-}
-
-/**
- * The next turn while guiding. Otherwise a way in: search for a destination,
- * or start the route being previewed. [banner] puts it all on one line for a
- * long, low slot.
- */
-@Composable
-fun GuideCard(navi: NaviUi, modifier: Modifier, overlay: Boolean = false, banner: Boolean = false) {
-    if (navi.guiding) {
-        if (banner) TurnBanner(navi, modifier) else TurnCard(navi, modifier, compact = overlay)
-        return
-    }
-    var searching by remember { mutableStateOf(false) }
-    Row(
-        modifier.glass(20.dp).clickable { searching = true }.padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(Icons.Filled.Search, null, Modifier.size(30.dp), Neon.lime)
-        val preview = navi.phase == NaviPhase.PREVIEW
-        val title = if (preview) navi.route?.goal?.name ?: "경로 미리보기" else "목적지 검색"
-        val hint = if (preview) "탭해서 안내 시작" else "주소·장소로 바로 안내"
-        if (banner) {
-            Text(title, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(hint, fontSize = 13.sp, color = Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        } else {
-            Column {
-                Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(hint, fontSize = 12.sp, color = Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-        }
-    }
-    if (searching) DestinationDialog { searching = false }
-}
-
-/**
- * The speed camera ahead from the public list, or the section being driven.
- * [tall] stacks it for the narrow column of layout C.
- */
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun CameraCard(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier, tall: Boolean = false) {
-    val running by CameraState.running.collectAsState()
-    val camera by CameraState.status.collectAsState()
-    val over = c.overLimit
-    val blink = if (over) rememberPulse(450) else 1f
-    val ahead = camera.ahead
-    val d = camera.distanceM
-    val limit = camera.sectionLimitKmh ?: ahead?.limitKmh
-    val signSize: Dp = if (tall) 104.dp else 76.dp
-    val sign: @Composable () -> Unit = {
-        if (running && limit != null) LimitSign(limit, signSize, flashing = over, blink = blink)
-        else Text("—", fontFamily = Orbitron, fontSize = 28.sp, color = Neon.faint)
-    }
-    val words: @Composable () -> Unit = {
-        when {
-            !running -> Text(
-                if (ui.cameraCount > 0) "카메라 알림 꺼짐\n탭해서 켜기" else "카메라 데이터 없음\n내비 탭에서 받기",
-                fontSize = 12.sp, color = Neon.muted,
-            )
-            camera.sectionAverageKmh != null -> {
-                Text("구간단속 평균", fontSize = 12.sp, color = Neon.muted)
-                Text("${camera.sectionAverageKmh!!.roundToInt()}", fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = 26.sp, color = Neon.amber)
-                camera.sectionRemainingM?.let { Text("남은 ${km(it)}", fontSize = 12.sp, color = Neon.muted) }
-            }
-            ahead != null && d != null -> {
-                Text(if (over) "과속 경고" else ahead.zone ?: "단속카메라", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (over || ahead.zone != null) Neon.red else Neon.amber)
-                Text(km(d), fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = 26.sp, color = Neon.amber)
-            }
-            else -> Text("앞쪽 카메라 없음", fontSize = 12.sp, color = Neon.muted)
-        }
-    }
-    val heading = camera.headingDeg
-    val tap = Modifier.combinedClickable(
-        interactionSource = remember { MutableInteractionSource() },
-        indication = null,
-        onClick = { if (!running) vm.setCameraAlerts(true) },
-        // A camera on another road: a long press quiets it for this direction.
-        onLongClick = if (running && ahead != null && heading != null) ({ vm.ignoreCamera(ahead.id, heading) }) else null,
-    )
-    val edge = when {
-        over -> Neon.red.copy(alpha = blink)
-        running && ahead != null -> Neon.amber.copy(alpha = 0.6f)
-        else -> null
-    }
-    if (tall) {
-        Column(modifier.then(tap), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically)) {
-            sign()
-            Column(horizontalAlignment = Alignment.CenterHorizontally) { words() }
-        }
-    } else {
-        Row(
-            modifier.glass(20.dp, edge = edge).then(tap).padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            sign()
-            Column { words() }
-        }
-    }
-}
-
-/**
- * Arrival time, distance left and battery on arrival while guiding;
- * otherwise range, cabin temperature and power. [overlay] makes it opaque
- * enough to sit on the map.
- */
-@Composable
-fun TripCard(navi: NaviUi, c: Cockpit, modifier: Modifier, overlay: Boolean = false) {
-    val shape = RoundedCornerShape(if (overlay) 14.dp else 20.dp)
-    val cells: List<Triple<String, String, Color>> = if (navi.guiding) {
-        val p = navi.progress
-        val route = navi.route
-        listOf(
-            Triple("도착", p?.let { clock(it.remainingMs) } ?: route?.let { clock(it.durationMs) } ?: "—", Neon.text),
-            Triple("남은 거리", km(p?.remainingM ?: route?.distanceM?.toDouble() ?: 0.0), Neon.cyan),
-            Triple("도착 배터리", navi.socAtArrival?.let { "${it.roundToInt()}%" } ?: "—", navi.socAtArrival?.let(::socColor) ?: Neon.muted),
-        )
-    } else {
-        listOf(
-            Triple("주행 가능", c.rangeKm?.let { "${it}km" } ?: "—", Neon.text),
-            Triple("실내", c.insideTempC?.let { "${it.roundToInt()}°" } ?: "—", Neon.cyan),
-            Triple("출력", c.powerKw?.let { "${it.roundToInt()}kW" } ?: "—", Neon.muted),
-        )
-    }
-    val pane = if (overlay) Modifier.background(Glass.dense, shape) else Modifier.glass(20.dp)
-    Row(modifier.then(pane).padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        cells.forEach { (label, value, color) ->
-            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(label, style = Caption, maxLines = 1)
-                Text(value, fontFamily = Orbitron, fontWeight = FontWeight.ExtraBold, fontSize = if (overlay) 15.sp else 17.sp, color = color, maxLines = 1)
-            }
-        }
-    }
 }

@@ -1,7 +1,6 @@
 package com.splittesla.app.ui
 
 import com.splittesla.app.UiState
-import com.splittesla.core.camera.CameraStatus
 import com.splittesla.core.s3xy.Latch
 import com.splittesla.core.s3xy.VehicleSignal
 import com.tesla.generated.vcsec.Vcsec
@@ -11,15 +10,13 @@ enum class Closure { FRONT_LEFT, FRONT_RIGHT, REAR_LEFT, REAR_RIGHT, FRUNK, TRUN
 /**
  * Everything the dashboard draws, merged from both links. The Commander's
  * live CAN stream wins when it has a value; the car's own BLE status fills in
- * locks and doors while the Commander is away. GPS speed is the last resort.
+ * locks and doors while the Commander is away.
  */
 data class Cockpit(
     val speedKmh: Float?,
     val speedSource: String,
     /** The road's limit from Tesla's own map data, read from the Commander. */
     val limitKmh: Int?,
-    val cameraLimitKmh: Int?,
-    val cameraDistanceM: Double?,
     val gear: String?,
     val driveMode: String?,
     val regen: String?,
@@ -37,13 +34,8 @@ data class Cockpit(
     val turnRight: Boolean,
     val brake: Boolean,
 ) {
-    /**
-     * The limit the dashboard enforces: the speed camera ahead (or the section
-     * being driven) from the public data.go.kr camera list. The car's own
-     * map limit ([limitKmh], from Tesla over the Commander) is only shown
-     * beside it, never used as a camera.
-     */
-    val activeLimit: Int? get() = cameraLimitKmh?.takeIf { it > 0 }
+    /** The road's limit as the car knows it, shown on the gauge. */
+    val activeLimit: Int? get() = limitKmh
     val overLimit: Boolean
         get() {
             val s = speedKmh ?: return false
@@ -52,12 +44,11 @@ data class Cockpit(
         }
 
     companion object {
-        fun from(ui: UiState, camera: CameraStatus, gpsSpeedKmh: Float?): Cockpit {
+        fun from(ui: UiState): Cockpit {
             val d = ui.live
             val status = ui.vehicleStatus
             val canSpeed = d.speedKmh?.toFloat()
             val (speed, source) = canSpeed?.let { it to "CAN" }
-                ?: gpsSpeedKmh?.let { it to "GPS" }
                 ?: ui.nav?.speedKmh?.let { it.toFloat() to "BLE" }
                 ?: (null to "")
             val lockedLive = d.long(VehicleSignal.CAR_LOCKED)?.let { it == 1L }
@@ -69,9 +60,6 @@ data class Cockpit(
                 speedKmh = speed,
                 speedSource = source,
                 limitKmh = d.speedLimit?.toInt()?.takeIf { it > 0 },
-                cameraLimitKmh = camera.ahead?.limitKmh?.takeIf { (camera.distanceM ?: Double.MAX_VALUE) < 800 }
-                    ?: camera.sectionLimitKmh,
-                cameraDistanceM = camera.distanceM,
                 gear = d.gear?.label,
                 driveMode = driveModeLabel(d.long(VehicleSignal.ACCELERATION_MODE), d.long(VehicleSignal.TRACK_MODE_STATE)),
                 regen = d.long(VehicleSignal.REGEN_LEVEL)?.let { if (it == 0L) "LOW" else "STANDARD" },
@@ -97,7 +85,7 @@ data class Cockpit(
             val wave = (kotlin.math.sin(t * 0.35) * 0.5 + 0.5).toFloat()
             val speed = 15f + wave * 135f
             return Cockpit(
-                speedKmh = speed, speedSource = "DEMO", limitKmh = 110, cameraLimitKmh = 110, cameraDistanceM = 450.0,
+                speedKmh = speed, speedSource = "DEMO", limitKmh = 110,
                 gear = "D", driveMode = "SPORT", regen = "STANDARD", locked = true, open = emptySet(),
                 socPercent = 78, rangeKm = 412, powerKw = (kotlin.math.cos(t * 0.35) * 160).toFloat(),
                 outsideTempC = 17f, insideTempC = 21f, blindLeft = speed > 120, blindRight = false,
