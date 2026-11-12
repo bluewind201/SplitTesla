@@ -87,5 +87,6 @@ fun ValueRow(label: String, value: String?, highlight: Color? = null) {
 }
 
 fun Double?.fmt(digits: Int = 1, unit: String = ""): String? = this?.let { "%.${digits}f%s".format(it, unit) }
+fun Float?.fmt(digits: Int = 1, unit: String = ""): String? = this?.toDouble().fmt(digits, unit)
 
 fun Long?.fmt(unit: String = ""): String? = this?.let { "$it$unit" }

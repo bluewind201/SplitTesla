@@ -190,6 +190,8 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                 )
             }
 
+            CameraSettingsCard(vm, ui)
+
             VoiceSettingsCard()
 
             FoldSection("계기판", summary = ui.gaugeStyle.title) {

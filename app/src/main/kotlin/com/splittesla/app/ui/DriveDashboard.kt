@@ -36,7 +36,10 @@ import com.splittesla.app.AppViewModel
 import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
 import com.splittesla.app.assistant.AssistantUi
+import com.splittesla.app.ui.gauge.CameraLines
+import com.splittesla.app.ui.gauge.LimitSign
 import com.splittesla.app.ui.theme.Caption
+import com.splittesla.app.ui.theme.rememberPulse
 import com.splittesla.app.ui.theme.GlowButton
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.NeonBar
@@ -80,20 +83,20 @@ fun DriveDashboard(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier
                 tall -> {
                     FitGaugeBox(vm, ui, c, Modifier.weight(1.2f).fillMaxWidth())
                     CarCard(c, Modifier.weight(0.6f).fillMaxWidth())
-                    WeatherCard(vm, ui, c, Modifier.weight(0.6f).fillMaxWidth())
+                    WeatherOrCamera(vm, ui, c, Modifier.weight(0.6f).fillMaxWidth())
                 }
                 wide -> Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FitGaugeBox(vm, ui, c, Modifier.weight(1.2f).fillMaxHeight())
                     Column(Modifier.weight(0.8f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         CarCard(c, Modifier.weight(1f).fillMaxWidth())
-                        WeatherCard(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
+                        WeatherOrCamera(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
                     }
                 }
                 else -> Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FitGaugeBox(vm, ui, c, Modifier.weight(1.15f).fillMaxHeight())
                     Column(Modifier.weight(0.85f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         CarCard(c, Modifier.weight(1f).fillMaxWidth())
-                        WeatherCard(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
+                        WeatherOrCamera(vm, ui, c, Modifier.weight(1f).fillMaxWidth())
                     }
                 }
             }
@@ -145,6 +148,7 @@ fun DriveTopBar(vm: AppViewModel, ui: UiState, c: Cockpit, end: @Composable () -
         LinkDot("S3XY", ui.commander.color()) { if (ui.commander != LinkState.CONNECTED) vm.connectCommander() }
         LinkDot("CAR", ui.car.color()) { if (ui.car != LinkState.CONNECTED) vm.connectCar() }
         Text(c.gear ?: "—", fontFamily = Orbitron, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Neon.lime)
+        if (c.originBadge.isNotEmpty()) Text("속도 ${c.originBadge}", fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Neon.cyan)
         c.driveMode?.let {
             Text(it, fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (it == "SPORT" || it == "TRACK") Neon.red else Neon.muted)
         }
@@ -209,6 +213,38 @@ private fun CarCard(c: Cockpit, modifier: Modifier) {
         Text(temps.joinToString(" · ").ifEmpty { "온도 —" }, fontSize = 12.sp, color = Neon.muted, maxLines = 1)
         if (!open.isNullOrEmpty()) {
             Text(open.joinToString(" ") { it.korean }, fontSize = 12.sp, color = Neon.red, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+/** While a speed camera is near (or a section zone is being driven) its card takes the weather's place. */
+@Composable
+private fun WeatherOrCamera(vm: AppViewModel, ui: UiState, c: Cockpit, modifier: Modifier) {
+    if (c.camera.active) CameraCard(c, modifier) else WeatherCard(vm, ui, c, modifier)
+}
+
+/** Speed camera guidance: limit sign, distance or section average, kind and place. */
+@Composable
+private fun CameraCard(c: Cockpit, modifier: Modifier) {
+    val cam = c.camera
+    val blink = if (c.overLimit) rememberPulse(450) else 1f
+    Card(modifier, accent = if (c.overLimit) Neon.red else Neon.amber) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(if (cam.ahead != null) "과속 단속 카메라" else "구간 단속", style = Caption, modifier = Modifier.weight(1f))
+            cam.positionSource?.let { Text("위치 $it", fontSize = 11.sp, color = Neon.muted) }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            c.activeLimit?.let { LimitSign(it, 44.dp, flashing = c.overLimit, blink = blink) }
+            CameraLines(cam, c.speedKmh, compact = false)
+        }
+        val detail = when {
+            c.overLimit -> "제한속도 초과 — 속도를 줄이세요"
+            cam.ahead != null -> cam.ahead?.place.orEmpty()
+            cam.sectionSafeKmh != null -> "남은 구간 ${cam.sectionSafeKmh?.roundToInt()}km/h 이하 유지"
+            else -> ""
+        }
+        if (detail.isNotEmpty()) {
+            Text(detail, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (c.overLimit) Neon.red else Neon.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }

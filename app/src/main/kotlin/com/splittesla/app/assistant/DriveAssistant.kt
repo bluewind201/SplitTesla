@@ -524,6 +524,9 @@ class DriveAssistant(private val vm: AppViewModel, private val scope: CoroutineS
         }
     }
 
+    /** A speed camera warning: urgent, so it cuts in ahead of whatever is being said. */
+    fun speakAlert(text: String) = say(text, interrupt = true)
+
     private fun say(text: String, interrupt: Boolean = false) {
         _state.update { it.copy(said = text) }
         speaker.speak(text, interrupt)

@@ -57,6 +57,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.splittesla.app.MainActivity
 import com.splittesla.app.R
+import com.splittesla.app.ui.CameraBanner
 import com.splittesla.app.ui.rememberCockpit
 import com.splittesla.app.ui.theme.Glass
 import com.splittesla.app.ui.theme.Neon
@@ -106,8 +107,23 @@ class DashboardOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
     private fun startInForeground() {
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel(CHANNEL, "내비 위 계기판", NotificationManager.IMPORTANCE_LOW))
-        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
-        ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), type)
+        // With location granted the service also carries the location type, so phone GPS
+        // (speed camera alerts, the GPS speed fallback) keeps working behind the navi.
+        val located = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        val type = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE ->
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or (if (located) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0)
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && located -> ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            else -> 0
+        }
+        try {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), type)
+        } catch (e: Exception) {
+            // Location type refused (permission revoked): carry on without it.
+            val fallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), fallback)
+        }
     }
 
     private fun notification(): Notification {
@@ -155,6 +171,8 @@ class DashboardOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
                             },
                     ) {
                         OverlayGauge(ui.gaugeStyle, c, Modifier.fillMaxSize().padding(6.dp))
+                        // Camera guidance across the top, between the corner buttons, so it reads at a glance over the navi.
+                        CameraBanner(c, Modifier.align(Alignment.TopCenter).padding(top = 4.dp, start = 38.dp, end = 38.dp))
                         CornerButton("↗", Modifier.align(Alignment.TopStart)) { startActivity(openAppIntent()) }
                         CornerButton("✕", Modifier.align(Alignment.TopEnd)) { DashboardOverlay.dismiss() }
                     }

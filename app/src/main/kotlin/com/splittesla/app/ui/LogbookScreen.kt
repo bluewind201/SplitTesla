@@ -1,5 +1,6 @@
 package com.splittesla.app.ui
 
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -43,6 +44,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import com.splittesla.app.logbook.PaymentMessages
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.logbook.LogbookState
 import com.splittesla.app.ui.theme.Caption
@@ -89,6 +94,7 @@ fun LogbookScreen(vm: AppViewModel, modifier: Modifier) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SummaryPanel(lb, now)
+            AutoPanel(vm, lb)
             MonthlyPanel(lb, now)
             DuePanel(lb, now) { new(EntryKind.MAINTENANCE, it) }
         }
@@ -119,6 +125,20 @@ fun LogbookScreen(vm: AppViewModel, modifier: Modifier) {
                         Spacer(Modifier.width(8.dp))
                         Text(
                             "${p.type.label} 충전 중 · ${"%.1f".format(p.kwh)} kWh. 끝나면 자동으로 기록됩니다",
+                            fontSize = 13.sp,
+                            color = Neon.text,
+                        )
+                    }
+                }
+            }
+            lb.driving?.let { p ->
+                Panel(Modifier.fillMaxWidth(), accent = Neon.green) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(8.dp).background(Neon.green.copy(alpha = rememberPulse()), CircleShape))
+                        Spacer(Modifier.width(8.dp))
+                        val km = p.lastOdometerKm?.let { o -> p.startOdometerKm?.let { o - it } } ?: p.gpsKm
+                        Text(
+                            "주행 중 · %.1f km · %s 출발. 주차(P)하면 자동으로 기록됩니다".format(km, p.startPlace ?: "?"),
                             fontSize = 13.sp,
                             color = Neon.text,
                         )
@@ -171,7 +191,81 @@ private fun SummaryPanel(lb: LogbookState, now: Long) {
         ValueRow("주행거리 (기록 기준)", s.distanceKm?.let { "%,d km".format(it) })
         ValueRow("km당 비용", s.wonPerKm?.let { "%,.0f 원".format(it) })
         ValueRow("전비 (충전량 기준)", s.kwhPer100Km?.let { "%.1f kWh/100km".format(it) })
+        ValueRow("충전된 거리", s.chargedRangeKm.takeIf { it > 0 }?.let { "%,.0f km".format(it) })
+        ValueRow("1km 충전 시 금액", s.wonPerChargedKm?.let { "%,.1f 원/km".format(it) }, Neon.lime)
+        ValueRow("100km 충전 시 금액", s.wonPer100ChargedKm?.let { "%,.0f 원/100km".format(it) }, Neon.lime)
+        ValueRow("충전 효율", s.chargedKmPerKwh?.let { "%.1f km/kWh".format(it) })
+        ValueRow("자동 기록 주행 ${s.driveCount}회", s.driveKm.takeIf { it > 0 }?.let { "%,.1f km".format(it) })
+        ValueRow("주행 전비", s.driveKmPerKwh?.let { "%.1f km/kWh".format(it) })
         EntryKind.entries.forEach { k -> s.byKind[k]?.takeIf { it > 0 }?.let { ValueRow(k.label, won(it)) } }
+    }
+}
+
+/**
+ * Automatic booking: payment texts and notifications (charging operators
+ * from the user's keyword list, 하이패스/통행료, parking, car wash), drives
+ * and health checks from the car's data, plus the inbox scan and a test box.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AutoPanel(vm: AppViewModel, lb: LogbookState) {
+    val context = LocalContext.current
+    var notifyOk by remember { mutableStateOf(PaymentMessages.hasNotificationAccess(context)) }
+    var smsOk by remember { mutableStateOf(PaymentMessages.hasSmsPermission(context) && PaymentMessages.canReadInbox(context)) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        notifyOk = PaymentMessages.hasNotificationAccess(context)
+        smsOk = PaymentMessages.hasSmsPermission(context) && PaymentMessages.canReadInbox(context)
+    }
+    val smsPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { r ->
+        smsOk = r[Manifest.permission.RECEIVE_SMS] == true && r[Manifest.permission.READ_SMS] == true
+    }
+    var keyword by rememberSaveable { mutableStateOf("") }
+    var test by rememberSaveable { mutableStateOf("") }
+
+    Panel(Modifier.fillMaxWidth(), title = "자동 기록") {
+        Toggle("문자·카카오톡·결제 알림으로 충전비·통행료·주차·세차 등록", lb.autoMessages, vm.logbook::setAutoMessages)
+        Toggle("차량 데이터로 주행 기록 (거리·출발/도착·배터리·전비)", lb.autoDrives, vm.logbook::setAutoDrives)
+        Toggle("12V·타이어·배터리 이상 점검 메모", lb.autoChecks, vm.logbook::setAutoChecks)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            GlowButton(if (notifyOk) "✓ 알림 접근 허용됨" else "알림 접근 허용", { context.startActivity(PaymentMessages.notificationAccessIntent()) }, active = notifyOk)
+            GlowButton(
+                if (smsOk) "✓ 문자 권한 허용됨" else "문자 권한 허용",
+                { smsPermission.launch(arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS)) },
+                active = smsOk,
+            )
+            GlowButton("문자함 검사 (30일)", vm::scanSmsInbox, enabled = smsOk)
+        }
+        Text("충전 가맹점 키워드 (누르면 삭제)", style = Caption)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            lb.chargeKeywords.forEach { k ->
+                Text(
+                    "$k ✕",
+                    fontSize = 12.sp,
+                    color = Neon.text,
+                    modifier = Modifier
+                        .background(Glass.track, RoundedCornerShape(8.dp))
+                        .clickable { vm.logbook.removeKeyword(k) }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                )
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LogField(keyword, { keyword = it }, "키워드 추가", Modifier.weight(1f))
+            GlowButton("추가", {
+                vm.logbook.addKeyword(keyword)
+                keyword = ""
+            }, enabled = keyword.isNotBlank())
+            GlowButton("기본값", vm.logbook::resetKeywords)
+        }
+        Text("'하이패스'·'한국도로공사'·'통행료'는 통행료로, 주차·세차 결제도 자동 분류됩니다.", fontSize = 11.sp, color = Neon.muted)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LogField(test, { test = it }, "메시지 붙여넣기 (테스트·직접 등록)", Modifier.weight(1f))
+            GlowButton("등록", {
+                vm.testPaymentMessage(test)
+                test = ""
+            }, enabled = test.isNotBlank(), filled = true)
+        }
+        lb.lastMessage?.let { Text("최근: $it", fontSize = 12.sp, color = Neon.lime) }
     }
 }
 
@@ -242,6 +336,8 @@ private fun EntryKind.color(): Color = when (this) {
     EntryKind.WASH -> Neon.blue
     EntryKind.INSURANCE -> Neon.red
     EntryKind.OTHER -> Neon.muted
+    EntryKind.DRIVE -> Neon.green
+    EntryKind.CHECK -> Neon.red
 }
 
 @Composable
@@ -265,16 +361,47 @@ private fun EntryRow(e: LogEntry, onClick: () -> Unit) {
                     Text("자동", fontSize = 10.sp, color = Color.Black, modifier = Modifier.background(Neon.lime, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp))
                 }
             }
-            val details = listOfNotNull(
-                SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.KOREA).format(Date(e.timeMillis)),
-                e.odometerKm?.let { "%,d km".format(it) },
-                e.kwh?.let { "%.1f kWh".format(it) },
-                e.place.ifBlank { null },
-                e.memo.ifBlank { null },
-            ).joinToString(" · ")
-            Text(details, fontSize = 12.sp, color = Neon.muted, maxLines = 1)
+            val when_ = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.KOREA).format(Date(e.timeMillis))
+            val soc = if (e.socStart != null || e.socEnd != null) "${e.socStart ?: "?"}→${e.socEnd ?: "?"}%" else null
+            val details = when (e.kind) {
+                EntryKind.DRIVE -> listOfNotNull(
+                    when_,
+                    e.distanceKm?.let { "%.1f km".format(it) },
+                    listOf(e.place, e.placeEnd).filter { it.isNotBlank() }.joinToString(" → ").ifBlank { null },
+                    soc,
+                    e.kwh?.let { "%.1f kWh".format(it) },
+                    e.kmPerKwh?.let { "%.1f km/kWh".format(it) },
+                )
+                else -> listOfNotNull(
+                    when_,
+                    e.odometerKm?.let { "%,d km".format(it) },
+                    e.kwh?.let { "%.1f kWh".format(it) },
+                    e.chargedRangeKm?.let { "+%.0f km".format(it) },
+                    soc.takeIf { e.kind == EntryKind.CHARGE },
+                    e.place.ifBlank { null },
+                    e.source.ifBlank { null },
+                    e.memo.ifBlank { null },
+                )
+            }.joinToString(" · ")
+            Text(details, fontSize = 12.sp, color = Neon.muted, maxLines = 2)
+            // What a km of charged range cost: the number the driver compares between chargers.
+            e.wonPerChargedKm?.let { perKm ->
+                Text(
+                    "1km 충전 %,.1f원 · 100km 충전 %,.0f원".format(perKm, perKm * 100),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Neon.lime,
+                    maxLines = 1,
+                )
+            }
         }
-        Text(won(e.costWon), fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Neon.text)
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                if (e.kind == EntryKind.DRIVE && e.costWon == 0L) (e.distanceKm?.let { "%.1fkm".format(it) } ?: "—") else won(e.costWon),
+                fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Neon.text,
+            )
+            if (e.paid) Text("결제 확인", fontSize = 10.sp, color = Neon.green)
+        }
     }
 }
 

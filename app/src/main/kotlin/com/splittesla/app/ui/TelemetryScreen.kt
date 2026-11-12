@@ -29,7 +29,34 @@ fun TelemetryScreen(ui: UiState, modifier: Modifier) {
     var showAll by rememberSaveable { mutableStateOf(false) }
     Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (d.isEmpty) {
-            Text("S3XY Commander를 연결하면 실시간 데이터가 표시됩니다. 위쪽 S3XY 표시를 누르세요.", fontSize = 13.sp, color = Neon.muted)
+            Text("S3XY Commander를 연결하면 실시간 CAN 데이터가 표시됩니다. 연결 전에는 차량 BLE·휴대폰 GPS의 속도와 기어를 씁니다.", fontSize = 13.sp, color = Neon.muted)
+        }
+        // Speed and gear as the gauge shows them, with every source side by side.
+        Section("속도·기어 (계기판 표시값)") {
+            val now = System.currentTimeMillis()
+            val car = ui.carDrive
+            val gps = ui.gps
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Metric("SPEED", ui.speed.kmh?.let { "%.0f".format(it) } ?: "—", "km/h", Neon.lime)
+                Metric("GEAR", ui.speed.gear ?: "—")
+                Metric("SOURCE", ui.speed.origin.label.ifEmpty { "—" })
+            }
+            ValueRow("S3XY CAN", d.speedKmh?.let { "$it km/h · ${d.gear?.label ?: "—"}" } ?: "연결 안 됨")
+            ValueRow(
+                "차량 BLE",
+                car?.let { "${it.speedKmh.fmt(0) ?: "—"} km/h · ${it.gear ?: "—"} · ${it.powerKw.fmt(0) ?: "—"} kW · ${(now - it.atMillis) / 1000}초 전" } ?: "—",
+            )
+            ValueRow("휴대폰 GPS", gps?.let { "${it.speedKmh.fmt(0) ?: "—"} km/h · ${(now - it.atMillis) / 1000}초 전" } ?: "—")
+            val cam = ui.camera
+            ValueRow(
+                "과속 카메라",
+                when {
+                    !ui.cameraEnabled -> "꺼짐"
+                    cam.ahead != null -> "${cam.ahead?.limitKmh}km/h · ${cam.distanceM?.let { "%.0fm".format(it) } ?: "—"} · ${cam.ahead?.place}"
+                    cam.sectionLimitKmh != null -> "구간단속 ${cam.sectionLimitKmh} · 평균 ${cam.sectionAverageKmh.fmt(0) ?: "—"}"
+                    else -> "없음 (${ui.cameraCount}개 감시)"
+                },
+            )
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Section("출력", Modifier.weight(1f)) {

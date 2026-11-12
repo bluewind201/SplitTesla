@@ -1,6 +1,9 @@
 package com.splittesla.app.ui
 
+import com.splittesla.app.LinkState
 import com.splittesla.app.UiState
+import com.splittesla.core.camera.CameraStatus
+import com.splittesla.core.drive.SpeedOrigin
 import com.splittesla.core.s3xy.Latch
 import com.splittesla.core.s3xy.VehicleSignal
 import com.tesla.generated.vcsec.Vcsec
@@ -33,9 +36,16 @@ data class Cockpit(
     val turnLeft: Boolean,
     val turnRight: Boolean,
     val brake: Boolean,
+    /** Where [speedKmh] came from: Commander CAN, the car's BLE, or the phone's GPS. */
+    val speedOrigin: SpeedOrigin = SpeedOrigin.NONE,
+    /** Speed camera ahead, or the section enforcement zone being driven. */
+    val camera: CameraStatus = CameraStatus(),
 ) {
-    /** The road's limit as the car knows it, shown on the gauge. */
-    val activeLimit: Int? get() = limitKmh
+    /**
+     * The limit that matters now: a camera's (or section's) limit while one is
+     * ahead, since that is what is enforced; else the road's limit from the car's map.
+     */
+    val activeLimit: Int? get() = camera.limitKmh.takeIf { camera.active } ?: limitKmh
     val overLimit: Boolean
         get() {
             val s = speedKmh ?: return false
@@ -43,32 +53,38 @@ data class Cockpit(
             return s > l + 0.5f
         }
 
+    /** Short label for the speed's source; empty for CAN, the normal case. */
+    val originBadge: String
+        get() = when (speedOrigin) {
+            SpeedOrigin.CAR -> "차량 BLE"
+            SpeedOrigin.GPS -> "GPS"
+            else -> ""
+        }
+
     companion object {
         fun from(ui: UiState): Cockpit {
-            val d = ui.live
+            // Nothing from the Commander survives its disconnect, but guard anyway.
+            val d = if (ui.commander == LinkState.CONNECTED) ui.live else com.splittesla.core.s3xy.VehicleData()
             val status = ui.vehicleStatus
-            val canSpeed = d.speedKmh?.toFloat()
-            val (speed, source) = canSpeed?.let { it to "CAN" }
-                ?: ui.nav?.speedKmh?.let { it.toFloat() to "BLE" }
-                ?: (null to "")
+            val car = ui.carDrive
             val lockedLive = d.long(VehicleSignal.CAR_LOCKED)?.let { it == 1L }
             val lockedBle = status?.vehicleLockState?.let {
                 it == Vcsec.VehicleLockState_E.VEHICLELOCKSTATE_LOCKED ||
                     it == Vcsec.VehicleLockState_E.VEHICLELOCKSTATE_INTERNAL_LOCKED
             }
             return Cockpit(
-                speedKmh = speed,
-                speedSource = source,
+                speedKmh = ui.speed.kmh,
+                speedSource = ui.speed.origin.label,
                 limitKmh = d.speedLimit?.toInt()?.takeIf { it > 0 },
-                gear = d.gear?.label,
+                gear = ui.speed.gear ?: d.gear?.label,
                 driveMode = driveModeLabel(d.long(VehicleSignal.ACCELERATION_MODE), d.long(VehicleSignal.TRACK_MODE_STATE)),
                 regen = d.long(VehicleSignal.REGEN_LEVEL)?.let { if (it == 0L) "LOW" else "STANDARD" },
                 locked = lockedLive ?: lockedBle,
-                open = liveOpen(ui) ?: bleOpen(status),
+                open = liveOpen(d) ?: bleOpen(status),
                 socPercent = d.socPercent?.toInt() ?: ui.charge?.takeIf { it.hasBatteryLevel() }?.batteryLevel,
                 rangeKm = d.rangeKm?.toInt()
                     ?: ui.charge?.takeIf { it.hasBatteryRange() }?.let { (it.batteryRange * 1.609344f).toInt() },
-                powerKw = d.batteryPowerKw?.toFloat()?.let { -it },
+                powerKw = d.batteryPowerKw?.toFloat()?.let { -it } ?: car?.powerKw,
                 outsideTempC = d.outsideTempC?.toFloat()
                     ?: ui.climate?.takeIf { it.hasOutsideTempCelsius() }?.outsideTempCelsius,
                 insideTempC = ui.climate?.takeIf { it.hasInsideTempCelsius() }?.insideTempCelsius,
@@ -77,6 +93,8 @@ data class Cockpit(
                 turnLeft = d.turnSignalLeftOn == true,
                 turnRight = d.turnSignalRightOn == true,
                 brake = d.brakePressed == true,
+                speedOrigin = ui.speed.origin,
+                camera = ui.camera,
             )
         }
 
@@ -84,12 +102,24 @@ data class Cockpit(
         fun demo(t: Float): Cockpit {
             val wave = (kotlin.math.sin(t * 0.35) * 0.5 + 0.5).toFloat()
             val speed = 15f + wave * 135f
+            // A camera every ~30 s of demo time, counting down from 600 m.
+            val phase = (t % 30f) / 30f
+            val camera = if (phase < 0.6f) {
+                CameraStatus(
+                    ahead = com.splittesla.core.camera.SpeedCamera("demo", 0.0, 0.0, 100, "데모 카메라"),
+                    distanceM = (600.0 * (1 - phase / 0.6f)).coerceAtLeast(10.0),
+                    positionSource = "DEMO",
+                )
+            } else {
+                CameraStatus(sectionLimitKmh = 110, sectionAverageKmh = 96.0 + wave * 20, sectionRemainingM = 4200.0 * (1 - phase), sectionSafeKmh = 104.0)
+            }
             return Cockpit(
                 speedKmh = speed, speedSource = "DEMO", limitKmh = 110,
                 gear = "D", driveMode = "SPORT", regen = "STANDARD", locked = true, open = emptySet(),
                 socPercent = 78, rangeKm = 412, powerKw = (kotlin.math.cos(t * 0.35) * 160).toFloat(),
                 outsideTempC = 17f, insideTempC = 21f, blindLeft = speed > 120, blindRight = false,
                 turnLeft = (t.toInt() % 6) == 0, turnRight = false, brake = false,
+                speedOrigin = SpeedOrigin.NONE, camera = camera,
             )
         }
 
@@ -106,8 +136,7 @@ data class Cockpit(
             else -> "MODE $accel"
         }
 
-        private fun liveOpen(ui: UiState): Set<Closure>? {
-            val d = ui.live
+        private fun liveOpen(d: com.splittesla.core.s3xy.VehicleData): Set<Closure>? {
             val pairs = listOf(
                 Closure.FRONT_LEFT to VehicleSignal.DOOR_FRONT_LEFT, Closure.FRONT_RIGHT to VehicleSignal.DOOR_FRONT_RIGHT,
                 Closure.REAR_LEFT to VehicleSignal.DOOR_REAR_LEFT, Closure.REAR_RIGHT to VehicleSignal.DOOR_REAR_RIGHT,

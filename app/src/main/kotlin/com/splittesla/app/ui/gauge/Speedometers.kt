@@ -49,6 +49,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.splittesla.app.ui.Cockpit
+import com.splittesla.core.camera.CameraStatus
+import com.splittesla.core.camera.cameraDistanceText
+import com.splittesla.core.camera.kindLabel
 import com.splittesla.app.ui.theme.Neon
 import com.splittesla.app.ui.theme.Orbitron
 import com.splittesla.app.ui.theme.Rajdhani
@@ -80,6 +83,8 @@ private class GaugeData(c: Cockpit, val speed: Float) {
     val soc = c.socPercent
     val hasSpeed = c.speedKmh != null
     val brake = c.brake
+    val camera = c.camera
+    val origin = c.originBadge
 }
 
 /**
@@ -165,9 +170,15 @@ private fun TrackGauge(d: GaugeData, blink: Float, modifier: Modifier) {
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             SpeedDigits(d, 60)
-            Text("KM/H", fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 13.sp, letterSpacing = 3.sp, color = Neon.muted)
+            UnitLine(d, 3)
         }
-        Box(Modifier.fillMaxSize().padding(bottom = 6.dp), contentAlignment = Alignment.BottomCenter) {
+        // The dial's open bottom: camera guidance (or the road's limit) above the gear.
+        Column(
+            Modifier.fillMaxSize().padding(bottom = 6.dp),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            GaugeCameraChip(d, blink)
             GearBadge(d.gear, d.mode)
         }
     }
@@ -206,10 +217,12 @@ private fun F1Gauge(d: GaugeData, blink: Float, modifier: Modifier) {
                 }
                 Column(Modifier.weight(2f), horizontalAlignment = Alignment.CenterHorizontally) {
                     SpeedDigits(d, big)
-                    Text("KM/H", fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 13.sp, letterSpacing = 4.sp, color = Neon.muted)
+                    UnitLine(d, 4)
                 }
-                F1Box("LIMIT", Modifier.weight(1f)) {
-                    if (d.limit != null) LimitSign(d.limit, 58.dp, flashing = d.over, blink = blink) else Text("—", fontFamily = Orbitron, fontSize = 28.sp, color = Neon.faint)
+                F1Box(if (d.camera.active) "CAMERA" else "LIMIT", Modifier.weight(1f)) {
+                    val sign = if (d.camera.active) 46.dp else 58.dp
+                    if (d.limit != null) LimitSign(d.limit, sign, flashing = d.over, blink = blink) else Text("—", fontFamily = Orbitron, fontSize = 28.sp, color = Neon.faint)
+                    CameraLines(d.camera, d.speed, compact = true)
                 }
             }
             PowerBar(d.powerKw, d.soc, d.mode)
@@ -353,13 +366,97 @@ private fun HyperGauge(d: GaugeData, blink: Float, modifier: Modifier) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.offset(y = 10.dp)) {
             GearBadge(d.gear, null)
             SpeedDigits(d, 76)
-            Text("KM/H", fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 13.sp, letterSpacing = 4.sp, color = Neon.muted)
+            UnitLine(d, 4)
             d.mode?.let { Text(it, fontFamily = Orbitron, fontWeight = FontWeight.SemiBold, fontSize = 12.sp, letterSpacing = 2.sp, color = Neon.lime) }
+        }
+        // The arc's open bottom carries the camera guidance.
+        Box(Modifier.fillMaxSize().padding(bottom = 2.dp), contentAlignment = Alignment.BottomCenter) {
+            GaugeCameraChip(d, blink)
         }
     }
 }
 
 // ── Shared pieces ──
+
+/** "KM/H", plus where the speed came from when it is not the Commander's CAN data. */
+@Composable
+private fun UnitLine(d: GaugeData, spacing: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("KM/H", fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 13.sp, letterSpacing = spacing.sp, color = Neon.muted)
+        if (d.origin.isNotEmpty()) {
+            Text(
+                d.origin,
+                fontFamily = Rajdhani,
+                fontWeight = FontWeight.Bold,
+                fontSize = 11.sp,
+                color = Color.Black,
+                modifier = Modifier.background(Neon.cyan, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp),
+            )
+        }
+    }
+}
+
+/**
+ * The limit sign with the camera beside it: metres to go and its kind, or a
+ * section zone's running average and distance left. Only the road's limit
+ * sign when no camera is near.
+ */
+@Composable
+private fun GaugeCameraChip(d: GaugeData, blink: Float) {
+    val limit = d.limit ?: return
+    Row(
+        Modifier.padding(bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        LimitSign(limit, if (d.camera.active) 44.dp else 36.dp, flashing = d.over, blink = blink)
+        if (d.camera.active) CameraLines(d.camera, d.speed, compact = false)
+    }
+}
+
+/**
+ * Text part of the camera guidance: "350m" in large digits and "과속카메라",
+ * or for a section zone "평균 96" and "잔여 4.2km". Shared by the gauges,
+ * the dashboard banner and the floating overlay.
+ */
+@Composable
+fun CameraLines(camera: CameraStatus, speedKmh: Float?, compact: Boolean) {
+    val ahead = camera.ahead
+    val distance = camera.distanceM
+    val align = if (compact) Alignment.CenterHorizontally else Alignment.Start
+    when {
+        ahead != null && distance != null -> Column(horizontalAlignment = align) {
+            val near = distance <= 150
+            Text(
+                cameraDistanceText(distance),
+                fontFamily = Orbitron,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = if (compact) 15.sp else 18.sp,
+                color = if (near) Neon.red else Neon.amber,
+                maxLines = 1,
+            )
+            Text(ahead.kindLabel, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1)
+        }
+        camera.sectionLimitKmh != null -> Column(horizontalAlignment = align) {
+            val avg = camera.sectionAverageKmh
+            val over = avg != null && avg > (camera.sectionLimitKmh ?: Int.MAX_VALUE)
+            Text(
+                avg?.let { "평균 ${it.roundToInt()}" } ?: "구간단속",
+                fontFamily = Orbitron,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = if (compact) 13.sp else 16.sp,
+                color = if (over) Neon.red else Neon.lime,
+                maxLines = 1,
+            )
+            val rest = listOfNotNull(
+                camera.sectionRemainingM?.let { "잔여 ${cameraDistanceText(it)}" },
+                camera.sectionSafeKmh?.takeIf { !compact }?.let { "≤${it.roundToInt()}" },
+            ).joinToString(" · ").ifEmpty { "구간단속 중" }
+            Text(rest, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Neon.text, maxLines = 1)
+        }
+        else -> Unit
+    }
+}
 
 @Composable
 private fun SpeedDigits(d: GaugeData, sizeSp: Int) {

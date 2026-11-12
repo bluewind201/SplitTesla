@@ -8,6 +8,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -61,6 +62,7 @@ import com.splittesla.app.LinkState
 import com.splittesla.app.Refresh
 import com.splittesla.app.UiState
 import com.splittesla.app.ui.gauge.GaugeStyle
+import com.splittesla.app.ui.gauge.CameraLines
 import com.splittesla.app.ui.gauge.LimitSign
 import com.splittesla.app.ui.gauge.Speedometer
 import com.splittesla.app.ui.theme.Caption
@@ -273,4 +275,35 @@ private fun SideSignal(turn: Boolean, blind: Boolean, left: Boolean, modifier: M
         fontSize = 34.sp,
         color = color.copy(alpha = if (turn) a else 1f),
     )
+}
+
+/**
+ * Speed camera guidance as one bold strip: the limit sign, the distance (or a
+ * section's running average) and the kind, flashing red when over the limit.
+ * Shown above the gauge on the dashboard and across the floating overlay.
+ */
+@Composable
+fun CameraBanner(c: Cockpit, modifier: Modifier = Modifier) {
+    val cam = c.camera
+    if (!cam.active) return
+    val limit = c.activeLimit ?: return
+    val blink = if (c.overLimit) rememberPulse(450) else 1f
+    val edge = if (c.overLimit) Neon.red.copy(alpha = 0.4f + 0.6f * blink) else Neon.amber
+    Row(
+        modifier
+            .background(Color(0xE6101318), RoundedCornerShape(12.dp))
+            .border(1.5.dp, edge, RoundedCornerShape(12.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        LimitSign(limit, 34.dp, flashing = c.overLimit, blink = blink)
+        CameraLines(cam, c.speedKmh, compact = false)
+        val src = cam.positionSource
+        if (c.overLimit) {
+            Text("감속!", fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = Neon.red.copy(alpha = 0.4f + 0.6f * blink))
+        } else if (src != null) {
+            Text(src, fontFamily = Rajdhani, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Neon.muted)
+        }
+    }
 }
