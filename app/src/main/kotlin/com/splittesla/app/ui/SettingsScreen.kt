@@ -91,9 +91,13 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
                     keyboardActions = KeyboardActions(onDone = { if (valid) vm.setVin(vin) }),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                ButtonGrid(valid, "저장" to { vm.setVin(vin) })
+                ButtonGrid(
+                    valid,
+                    "저장" to { vm.setVin(vin) },
+                    "차량 BLE 연결" to vm::connectCar,
+                )
                 Text(
-                    "차량 화면 '컨트롤 > 소프트웨어' 또는 앞유리 왼쪽 아래에서 확인하세요. 저장하면 차량 BLE는 이 VIN으로 차를 찾습니다.",
+                    "차량 화면 '컨트롤 > 소프트웨어' 또는 앞유리 왼쪽 아래에서 확인하세요. 저장하면 차량 BLE는 이 VIN으로 차를 찾고 끊어지면 자동으로 재연결합니다.",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -146,9 +150,14 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
             ) {
                 Text(
                     "처음 연결하면 '페어링 필요'가 뜹니다. 그때 60초 안에 핸들 오른쪽 스크롤 버튼을 두 번 누르세요. " +
-                        "등록되면 'S3XY Commander에 이 폰을 등록했습니다' 안내가 뜹니다. " +
+                        "등록되면 'S3XY Commander에 이 폰을 등록했습니다' 안내가 뜨며, 연결이 끊어지면 자동으로 재시도합니다. " +
                         "S3XY 공식 앱이 Commander에 연결돼 있으면 이 앱이 연결되지 않을 수 있으니 공식 앱을 종료하세요.",
                     style = MaterialTheme.typography.bodyMedium,
+                )
+                ButtonGrid(
+                    true,
+                    "S3XY 연결 / 재시도" to vm::connectCommander,
+                    "연결 끊기" to vm::disconnectCommander,
                 )
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("실시간 원본 패킷 로그 (분석용)")

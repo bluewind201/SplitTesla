@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.os.Build
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
@@ -20,7 +21,8 @@ class GattException(message: String) : Exception(message)
 /**
  * Coroutine wrapper around [BluetoothGatt]. Android allows one GATT operation
  * in flight per connection, so every operation takes [mutex] and waits for
- * its callback.
+ * its callback. Always closes the underlying [BluetoothGatt] handle if
+ * connection or service discovery fails, preventing Android GATT slot exhaustion.
  */
 @SuppressLint("MissingPermission")
 class GattClient(
@@ -30,9 +32,16 @@ class GattClient(
     private val onDisconnect: () -> Unit,
 ) {
     private val mutex = Mutex()
+    @Volatile
     private var gatt: BluetoothGatt? = null
+    @Volatile
     private var pending: CompletableDeferred<Any?>? = null
+    @Volatile
     private var connected: CompletableDeferred<Unit>? = null
+    @Volatile
+    private var established = false
+    @Volatile
+    private var closedByUs = false
 
     var mtu: Int = 23
         private set
@@ -41,13 +50,17 @@ class GattClient(
         override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
             if (newState == BluetoothProfile.STATE_CONNECTED && status == BluetoothGatt.GATT_SUCCESS) {
                 connected?.complete(Unit)
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                val error = GattException("연결 끊김 (status=$status)")
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED || status != BluetoothGatt.GATT_SUCCESS) {
+                val error = GattException("연결 끊김 (status=$status, state=$newState)")
                 connected?.completeExceptionally(error)
                 pending?.completeExceptionally(error)
-                g.close()
-                gatt = null
-                onDisconnect()
+                runCatching { g.disconnect() }
+                runCatching { g.close() }
+                if (gatt === g) gatt = null
+                if (established && !closedByUs) {
+                    established = false
+                    onDisconnect()
+                }
             }
         }
 
@@ -96,12 +109,29 @@ class GattClient(
         if (status == BluetoothGatt.GATT_SUCCESS) p.complete(value) else p.completeExceptionally(GattException("GATT 오류 status=$status"))
     }
 
-    suspend fun connect(timeoutMillis: Long = 15_000) {
+    suspend fun connect(timeoutMillis: Long = 12_000, refreshCache: Boolean = false) {
+        closedByUs = false
+        established = false
         val done = CompletableDeferred<Unit>()
         connected = done
-        gatt = device.connectGatt(context, false, callback, BluetoothDevice.TRANSPORT_LE)
-        withTimeout(timeoutMillis) { done.await() }
-        op { it.discoverServices() }
+        try {
+            val g = device.connectGatt(context, false, callback, BluetoothDevice.TRANSPORT_LE)
+                ?: throw GattException("GATT 클라이언트를 생성하지 못했습니다")
+            gatt = g
+            withTimeout(timeoutMillis) { done.await() }
+            if (refreshCache) refreshGattCache(g)
+            // Let the radio link settle before service discovery to avoid status 129/133 on Android.
+            delay(150)
+            op { it.discoverServices() }
+            established = true
+        } catch (t: Throwable) {
+            close()
+            throw t
+        }
+    }
+
+    private fun refreshGattCache(g: BluetoothGatt) {
+        runCatching { g.javaClass.getMethod("refresh").invoke(g) }
     }
 
     /**
@@ -110,7 +140,7 @@ class GattClient(
      * the Wi-Fi hotspot on the same 2.4 GHz radio.
      */
     fun preferLowPower() {
-        gatt?.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER)
+        runCatching { gatt?.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER) }
     }
 
     suspend fun requestMtu(size: Int): Int = (op { it.requestMtu(size) } as? Int) ?: mtu
@@ -165,9 +195,17 @@ class GattClient(
     }
 
     fun close() {
-        gatt?.disconnect()
-        gatt?.close()
+        closedByUs = true
+        established = false
+        val g = gatt
         gatt = null
+        val err = GattException("연결 종료됨")
+        connected?.completeExceptionally(err)
+        pending?.completeExceptionally(err)
+        if (g != null) {
+            runCatching { g.disconnect() }
+            runCatching { g.close() }
+        }
     }
 
     private suspend fun op(timeoutMillis: Long = 10_000, start: (BluetoothGatt) -> Boolean): Any? = mutex.withLock {

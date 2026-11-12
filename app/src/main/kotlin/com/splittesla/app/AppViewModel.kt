@@ -45,6 +45,7 @@ import com.tesla.generated.carserver.vehicle.Vehicle
 import com.tesla.generated.vcsec.Vcsec
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,6 +55,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -212,9 +214,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun setVin(vin: String) {
         val changed = vin != prefs.vin
         prefs.vin = vin
+        if (changed) prefs.carAddress = ""
         _ui.update { it.copy(vin = prefs.vin, toast = "✅ VIN을 저장했습니다") }
         // A different car needs a fresh connection.
-        if (changed && car != null) disconnectCar()
+        if (changed) {
+            car?.disconnect()
+            car = null
+            _ui.update { it.copy(car = LinkState.DISCONNECTED, carDrive = null) }
+            carOff = false
+            carFailures = 0
+            carWake.trySend(Unit)
+        }
     }
 
     fun setGaugeStyle(style: GaugeStyle) {
@@ -271,68 +281,143 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update { it.copy(favorites = next) }
     }
 
-    // ── Auto connect ──
+    // ── Auto connect & continuous retry ──
 
-    /** Set when the user taps a link off; auto connect leaves that link alone until they tap it on. */
+    /** Set when the user explicitly taps a connected link off; cleared when they tap it on. */
+    @Volatile
     private var commanderOff = false
+    @Volatile
     private var carOff = false
-    private var autoJob: Job? = null
+    @Volatile
+    private var commanderFailures = 0
+    @Volatile
+    private var carFailures = 0
+    @Volatile
+    private var lastCommanderPushAt = 0L
+    @Volatile
+    private var carPollErrors = 0
+
+    private val commanderWake = Channel<Unit>(Channel.CONFLATED)
+    private val carWake = Channel<Unit>(Channel.CONFLATED)
+    private var commanderAutoJob: Job? = null
+    private var carAutoJob: Job? = null
 
     /**
-     * Connects both links as soon as the app opens and reconnects them after a
-     * drop, while the app is on screen. Runs outside [run] so it never shows
-     * as busy or blocks a button; a tap simply joins the same connection.
+     * Continuously keeps both BLE links connected and immediately retries when
+     * a link drops or when a manual connection attempt fails. Each link runs in
+     * its own coroutine so S3XY and Car BLE never block each other.
      */
     fun startAutoConnect() {
-        if (autoJob?.isActive == true) return
-        autoJob = viewModelScope.launch {
-            var failures = 0
-            while (isActive) {
-                // The dashboard over the navi counts as on screen: it needs live data too.
-                if (isForeground || overlayShown) {
-                    val s = _ui.value
-                    val idle = setOf(LinkState.DISCONNECTED, LinkState.FAILED)
-                    val tries = buildList {
-                        if (!commanderOff && s.commander in idle) add(launch { autoTry("S3XY") { ensureCommander() } })
-                        if (!carOff && prefs.vin.length == 17 && s.car in idle) add(launch { autoTry("차량") { ensureCar() } })
+        if (commanderAutoJob?.isActive != true) {
+            commanderAutoJob = viewModelScope.launch {
+                while (isActive) {
+                    val active = isForeground || overlayShown || _ui.value.overlay
+                    val state = _ui.value.commander
+                    // Dead-link watchdog: if S3XY is marked CONNECTED but sent nothing for 18s, reconnect.
+                    if (state == LinkState.CONNECTED && lastCommanderPushAt > 0L &&
+                        System.currentTimeMillis() - lastCommanderPushAt > 18_000L
+                    ) {
+                        log("Commander 응답 없음 (18초 초과) — 연결 재설정")
+                        commander?.disconnect()
+                        commander = null
+                        clearLive()
+                        _ui.update { it.copy(commander = LinkState.DISCONNECTED) }
+                        resolveSpeed()
+                        commanderFailures = 0
                     }
-                    tries.forEach { it.join() }
-                    val failed = _ui.value.commander == LinkState.FAILED || _ui.value.car == LinkState.FAILED
-                    failures = if (tries.isNotEmpty() && failed) failures + 1 else 0
+                    if (!commanderOff && active && _ui.value.commander in setOf(LinkState.DISCONNECTED, LinkState.FAILED)) {
+                        if (commanderFailures > 0) delay(1_200L) // brief pause after a drop before grabbing GATT
+                        val ok = autoTry("S3XY") { ensureCommander() }
+                        commanderFailures = if (ok) 0 else commanderFailures + 1
+                    }
+                    val waitMs = if (_ui.value.commander == LinkState.CONNECTED) {
+                        5_000L
+                    } else {
+                        retryDelayMs(commanderFailures, active)
+                    }
+                    withTimeoutOrNull(waitMs) { commanderWake.receive() }
                 }
-                // Retry quickly at first, then ease off while the car is out of range:
-                // 15 s, 30 s, 1 min, 2 min, then every 3 min. Scanning disturbs
-                // Bluetooth audio and the hotspot, so a car that isn't there
-                // should not be searched for nonstop.
-                delay(minOf(15_000L shl minOf(failures, 4), 180_000L))
             }
+        }
+        if (carAutoJob?.isActive != true) {
+            carAutoJob = viewModelScope.launch {
+                while (isActive) {
+                    val active = isForeground || overlayShown || _ui.value.overlay
+                    if (!carOff && prefs.vin.length == 17 && active && _ui.value.car in setOf(LinkState.DISCONNECTED, LinkState.FAILED)) {
+                        if (carFailures > 0) delay(1_200L)
+                        val ok = autoTry("차량 BLE") { ensureCar() }
+                        carFailures = if (ok) 0 else carFailures + 1
+                    }
+                    val waitMs = if (_ui.value.car == LinkState.CONNECTED) {
+                        5_000L
+                    } else {
+                        retryDelayMs(carFailures, active)
+                    }
+                    withTimeoutOrNull(waitMs) { carWake.receive() }
+                }
+            }
+        }
+        commanderWake.trySend(Unit)
+        carWake.trySend(Unit)
+    }
+
+    /** Retry schedule: 2s -> 4s -> 6s -> 10s -> 15s while active (30s in background). */
+    private fun retryDelayMs(failures: Int, active: Boolean): Long {
+        if (!active) return 30_000L
+        return when (failures) {
+            0 -> 2_000L
+            1 -> 3_000L
+            2 -> 5_000L
+            3 -> 8_000L
+            4 -> 12_000L
+            else -> 15_000L
         }
     }
 
     fun setForeground(on: Boolean) {
+        val was = isForeground
         isForeground = on
+        if (on && !was) {
+            commanderFailures = 0
+            carFailures = 0
+            commanderWake.trySend(Unit)
+            carWake.trySend(Unit)
+        }
     }
 
     /** Set by the overlay service while the floating dashboard is on screen. */
     @Volatile
     var overlayShown = false
 
-    private suspend fun autoTry(name: String, block: suspend () -> Unit) {
+    private suspend fun autoTry(name: String, block: suspend () -> Unit): Boolean =
         try {
             block()
             log("$name 자동 연결됨")
+            true
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            log("$name 자동 연결 실패: ${e.message}")
+            log("$name 자동 연결 실패 (지속 재시도 중): ${e.message}")
+            false
         }
-    }
 
     // ── Commander ──
 
     fun connectCommander() {
         commanderOff = false
-        run("S3XY 연결", silent = true) { ensureCommander() }
+        commanderFailures = 0
+        startAutoConnect()
+        viewModelScope.launch {
+            try {
+                ensureCommander()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log("S3XY 연결 실패 (백그라운드에서 계속 재시도합니다): ${e.message}")
+                _ui.update { it.copy(toast = "S3XY 연결 재시도 중… (${e.message})") }
+                commanderWake.trySend(Unit)
+            }
+        }
     }
 
     private suspend fun ensureCommander(): CommanderSession = commanderMutex.withLock {
@@ -346,13 +431,22 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val link = CommanderLink(
                 context = getApplication(),
                 phoneUuid = prefs.commanderPhoneUuid,
+                savedAddress = prefs.commanderAddress,
+                onAddressLearned = { addr -> prefs.commanderAddress = addr },
                 onData = { delta -> queueLive(delta) },
-                onRawPush = { bytes -> if (_ui.value.logRawPushes) log("PUSH ${bytes.hex()}") },
+                onRawPush = { bytes ->
+                    lastCommanderPushAt = System.currentTimeMillis()
+                    if (_ui.value.logRawPushes) log("PUSH ${bytes.hex()}")
+                },
                 onDisconnect = {
-                    log("Commander 연결 끊김")
+                    log("Commander 연결 끊김 — 자동 재연결 시작")
                     clearLive()
                     _ui.update { it.copy(commander = LinkState.DISCONNECTED) }
                     resolveSpeed()
+                    if (!commanderOff) {
+                        commanderFailures = 0
+                        commanderWake.trySend(Unit)
+                    }
                 },
                 log = ::log,
             )
@@ -360,6 +454,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             link.connect()
             val session = link.session ?: error("Commander 세션을 열지 못했습니다")
             registerAndSubscribe(session)
+            lastCommanderPushAt = System.currentTimeMillis()
+            commanderFailures = 0
             return session
         } catch (e: Exception) {
             clearLive()
@@ -464,7 +560,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun connectCar() {
         carOff = false
-        run("차량 연결", silent = true) { ensureCar() }
+        carFailures = 0
+        if (prefs.vin.length != 17) {
+            _ui.update { it.copy(toast = "설정 탭에서 17자리 VIN을 먼저 저장하세요") }
+            return
+        }
+        startAutoConnect()
+        viewModelScope.launch {
+            try {
+                ensureCar()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                log("차량 BLE 연결 실패 (백그라운드에서 계속 재시도합니다): ${e.message}")
+                _ui.update { it.copy(toast = "차량 BLE 연결 재시도 중… (${e.message})") }
+                carWake.trySend(Unit)
+            }
+        }
     }
 
     private suspend fun ensureCar(): TeslaClient = carMutex.withLock {
@@ -477,13 +589,28 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _ui.update { it.copy(car = LinkState.CONNECTING) }
         try {
             car?.disconnect()
-            val link = TeslaLink(getApplication(), vin, prefs.teslaKey, onDisconnect = {
-                log("차량 BLE 연결 끊김")
-                _ui.update { it.copy(car = LinkState.DISCONNECTED, carDrive = null) }
-            }, log = ::log)
+            val link = TeslaLink(
+                context = getApplication(),
+                vin = vin,
+                key = prefs.teslaKey,
+                savedAddress = prefs.carAddress,
+                onAddressLearned = { addr -> prefs.carAddress = addr },
+                onDisconnect = {
+                    log("차량 BLE 연결 끊김 — 자동 재연결 시작")
+                    _ui.update { it.copy(car = LinkState.DISCONNECTED, carDrive = null) }
+                    resolveSpeed()
+                    if (!carOff) {
+                        carFailures = 0
+                        carWake.trySend(Unit)
+                    }
+                },
+                log = ::log,
+            )
             car = link
             link.connect()
             val client = link.client ?: error("차량 BLE 세션을 열지 못했습니다")
+            carFailures = 0
+            carPollErrors = 0
             _ui.update { it.copy(car = LinkState.CONNECTED) }
             checkKey(client)
             loadCarState(client)
@@ -752,6 +879,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     val gpsFresh = s.gps?.let { System.currentTimeMillis() - it.atMillis < SpeedSource.GPS_FRESH_MS } == true
                     try {
                         pollCarDrive(client, withLocation = !gpsFresh || n % 5 == 0L)
+                        carPollErrors = 0
                         if (System.currentTimeMillis() - lastTyres > 10 * 60_000L) {
                             lastTyres = System.currentTimeMillis()
                             readTyres(client)
@@ -759,7 +887,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
-                        if (n % 20 == 0L) log("차량 주행 상태 읽기 실패: ${e.message}")
+                        carPollErrors++
+                        if (n % 10 == 0L) log("차량 주행 상태 읽기 실패 ($carPollErrors): ${e.message}")
+                        if (carPollErrors >= 3) {
+                            log("차량 BLE 연속 응답 실패 — 연결 재설정")
+                            carPollErrors = 0
+                            car?.disconnect()
+                            car = null
+                            _ui.update { it.copy(car = LinkState.DISCONNECTED, carDrive = null) }
+                            resolveSpeed()
+                            if (!carOff) {
+                                carFailures = 0
+                                carWake.trySend(Unit)
+                            }
+                        }
                     }
                     n++
                 }

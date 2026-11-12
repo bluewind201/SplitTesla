@@ -15,6 +15,16 @@ class Prefs(context: Context) {
         get() = prefs.getString("vin", "") ?: ""
         set(value) = prefs.edit().putString("vin", value.trim().uppercase()).apply()
 
+    /** Last BLE MAC address that worked for the S3XY Commander, for fast direct reconnect. */
+    var commanderAddress: String
+        get() = prefs.getString("commander_ble_address", "") ?: ""
+        set(value) = prefs.edit().putString("commander_ble_address", value.trim().uppercase()).apply()
+
+    /** Last BLE MAC address that worked for the car, for fast direct reconnect. */
+    var carAddress: String
+        get() = prefs.getString("car_ble_address", "") ?: ""
+        set(value) = prefs.edit().putString("car_ble_address", value.trim().uppercase()).apply()
+
     var gaugeStyle: GaugeStyle
         get() = GaugeStyle.entries.firstOrNull { it.name == prefs.getString("gauge_style", null) } ?: GaugeStyle.TRACK
         set(value) = prefs.edit().putString("gauge_style", value.name).apply()
