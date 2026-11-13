@@ -201,6 +201,23 @@ class LogbookController private constructor(private val context: Context) {
         return line
     }
 
+    /**
+     * Reads one or more payment messages from shared text, clipboard, or an
+     * exported `.txt` chat file. Returns the list of newly booked summary lines.
+     */
+    fun onMessages(
+        text: String,
+        source: MessageSource,
+        timeMillis: Long = System.currentTimeMillis(),
+        force: Boolean = false,
+    ): List<String> {
+        val parts = PaymentParser.splitMessages(text)
+        if (parts.isEmpty()) return emptyList()
+        val booked = parts.mapNotNull { onMessage(it, source, timeMillis, force = force) }
+        if (booked.isNotEmpty() || parts.size == 1) return booked
+        return listOfNotNull(onMessage(text, source, timeMillis, force = force))
+    }
+
     /** Remembers message fingerprints so a rescan or a repeated notification books nothing twice. */
     private fun markSeen(fp: String): Boolean {
         val seen = prefs.getString("logbook_seen_messages", "").orEmpty().split(',').filter { it.isNotEmpty() }

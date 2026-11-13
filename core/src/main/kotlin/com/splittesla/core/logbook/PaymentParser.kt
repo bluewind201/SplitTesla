@@ -131,6 +131,21 @@ object PaymentParser {
 
     /** Same text, same key: whitespace and the [Web발신] prefix do not matter. */
     fun fingerprint(text: String): String = normalize(text.replace("[Web발신]", "")).hashCode().toUInt().toString(16)
+
+    private val MESSAGE_BOUNDARY = Regex(
+        """(?=\[Web발신\])|\r?\n\s*\r?\n+|\r?\n(?=(?:\[[^\]]+\]\s*\[(?:오전|오후)\s*\d{1,2}:\d{2}\]|\d{4}[년.\-/]\s*\d{1,2}[월.\-/]\s*\d{1,2}일?\s*(?:오전|오후)?\s*\d{1,2}:\d{2}))""",
+    )
+
+    /**
+     * Splits a pasted block, shared text, or exported KakaoTalk/SMS `.txt` file
+     * into individual payment messages so a batch import can book all of them.
+     */
+    fun splitMessages(raw: String): List<String> {
+        val trimmed = raw.trim()
+        if (trimmed.isEmpty()) return emptyList()
+        val parts = trimmed.split(MESSAGE_BOUNDARY).map { it.trim() }.filter { it.isNotEmpty() }
+        return if (parts.size > 1) parts else listOf(trimmed)
+    }
 }
 
 /** What booking a payment did to the logbook. */

@@ -27,16 +27,10 @@
     <!-- Speed camera alerts from phone GPS while the dashboard floats over the navi -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
-    <!-- 차계부: card approval and 하이패스 texts. Read on the phone only. -->
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.READ_SMS" />
-
     <!-- Self-update from the GitHub latest-apk release. The second lets Android 13+
          install later updates without a prompt once this app installed itself. -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
-
-    <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <!-- Android 11+ package visibility: the TTS engine -->
     <queries>
@@ -55,12 +49,26 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- 차계부: 카카오톡·문자·파일에서 '공유 → 스플릿테슬라'로 결제 내역 전달 (민감 권한 불필요) -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+            </intent-filter>
+            <!-- 갤럭시 모드 및 루틴 / 자동화 앱 연동: splittesla://pay?text=... -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="splittesla" android:host="pay" />
             </intent-filter>
         </activity>
         <service
@@ -72,23 +80,6 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Car dashboard drawn over the navigation app while driving" />
         </service>
-        <service
-            android:name=".logbook.PaymentNotificationListener"
-            android:exported="true"
-            android:label="스플릿테슬라 차계부 결제 알림"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
-        <receiver
-            android:name=".logbook.PaymentSmsReceiver"
-            android:exported="true"
-            android:permission="android.permission.BROADCAST_SMS">
-            <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
-            </intent-filter>
-        </receiver>
         <receiver
             android:name=".update.UpdateReceiver"
             android:exported="false">

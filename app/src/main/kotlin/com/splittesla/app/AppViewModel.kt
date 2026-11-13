@@ -1089,17 +1089,61 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     // ── Payment messages ──
 
-    /** Books charging, 하이패스, parking and car wash payments from the last 30 days of texts. */
-    fun scanSmsInbox() = run("문자함 검사", silent = true) {
-        val booked = PaymentMessages.scanInbox(getApplication())
-        toast(if (booked.isEmpty()) "새로 등록할 결제 문자가 없습니다" else "결제 문자 ${booked.size}건을 차계부에 등록했습니다")
+    /**
+     * Reads clipboard text and books any new charging, 하이패스, parking or wash
+     * payment. When [silentIfEmpty] is true (auto-check on app focus), stays
+     * quiet unless a new payment is actually booked.
+     */
+    fun bookFromClipboard(silentIfEmpty: Boolean = false) {
+        if (silentIfEmpty && !logbook.state.value.autoMessages) return
+        val clip = runCatching { PaymentMessages.readClipboard(getApplication()) }.getOrNull()
+        if (clip.isNullOrBlank()) {
+            if (!silentIfEmpty) toast("클립보드에 복사된 텍스트가 없습니다")
+            return
+        }
+        val booked = logbook.onMessages(clip, MessageSource.SMS, System.currentTimeMillis(), force = !silentIfEmpty)
+        if (booked.isNotEmpty()) {
+            toast(if (booked.size == 1) "📋 ${booked.first()}" else "📋 클립보드에서 결제 ${booked.size}건을 차계부에 등록했습니다")
+        } else if (!silentIfEmpty) {
+            toast("클립보드에서 새로 등록할 차계부 결제 내역을 찾지 못했습니다")
+        }
     }
 
-    /** The test box: reads a pasted message as if it had just arrived. */
+    /** Imports an exported KakaoTalk or SMS `.txt` / `.csv` file and books all matching payments. */
+    fun importPaymentFile(uri: Uri) = run("결제 내역 파일 가져오기", silent = true) {
+        val text = PaymentMessages.readTextUri(getApplication(), uri)
+        val src = if (text.contains("카카오") || text.contains("KakaoTalk", ignoreCase = true)) MessageSource.KAKAO else MessageSource.SMS
+        val booked = logbook.onMessages(text, src, System.currentTimeMillis(), force = true)
+        toast(if (booked.isEmpty()) "새로 등록할 결제 내역이 없습니다" else "파일에서 결제 ${booked.size}건을 차계부에 등록했습니다")
+    }
+
+    /** Handles `Intent.ACTION_SEND` (공유하기) and `splittesla://pay?text=...` (모드 및 루틴). */
+    fun handleIncomingPaymentIntent(intent: android.content.Intent?) {
+        if (intent == null) return
+        viewModelScope.launch {
+            val (text, source) = PaymentMessages.extractIncoming(getApplication(), intent) ?: return@launch
+            val booked = logbook.onMessages(text, source, System.currentTimeMillis(), force = true)
+            toast(
+                when {
+                    booked.size == 1 -> booked.first()
+                    booked.size > 1 -> "공유된 결제 ${booked.size}건을 차계부에 등록했습니다"
+                    else -> "공유된 텍스트에서 새로 등록할 차계부 결제 내역을 찾지 못했습니다"
+                },
+            )
+        }
+    }
+
+    /** The test box: reads one or more pasted messages as if they had just arrived. */
     fun testPaymentMessage(text: String) {
         if (text.isBlank()) return
-        val line = logbook.onMessage(text, MessageSource.MANUAL, System.currentTimeMillis(), force = true)
-        toast(line ?: "차계부 항목으로 인식하지 못했습니다 (키워드·금액 확인, 또는 이미 등록됨)")
+        val booked = logbook.onMessages(text, MessageSource.MANUAL, System.currentTimeMillis(), force = true)
+        toast(
+            when {
+                booked.size == 1 -> booked.first()
+                booked.size > 1 -> "결제 ${booked.size}건을 차계부에 등록했습니다"
+                else -> "차계부 항목으로 인식하지 못했습니다 (키워드·금액 확인, 또는 이미 등록됨)"
+            },
+        )
     }
 
     // ── Logbook ──

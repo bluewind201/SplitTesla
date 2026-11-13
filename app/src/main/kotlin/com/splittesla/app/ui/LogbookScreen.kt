@@ -1,6 +1,5 @@
 package com.splittesla.app.ui
 
-import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -44,10 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
-import com.splittesla.app.logbook.PaymentMessages
 import com.splittesla.app.AppViewModel
 import com.splittesla.app.logbook.LogbookState
 import com.splittesla.app.ui.theme.Caption
@@ -202,39 +197,33 @@ private fun SummaryPanel(lb: LogbookState, now: Long) {
 }
 
 /**
- * Automatic booking: payment texts and notifications (charging operators
- * from the user's keyword list, 하이패스/통행료, parking, car wash), drives
- * and health checks from the car's data, plus the inbox scan and a test box.
+ * Automatic booking: payment texts shared from KakaoTalk/Messages, copied to
+ * clipboard, or imported from `.txt` files (charging operators from the user's
+ * keyword list, 하이패스/통행료, parking, car wash), plus drives and health
+ * checks from the car's data.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AutoPanel(vm: AppViewModel, lb: LogbookState) {
-    val context = LocalContext.current
-    var notifyOk by remember { mutableStateOf(PaymentMessages.hasNotificationAccess(context)) }
-    var smsOk by remember { mutableStateOf(PaymentMessages.hasSmsPermission(context) && PaymentMessages.canReadInbox(context)) }
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        notifyOk = PaymentMessages.hasNotificationAccess(context)
-        smsOk = PaymentMessages.hasSmsPermission(context) && PaymentMessages.canReadInbox(context)
-    }
-    val smsPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { r ->
-        smsOk = r[Manifest.permission.RECEIVE_SMS] == true && r[Manifest.permission.READ_SMS] == true
+    val fileImporter = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let(vm::importPaymentFile)
     }
     var keyword by rememberSaveable { mutableStateOf("") }
     var test by rememberSaveable { mutableStateOf("") }
 
     Panel(Modifier.fillMaxWidth(), title = "자동 기록") {
-        Toggle("문자·카카오톡·결제 알림으로 충전비·통행료·주차·세차 등록", lb.autoMessages, vm.logbook::setAutoMessages)
+        Toggle("복사·공유된 문자/카카오톡 결제 내역으로 충전비·통행료·주차·세차 자동 등록", lb.autoMessages, vm.logbook::setAutoMessages)
         Toggle("차량 데이터로 주행 기록 (거리·출발/도착·배터리·전비)", lb.autoDrives, vm.logbook::setAutoDrives)
         Toggle("12V·타이어·배터리 이상 점검 메모", lb.autoChecks, vm.logbook::setAutoChecks)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            GlowButton(if (notifyOk) "✓ 알림 접근 허용됨" else "알림 접근 허용", { context.startActivity(PaymentMessages.notificationAccessIntent()) }, active = notifyOk)
-            GlowButton(
-                if (smsOk) "✓ 문자 권한 허용됨" else "문자 권한 허용",
-                { smsPermission.launch(arrayOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS)) },
-                active = smsOk,
-            )
-            GlowButton("문자함 검사 (30일)", vm::scanSmsInbox, enabled = smsOk)
+            GlowButton("📋 클립보드에서 등록", { vm.bookFromClipboard(silentIfEmpty = false) }, filled = true)
+            GlowButton("📂 대화내용 파일(.txt) 가져오기", { fileImporter.launch("text/*") })
         }
+        Text(
+            "결제 문자·카톡을 복사한 뒤 앱을 열거나 '공유 → 스플릿테슬라'를 누르면 민감 권한 없이 자동 등록됩니다. (갤럭시 루틴: splittesla://pay?text=...)",
+            fontSize = 11.sp,
+            color = Neon.muted,
+        )
         Text("충전 가맹점 키워드 (누르면 삭제)", style = Caption)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             lb.chargeKeywords.forEach { k ->
@@ -259,7 +248,7 @@ private fun AutoPanel(vm: AppViewModel, lb: LogbookState) {
         }
         Text("'하이패스'·'한국도로공사'·'통행료'는 통행료로, 주차·세차 결제도 자동 분류됩니다.", fontSize = 11.sp, color = Neon.muted)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            LogField(test, { test = it }, "메시지 붙여넣기 (테스트·직접 등록)", Modifier.weight(1f))
+            LogField(test, { test = it }, "메시지 붙여넣기 (단건·여러 건 직접 등록)", Modifier.weight(1f))
             GlowButton("등록", {
                 vm.testPaymentMessage(test)
                 test = ""

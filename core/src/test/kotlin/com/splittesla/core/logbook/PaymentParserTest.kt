@@ -113,4 +113,23 @@ class PaymentParserTest {
         assertEquals("문자", e.source)
         assertTrue(e.auto)
     }
+
+    @Test
+    fun splitMessagesExtractsMultiplePaymentsFromBatchText() {
+        val batch = """
+            [Web발신]
+            신한카드 승인 12,340원 일시불 11/12 한국자동차환경협회
+
+            2026년 11월 13일 오후 2:10, 카톡알림 : [하이패스] 서울TG→판교TG 통행료 2,000원 결제
+            2026년 11월 13일 오후 5:40, 카톡알림 : KB국민카드 승인 8,800원 (주) 에바
+        """.trimIndent()
+        val parsed = PaymentParser.splitMessages(batch).mapNotNull { PaymentParser.parse(it) }
+        assertEquals(3, parsed.size)
+        assertEquals(EntryKind.CHARGE, parsed[0].kind)
+        assertEquals(12_340, parsed[0].amountWon)
+        assertEquals(EntryKind.TOLL, parsed[1].kind)
+        assertEquals(2_000, parsed[1].amountWon)
+        assertEquals(EntryKind.CHARGE, parsed[2].kind)
+        assertEquals(8_800, parsed[2].amountWon)
+    }
 }

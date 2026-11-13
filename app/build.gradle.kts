@@ -16,7 +16,7 @@ android {
         // Phones already run CI builds 128+, so a hand build (versionCode 1, test key)
         // can't install over them: publish only CI APKs, never a local build.
         versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
-        versionName = "0.2.2"
+        versionName = "0.2.3"
     }
 
     // A fixed key so each CI build installs over the previous one. A new
