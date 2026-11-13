@@ -58,6 +58,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import java.text.SimpleDateFormat
 import java.util.Date
+import com.splittesla.app.update.AppUpdater
+import com.splittesla.app.update.UpdateController
 import java.util.Locale
 
 enum class LinkState(val label: String) {
@@ -210,6 +212,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun consumeToast() = _ui.update { it.copy(toast = null) }
 
     fun toast(text: String) = _ui.update { it.copy(toast = text) }
+
+    /** Self-update from the GitHub latest-apk release; installs only on screen and parked. */
+    val updater: UpdateController = run {
+        AppUpdater.log = { line -> log(line) }
+        UpdateController(app, viewModelScope) {
+            isForeground && (_ui.value.speed.kmh ?: 0f) < 3f
+        }
+    }
 
     fun setVin(vin: String) {
         val changed = vin != prefs.vin
@@ -382,6 +392,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             carFailures = 0
             commanderWake.trySend(Unit)
             carWake.trySend(Unit)
+            updater.onForeground()
         }
     }
 

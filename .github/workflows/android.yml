@@ -56,21 +56,26 @@ jobs:
             echo "::warning::Signing secrets not set; using the test key"
           fi
           ./gradlew :app:assembleRelease
-      - uses: actions/upload-artifact@v4
-        with:
-          name: SplitTesla-apk
-          path: app/build/outputs/apk/release/*.apk
-      # Direct .apk download on the "latest-apk" prerelease. Any branch may
-      # publish, but only when its commit contains the commit already behind
-      # latest-apk. So the link follows whichever branch is on top of the
-      # stack, never goes back to an older build (a lower versionCode makes
-      # Android refuse to install over the newer app), and a side branch
-      # can't replace it. Run the workflow by hand to force a publish.
-      - name: Publish APK to latest-apk release
-        if: github.event_name != 'pull_request'
+          # Only release-key builds may reach phones: a test-key APK can't
+          # install over them, and the in-app updater would reject it anyway.
+          if [ -n "${SPLITTESLA_KEYSTORE:-}" ]; then echo "RELEASE_SIGNED=1" >> "$GITHUB_ENV"; fi
+      # No upload-artifact step: the account's artifact storage quota is full
+      # and that failure stopped the publish step from running at all. The
+      # APK is on the release below instead.
+      # Direct .apk download and the in-app auto-update feed (latest.json) on
+      # the "latest-apk" prerelease. Only main publishes (or a manual run),
+      # and only when its commit contains the one already behind latest-apk,
+      # so phones never get an older build (a lower versionCode makes Android
+      # refuse to install over the newer app) or a side branch's build.
+      - name: Publish APK and update feed to latest-apk release
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ "${RELEASE_SIGNED:-}" != 1 ]; then
+            echo "::error::APK is signed with the test key; not publishing (fix SIGNING_KEYSTORE_* secrets)"
+            exit 1
+          fi
           current=$(gh release view latest-apk --json targetCommitish --jq .targetCommitish 2>/dev/null || true)
           if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] && [ -n "$current" ] \
              && ! git merge-base --is-ancestor "$current" "$GITHUB_SHA" 2>/dev/null; then
@@ -78,7 +83,25 @@ jobs:
             exit 0
           fi
           cp app/build/outputs/apk/release/app-release.apk SplitTesla.apk
+          aapt2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          badging=$("$aapt2" dump badging SplitTesla.apk | head -1)
+          vcode=$(printf '%s' "$badging" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
+          vname=$(printf '%s' "$badging" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
+          sha=$(sha256sum SplitTesla.apk | cut -d' ' -f1)
+          subject=$(git log -1 --format=%s "$GITHUB_SHA")
+          jq -n --argjson vc "$vcode" --arg vn "$vname" --arg sha "$sha" --arg c "$GITHUB_SHA" --arg n "$subject" \
+            --arg url "https://github.com/${GITHUB_REPOSITORY}/releases/download/latest-apk/SplitTesla.apk" \
+            '{versionCode:$vc, versionName:$vn, apkUrl:$url, sha256:$sha, commit:$c, notes:$n}' > latest.json
+          cat latest.json
           gh release delete latest-apk --yes --cleanup-tag || true
-          gh release create latest-apk SplitTesla.apk --prerelease --target "$GITHUB_SHA" \
-            --title "SplitTesla 테스트 APK" \
-            --notes "브랜치 ${GITHUB_REF_NAME}, 커밋 ${GITHUB_SHA::7}, 빌드 ${GITHUB_RUN_NUMBER}"
+          gh release create latest-apk SplitTesla.apk latest.json --prerelease --target "$GITHUB_SHA" \
+            --title "SplitTesla ${vname} (빌드 ${vcode})" \
+            --notes "브랜치 ${GITHUB_REF_NAME}, 커밋 ${GITHUB_SHA::7}, 빌드 ${vcode}: ${subject}"
+          # One permanent release per versionName, so the repo's "Latest"
+          # release is always an installable CI build.
+          if ! gh release view "v${vname}" >/dev/null 2>&1; then
+            cp SplitTesla.apk "SplitTesla-v${vname}.apk"
+            gh release create "v${vname}" "SplitTesla-v${vname}.apk" --latest --target "$GITHUB_SHA" \
+              --title "SplitTesla v${vname}" \
+              --notes "CI 빌드 ${vcode} (커밋 ${GITHUB_SHA::7}, 릴리스 키 서명). 앱의 설정 → 자동 업데이트가 이후 버전을 자동으로 설치합니다."
+          fi

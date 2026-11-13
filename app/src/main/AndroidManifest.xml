@@ -31,6 +31,11 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.READ_SMS" />
 
+    <!-- Self-update from the GitHub latest-apk release. The second lets Android 13+
+         install later updates without a prompt once this app installed itself. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
+
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <!-- Android 11+ package visibility: the TTS engine -->
@@ -82,6 +87,20 @@
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".update.UpdateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.splittesla.app.UPDATE_STATUS" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".update.PackageReplacedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
     </application>

@@ -167,6 +167,8 @@ fun SettingsScreen(vm: AppViewModel, ui: UiState, modifier: Modifier) {
             }
         }
         Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            UpdateSettingsCard(vm)
+
             FoldSection(
                 "내비 위 계기판 (다른 앱 위에 표시)",
                 summary = when {

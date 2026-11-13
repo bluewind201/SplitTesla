@@ -13,8 +13,10 @@ android {
         minSdk = 26
         targetSdk = 35
         // Each CI build counts up, so every published APK is a clear update over the last.
-        versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 3
-        versionName = "0.2.1"
+        // Phones already run CI builds 128+, so a hand build (versionCode 1, test key)
+        // can't install over them: publish only CI APKs, never a local build.
+        versionCode = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+        versionName = "0.2.2"
     }
 
     // A fixed key so each CI build installs over the previous one. A new
