@@ -13,10 +13,6 @@ import com.splittesla.core.logbook.HealthReading
 import com.splittesla.core.logbook.LogEntry
 import com.splittesla.core.logbook.Logbook
 import com.splittesla.core.logbook.LogbookStore
-import com.splittesla.core.logbook.MessageSource
-import com.splittesla.core.logbook.PaymentBooker
-import com.splittesla.core.logbook.PaymentBooking
-import com.splittesla.core.logbook.PaymentParser
 import com.splittesla.core.logbook.toEntry
 import com.tesla.generated.carserver.vehicle.Vehicle
 import kotlinx.coroutines.Dispatchers
@@ -40,16 +36,10 @@ data class LogbookState(
     val charging: ChargeSessionTracker.Pending? = null,
     /** A drive in progress, which becomes an entry once the car is parked. */
     val driving: DriveSessionTracker.Pending? = null,
-    /** Merchant words that mark a card or pay message as an EV charge. */
-    val chargeKeywords: List<String> = PaymentParser.DEFAULT_CHARGE_KEYWORDS,
-    /** Read SMS and notifications (KakaoTalk, card apps) for charge, toll, parking and wash payments. */
-    val autoMessages: Boolean = true,
     /** Record drives from the car's data. */
     val autoDrives: Boolean = true,
     /** Note 12 V, tyre and battery problems from the car's data. */
     val autoChecks: Boolean = true,
-    /** The last payment message that was booked or matched, for the screen. */
-    val lastMessage: String? = null,
 )
 
 /** Where the car is, for a charge or drive line. */
@@ -58,13 +48,8 @@ data class PlaceInfo(val name: String?, val latitude: Double?, val longitude: Do
 /**
  * The 차계부: costs, charges, drives and services, kept in app storage.
  * Charges record themselves from the car's charge state with where they
- * happened and how much range they added; the price paid is filled in from
- * the card or pay message when one arrives. Drives record themselves from
- * gear, odometer and battery. Tolls (하이패스), parking and car washes come
- * from messages.
- *
- * One per process, so the SMS receiver and the notification listener book
- * into the same file as the screen even while no screen is open.
+ * happened and how much range they added. Drives record themselves from
+ * gear, odometer and battery.
  */
 class LogbookController private constructor(private val context: Context) {
     @Volatile
@@ -93,8 +78,6 @@ class LogbookController private constructor(private val context: Context) {
             odometerKm = prefs.getInt("logbook_odometer", -1).takeIf { it >= 0 },
             prices = ChargeType.entries.associateWith { prefs.getInt("logbook_price_${it.name}", it.defaultWonPerKwh) },
             charging = tracker.current,
-            chargeKeywords = loadKeywords(),
-            autoMessages = prefs.getBoolean("logbook_auto_messages", true),
             autoDrives = prefs.getBoolean("logbook_auto_drives", true),
             autoChecks = prefs.getBoolean("logbook_auto_checks", true),
         ),
@@ -135,11 +118,6 @@ class LogbookController private constructor(private val context: Context) {
 
     // ── Settings ──
 
-    fun setAutoMessages(on: Boolean) {
-        prefs.edit().putBoolean("logbook_auto_messages", on).apply()
-        _state.update { it.copy(autoMessages = on) }
-    }
-
     fun setAutoDrives(on: Boolean) {
         prefs.edit().putBoolean("logbook_auto_drives", on).apply()
         _state.update { it.copy(autoDrives = on) }
@@ -148,82 +126,6 @@ class LogbookController private constructor(private val context: Context) {
     fun setAutoChecks(on: Boolean) {
         prefs.edit().putBoolean("logbook_auto_checks", on).apply()
         _state.update { it.copy(autoChecks = on) }
-    }
-
-    // ── Charge keywords ──
-
-    fun addKeyword(word: String) {
-        val w = word.trim()
-        if (w.isEmpty()) return
-        val list = _state.value.chargeKeywords
-        if (list.any { PaymentParser.normalize(it) == PaymentParser.normalize(w) }) return
-        saveKeywords(list + w)
-    }
-
-    fun removeKeyword(word: String) = saveKeywords(_state.value.chargeKeywords - word)
-
-    fun resetKeywords() = saveKeywords(PaymentParser.DEFAULT_CHARGE_KEYWORDS)
-
-    private fun saveKeywords(list: List<String>) {
-        prefs.edit().putString("logbook_charge_keywords", list.joinToString("\n")).apply()
-        _state.update { it.copy(chargeKeywords = list) }
-    }
-
-    private fun loadKeywords(): List<String> =
-        prefs.getString("logbook_charge_keywords", null)?.split('\n')?.map { it.trim() }?.filter { it.isNotEmpty() }
-            ?: PaymentParser.DEFAULT_CHARGE_KEYWORDS
-
-    // ── Payment messages ──
-
-    /**
-     * Reads one SMS, KakaoTalk or card-app notification. Returns what was
-     * booked, or null when the message is not a car expense or was already
-     * booked. [force] books even with automatic reading off (the test box).
-     */
-    fun onMessage(text: String, source: MessageSource, timeMillis: Long, force: Boolean = false): String? {
-        if (!force && !_state.value.autoMessages) return null
-        val p = PaymentParser.parse(text, _state.value.chargeKeywords, source, timeMillis) ?: return null
-        val result = synchronized(lock) {
-            if (!markSeen(p.fingerprint)) return null
-            val entries = _state.value.entries
-            if (PaymentBooker.isDuplicate(entries, p)) return null
-            val booking = PaymentBooker.book(entries, p, _state.value.odometerKm, ::newId)
-            persist((entries.filter { it.id != booking.entry.id } + booking.entry).sortedByDescending { it.timeMillis })
-            booking
-        }
-        val won = "%,d원".format(p.amountWon)
-        val line = when (result) {
-            is PaymentBooking.UpdatedCharge -> "충전 금액 확인: ${p.keyword} $won (예상 ${"%,d".format(result.previousWon)}원 → 실제)"
-            is PaymentBooking.Added -> "${p.kind.label} 자동 등록: ${p.merchant} $won (${source.label})"
-        }
-        _state.update { it.copy(lastMessage = line) }
-        log("차계부: $line")
-        return line
-    }
-
-    /**
-     * Reads one or more payment messages from shared text, clipboard, or an
-     * exported `.txt` chat file. Returns the list of newly booked summary lines.
-     */
-    fun onMessages(
-        text: String,
-        source: MessageSource,
-        timeMillis: Long = System.currentTimeMillis(),
-        force: Boolean = false,
-    ): List<String> {
-        val parts = PaymentParser.splitMessages(text)
-        if (parts.isEmpty()) return emptyList()
-        val booked = parts.mapNotNull { onMessage(it, source, timeMillis, force = force) }
-        if (booked.isNotEmpty() || parts.size == 1) return booked
-        return listOfNotNull(onMessage(text, source, timeMillis, force = force))
-    }
-
-    /** Remembers message fingerprints so a rescan or a repeated notification books nothing twice. */
-    private fun markSeen(fp: String): Boolean {
-        val seen = prefs.getString("logbook_seen_messages", "").orEmpty().split(',').filter { it.isNotEmpty() }
-        if (fp in seen) return false
-        prefs.edit().putString("logbook_seen_messages", (seen + fp).takeLast(400).joinToString(",")).apply()
-        return true
     }
 
     // ── Charges ──

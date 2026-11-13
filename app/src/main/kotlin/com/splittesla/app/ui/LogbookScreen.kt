@@ -197,64 +197,19 @@ private fun SummaryPanel(lb: LogbookState, now: Long) {
 }
 
 /**
- * Automatic booking: payment texts shared from KakaoTalk/Messages, copied to
- * clipboard, or imported from `.txt` files (charging operators from the user's
- * keyword list, 하이패스/통행료, parking, car wash), plus drives and health
- * checks from the car's data.
+ * Automatic booking from the car's BLE / CAN data: drives and health checks
+ * (charges record automatically when charging completes).
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AutoPanel(vm: AppViewModel, lb: LogbookState) {
-    val fileImporter = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let(vm::importPaymentFile)
-    }
-    var keyword by rememberSaveable { mutableStateOf("") }
-    var test by rememberSaveable { mutableStateOf("") }
-
     Panel(Modifier.fillMaxWidth(), title = "자동 기록") {
-        Toggle("복사·공유된 문자/카카오톡 결제 내역으로 충전비·통행료·주차·세차 자동 등록", lb.autoMessages, vm.logbook::setAutoMessages)
         Toggle("차량 데이터로 주행 기록 (거리·출발/도착·배터리·전비)", lb.autoDrives, vm.logbook::setAutoDrives)
         Toggle("12V·타이어·배터리 이상 점검 메모", lb.autoChecks, vm.logbook::setAutoChecks)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            GlowButton("📋 클립보드에서 등록", { vm.bookFromClipboard(silentIfEmpty = false) }, filled = true)
-            GlowButton("📂 대화내용 파일(.txt) 가져오기", { fileImporter.launch("text/*") })
-        }
         Text(
-            "결제 문자·카톡을 복사한 뒤 앱을 열거나 '공유 → 스플릿테슬라'를 누르면 민감 권한 없이 자동 등록됩니다. (갤럭시 루틴: splittesla://pay?text=...)",
+            "차량 BLE가 연결된 동안 충전 완료 시 충전량(kWh)·충전 거리(+km)·위치·단가 기준 금액이 자동으로 기록됩니다.",
             fontSize = 11.sp,
             color = Neon.muted,
         )
-        Text("충전 가맹점 키워드 (누르면 삭제)", style = Caption)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            lb.chargeKeywords.forEach { k ->
-                Text(
-                    "$k ✕",
-                    fontSize = 12.sp,
-                    color = Neon.text,
-                    modifier = Modifier
-                        .background(Glass.track, RoundedCornerShape(8.dp))
-                        .clickable { vm.logbook.removeKeyword(k) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                )
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            LogField(keyword, { keyword = it }, "키워드 추가", Modifier.weight(1f))
-            GlowButton("추가", {
-                vm.logbook.addKeyword(keyword)
-                keyword = ""
-            }, enabled = keyword.isNotBlank())
-            GlowButton("기본값", vm.logbook::resetKeywords)
-        }
-        Text("'하이패스'·'한국도로공사'·'통행료'는 통행료로, 주차·세차 결제도 자동 분류됩니다.", fontSize = 11.sp, color = Neon.muted)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            LogField(test, { test = it }, "메시지 붙여넣기 (단건·여러 건 직접 등록)", Modifier.weight(1f))
-            GlowButton("등록", {
-                vm.testPaymentMessage(test)
-                test = ""
-            }, enabled = test.isNotBlank(), filled = true)
-        }
-        lb.lastMessage?.let { Text("최근: $it", fontSize = 12.sp, color = Neon.lime) }
     }
 }
 

@@ -107,23 +107,8 @@ class DashboardOverlayService : Service(), LifecycleOwner, SavedStateRegistryOwn
     private fun startInForeground() {
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(NotificationChannel(CHANNEL, "내비 위 계기판", NotificationManager.IMPORTANCE_LOW))
-        // With location granted the service also carries the location type, so phone GPS
-        // (speed camera alerts, the GPS speed fallback) keeps working behind the navi.
-        val located = androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) ==
-            android.content.pm.PackageManager.PERMISSION_GRANTED
-        val type = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE ->
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or (if (located) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0)
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && located -> ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
-            else -> 0
-        }
-        try {
-            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), type)
-        } catch (e: Exception) {
-            // Location type refused (permission revoked): carry on without it.
-            val fallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
-            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), fallback)
-        }
+        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE else 0
+        ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), type)
     }
 
     private fun notification(): Notification {

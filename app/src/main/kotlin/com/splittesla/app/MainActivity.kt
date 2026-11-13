@@ -1,7 +1,6 @@
 package com.splittesla.app
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -59,22 +58,7 @@ class MainActivity : ComponentActivity() {
         val notify = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(Manifest.permission.POST_NOTIFICATIONS) else emptyArray()
         permissionLauncher.launch(permissions + notify)
         DashboardOverlay.vm = viewModel
-        viewModel.handleIncomingPaymentIntent(intent)
         setContent { SplitTeslaApp(viewModel) }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        viewModel.handleIncomingPaymentIntent(intent)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) {
-            // Android 10+ allows clipboard access only once the window gains focus.
-            viewModel.bookFromClipboard(silentIfEmpty = true)
-        }
     }
 
     /**

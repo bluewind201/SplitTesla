@@ -8,7 +8,6 @@ import com.splittesla.app.assistant.DriveAssistant
 import com.splittesla.app.camera.CameraRepository
 import com.splittesla.app.camera.GpsFix
 import com.splittesla.app.camera.PhoneGps
-import com.splittesla.app.logbook.PaymentMessages
 import com.splittesla.app.logbook.PlaceInfo
 import com.splittesla.app.ble.CommanderLink
 import com.splittesla.app.logbook.LogbookController
@@ -28,7 +27,6 @@ import com.splittesla.core.drive.SpeedReading
 import com.splittesla.core.drive.SpeedSource
 import com.splittesla.core.logbook.DriveSample
 import com.splittesla.core.logbook.HealthReading
-import com.splittesla.core.logbook.MessageSource
 import com.splittesla.core.s3xy.VehicleSignal
 import com.splittesla.core.tesla.CarDrive
 import com.splittesla.core.s3xy.CommanderAction
@@ -1085,65 +1083,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         log("과속 카메라 ${n}개 저장")
         reloadCameras()
         toast("과속 카메라 ${n}개를 저장했습니다")
-    }
-
-    // ── Payment messages ──
-
-    /**
-     * Reads clipboard text and books any new charging, 하이패스, parking or wash
-     * payment. When [silentIfEmpty] is true (auto-check on app focus), stays
-     * quiet unless a new payment is actually booked.
-     */
-    fun bookFromClipboard(silentIfEmpty: Boolean = false) {
-        if (silentIfEmpty && !logbook.state.value.autoMessages) return
-        val clip = runCatching { PaymentMessages.readClipboard(getApplication()) }.getOrNull()
-        if (clip.isNullOrBlank()) {
-            if (!silentIfEmpty) toast("클립보드에 복사된 텍스트가 없습니다")
-            return
-        }
-        val booked = logbook.onMessages(clip, MessageSource.SMS, System.currentTimeMillis(), force = !silentIfEmpty)
-        if (booked.isNotEmpty()) {
-            toast(if (booked.size == 1) "📋 ${booked.first()}" else "📋 클립보드에서 결제 ${booked.size}건을 차계부에 등록했습니다")
-        } else if (!silentIfEmpty) {
-            toast("클립보드에서 새로 등록할 차계부 결제 내역을 찾지 못했습니다")
-        }
-    }
-
-    /** Imports an exported KakaoTalk or SMS `.txt` / `.csv` file and books all matching payments. */
-    fun importPaymentFile(uri: Uri) = run("결제 내역 파일 가져오기", silent = true) {
-        val text = PaymentMessages.readTextUri(getApplication(), uri)
-        val src = if (text.contains("카카오") || text.contains("KakaoTalk", ignoreCase = true)) MessageSource.KAKAO else MessageSource.SMS
-        val booked = logbook.onMessages(text, src, System.currentTimeMillis(), force = true)
-        toast(if (booked.isEmpty()) "새로 등록할 결제 내역이 없습니다" else "파일에서 결제 ${booked.size}건을 차계부에 등록했습니다")
-    }
-
-    /** Handles `Intent.ACTION_SEND` (공유하기) and `splittesla://pay?text=...` (모드 및 루틴). */
-    fun handleIncomingPaymentIntent(intent: android.content.Intent?) {
-        if (intent == null) return
-        viewModelScope.launch {
-            val (text, source) = PaymentMessages.extractIncoming(getApplication(), intent) ?: return@launch
-            val booked = logbook.onMessages(text, source, System.currentTimeMillis(), force = true)
-            toast(
-                when {
-                    booked.size == 1 -> booked.first()
-                    booked.size > 1 -> "공유된 결제 ${booked.size}건을 차계부에 등록했습니다"
-                    else -> "공유된 텍스트에서 새로 등록할 차계부 결제 내역을 찾지 못했습니다"
-                },
-            )
-        }
-    }
-
-    /** The test box: reads one or more pasted messages as if they had just arrived. */
-    fun testPaymentMessage(text: String) {
-        if (text.isBlank()) return
-        val booked = logbook.onMessages(text, MessageSource.MANUAL, System.currentTimeMillis(), force = true)
-        toast(
-            when {
-                booked.size == 1 -> booked.first()
-                booked.size > 1 -> "결제 ${booked.size}건을 차계부에 등록했습니다"
-                else -> "차계부 항목으로 인식하지 못했습니다 (키워드·금액 확인, 또는 이미 등록됨)"
-            },
-        )
     }
 
     // ── Logbook ──
